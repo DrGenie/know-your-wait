@@ -5,284 +5,359 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Know Your Wait</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Research prototype: compare psychologist appointments by when you are likely to be seen and what you will pay.">
+<meta name="description" content="Waiting to see a psychologist? Compare your choices in 3 easy steps. A University of Newcastle research prototype.">
 <style>
-/* Layout: one reading column with a tab bar; option cards in a responsive grid; results sit beside inputs on wide screens. */
+/* Layout: service-style site. Dark masthead, help bar, step-by-step guided flow in one centred column (max 760px), large touch targets. */
 :root {
-  --bg: #f4f7f8;
-  --surface: #ffffff;
-  --ink: #15232a;
-  --muted: #546570;
-  --line: #d5e0e4;
-  --accent: #0d6b70;
-  --accent-soft: #dcefef;
-  --uncertain: #b06a00;
-  --uncertain-soft: #fbecd4;
-  --good: #2f7d32;
-  --warn: #9a5b00;
-  --crisis-bg: #fdf1ee;
-  --crisis-ink: #8a2d17;
-  --font-display: "Iowan Old Style", "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-data: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
-  --radius: 10px;
+  --page: #f5f7fa;
+  --card: #ffffff;
+  --text: #1a2332;
+  --muted: #4b5a6b;
+  --border: #c5d0dc;
+  --navy: #0b2545;
+  --navy-text: #ffffff;
+  --action: #0062a3;
+  --action-hover: #004a7c;
+  --action-soft: #e3f0fa;
+  --good: #0b7a3e;
+  --good-soft: #e3f4ea;
+  --late: #b04a00;
+  --late-soft: #fdeee2;
+  --help-bg: #fff4d6;
+  --help-text: #5b3d00;
+  --focus: #ffbf47;
+  --shadow: 0 1px 2px rgba(11, 37, 69, 0.08), 0 4px 14px rgba(11, 37, 69, 0.06);
+  --font: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f171b; --surface: #16222a; --ink: #e5eef1; --muted: #9db0b9; --line: #2a3a43;
-    --accent: #4fb8bc; --accent-soft: #173539; --uncertain: #f0a940; --uncertain-soft: #3a2a12;
-    --good: #7cc47f; --warn: #f0b35a; --crisis-bg: #2e1a15; --crisis-ink: #f4b3a2; color-scheme: dark;
+    --page: #0e1621; --card: #172231; --text: #e8eef5; --muted: #a9b7c6; --border: #33445a;
+    --navy: #06162b; --navy-text: #ffffff; --action: #5fb0ee; --action-hover: #8cc8f5; --action-soft: #15324d;
+    --good: #6fd19a; --good-soft: #153826; --late: #f5a76b; --late-soft: #3b2615;
+    --help-bg: #3a2f12; --help-text: #ffe2a0; --shadow: none; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0f171b; --surface: #16222a; --ink: #e5eef1; --muted: #9db0b9; --line: #2a3a43;
-  --accent: #4fb8bc; --accent-soft: #173539; --uncertain: #f0a940; --uncertain-soft: #3a2a12;
-  --good: #7cc47f; --warn: #f0b35a; --crisis-bg: #2e1a15; --crisis-ink: #f4b3a2; color-scheme: dark;
+  --page: #0e1621; --card: #172231; --text: #e8eef5; --muted: #a9b7c6; --border: #33445a;
+  --navy: #06162b; --navy-text: #ffffff; --action: #5fb0ee; --action-hover: #8cc8f5; --action-soft: #15324d;
+  --good: #6fd19a; --good-soft: #153826; --late: #f5a76b; --late-soft: #3b2615;
+  --help-bg: #3a2f12; --help-text: #ffe2a0; --shadow: none; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
-body {
-  margin: 0; background: var(--bg); color: var(--ink);
-  font: 15px/1.55 var(--font-body);
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 0 48px;
-}
-.wrap { max-width: 1080px; margin: 0 auto; }
-h1, h2, h3 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; margin: 0; }
-h1 { font-size: clamp(1.9rem, 4vw, 2.6rem); letter-spacing: -0.01em; }
-h2 { font-size: 1.35rem; }
-h3 { font-size: 1.05rem; }
-p { margin: 0; max-width: 68ch; }
-a { color: var(--accent); }
-small, .muted { color: var(--muted); }
+body { margin: 0; background: var(--page); color: var(--text); font: 18px/1.6 var(--font); }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.inner { max-width: 760px; margin: 0 auto; }
+h1, h2, h3 { line-height: 1.25; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.8rem, 5vw, 2.4rem); font-weight: 800; }
+h2 { font-size: 1.5rem; font-weight: 800; }
+h3 { font-size: 1.15rem; font-weight: 700; }
+p { margin: 0; }
+a { color: var(--action); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .num { font-variant-numeric: tabular-nums; }
-.label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
-:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
-header.top { padding-block: 28px 18px; display: grid; gap: 10px; }
-.tag { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600;
-  background: var(--uncertain-soft); color: var(--warn); border-radius: 999px; padding: 3px 10px; width: fit-content; }
-.lede { font-size: 1.05rem; color: var(--muted); }
+/* masthead */
+.masthead { background: var(--navy); color: var(--navy-text); padding-block: 14px; }
+.masthead .inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--navy-text); text-decoration: none; }
+.brand svg { flex: none; }
+.brand b { font-size: 1.15rem; display: block; line-height: 1.1; }
+.brand small { font-size: 0.78rem; opacity: 0.85; }
+.masthead nav { display: flex; gap: 4px; flex-wrap: wrap; }
+.masthead nav a, .masthead nav button { color: var(--navy-text); text-decoration: none; font: inherit; font-size: 0.92rem; font-weight: 600;
+  padding: 8px 12px; border-radius: 6px; background: transparent; border: 0; cursor: pointer; }
+.masthead nav a:hover, .masthead nav button:hover { background: rgba(255, 255, 255, 0.12); }
+.masthead nav a[aria-current="page"] { background: rgba(255, 255, 255, 0.18); }
 
-.crisis { background: var(--crisis-bg); color: var(--crisis-ink); border-radius: var(--radius);
-  padding: 10px 14px; font-size: 0.9rem; display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: baseline; }
-.crisis strong { font-weight: 700; }
+.helpbar { background: var(--help-bg); color: var(--help-text); padding-block: 10px; font-size: 0.95rem; }
+.helpbar .inner { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: baseline; }
+.helpbar b { white-space: nowrap; }
 
-nav.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-block: 22px 22px; overflow-x: auto; }
-nav.tabs a { text-decoration: none; color: var(--muted); padding: 10px 14px; font-weight: 600; border-bottom: 3px solid transparent;
-  white-space: nowrap; }
-nav.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); }
+.proto { background: var(--action-soft); color: var(--text); font-size: 0.85rem; padding-block: 6px; }
 
-section.view { display: grid; gap: 22px; }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 14px; min-width: 0; }
-.row { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: end; }
-.field { display: grid; gap: 4px; min-width: 0; }
-.field label { font-size: 0.85rem; font-weight: 600; }
-input[type="text"], input[type="number"], select, textarea {
-  font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; min-width: 0; }
-input[type="number"] { width: 6.5em; }
-textarea { width: 100%; min-height: 110px; font-family: var(--font-data); font-size: 0.85rem; }
-input[type="range"] { accent-color: var(--accent); width: 180px; max-width: 100%; }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-.seg button { font: inherit; border: 0; background: transparent; color: var(--ink); padding: 7px 12px; cursor: pointer; }
-.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
-button.btn { font: inherit; font-weight: 600; border: 1px solid var(--accent); color: var(--accent); background: transparent;
-  border-radius: 8px; padding: 7px 14px; cursor: pointer; }
-button.btn.primary { background: var(--accent); color: var(--surface); }
-button.link { font: inherit; background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; padding: 0; }
+main { padding-block: 28px 56px; }
+.stack { display: grid; gap: 20px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 22px; box-shadow: var(--shadow); display: grid; gap: 16px; min-width: 0; }
+.lead { font-size: 1.15rem; color: var(--muted); }
+.muted { color: var(--muted); }
+.small { font-size: 0.9rem; }
 
-.options { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
-.opt { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 12px; min-width: 0; align-content: start; }
-.opt.best { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
-.opt header { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
-.opt header input { font-weight: 700; font-size: 1rem; width: 100%; background: transparent; border: 1px dashed transparent; padding: 3px 4px; }
-.opt header input:hover, .opt header input:focus { border-color: var(--line); }
-.chip { font-size: 0.75rem; font-weight: 700; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
-.chip.fit { background: var(--accent-soft); color: var(--accent); }
-.chip.out { background: var(--uncertain-soft); color: var(--warn); }
-.inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.inputs .full { grid-column: 1 / -1; }
-.big { display: flex; align-items: baseline; gap: 10px; }
-.big .n { font-family: var(--font-display); font-size: 2.2rem; font-weight: 600; line-height: 1; }
-.facts { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 0.88rem; }
-.facts dt { color: var(--muted); }
-.facts dd { margin: 0; font-variant-numeric: tabular-nums; }
-.words { font-size: 0.92rem; background: var(--bg); border-radius: 8px; padding: 10px 12px; }
-.chart svg { width: 100%; height: auto; display: block; }
+/* buttons */
+.btn { font: inherit; font-weight: 700; font-size: 1rem; min-height: 48px; padding: 10px 20px; border-radius: 6px; cursor: pointer;
+  border: 2px solid var(--action); background: var(--card); color: var(--action); display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+.btn:hover { border-color: var(--action-hover); color: var(--action-hover); }
+.btn.primary { background: var(--action); color: var(--card); }
+.btn.primary:hover { background: var(--action-hover); color: var(--card); }
+.btn.big { font-size: 1.15rem; min-height: 56px; padding: 12px 28px; }
+.btn.quiet { border-color: transparent; background: transparent; text-decoration: underline; padding-inline: 8px; }
+.btnrow { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btnrow.spread { justify-content: space-between; }
 
-.values { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 22px; }
-.values .field { gap: 2px; }
-.scale-labels { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); width: 180px; max-width: 100%; }
+/* choice buttons */
+.pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+.pick button { font: inherit; font-weight: 600; min-height: 56px; border: 2px solid var(--border); background: var(--card); color: var(--text);
+  border-radius: 8px; cursor: pointer; padding: 8px 10px; line-height: 1.25; }
+.pick button:hover { border-color: var(--action); }
+.pick button[aria-pressed="true"] { border-color: var(--action); background: var(--action-soft); color: var(--text); box-shadow: inset 0 0 0 1px var(--action); }
+.pick.two { grid-template-columns: 1fr 1fr; }
+.pick.three { grid-template-columns: repeat(3, 1fr); }
 
-.summary { display: grid; gap: 10px; }
-.fitbar { display: grid; grid-template-columns: minmax(90px, 160px) 1fr 3.2em; gap: 10px; align-items: center; font-size: 0.9rem; }
-.fitbar .track { background: var(--bg); border-radius: 999px; height: 12px; overflow: hidden; }
-.fitbar .fill { background: var(--accent); height: 100%; border-radius: 999px; }
-.note { font-size: 0.85rem; color: var(--muted); }
+.stepper { display: inline-flex; align-items: center; border: 2px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--card); }
+.stepper button { font: inherit; font-size: 1.4rem; font-weight: 700; width: 52px; height: 52px; border: 0; background: var(--action-soft); color: var(--action); cursor: pointer; }
+.stepper button:hover { background: var(--action); color: var(--card); }
+.stepper output { min-width: 5.5em; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.q { display: grid; gap: 10px; }
+.q > .qlabel { font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.info { font: inherit; font-size: 0.85rem; font-weight: 700; border: 2px solid var(--action); color: var(--action); background: var(--card);
+  border-radius: 999px; padding: 2px 10px; cursor: pointer; min-height: 32px; }
 
-.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 4px; }
-.kpi .n { font-family: var(--font-display); font-size: 1.8rem; font-weight: 600; }
+/* progress */
+.progress { display: grid; gap: 8px; }
+.progress ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.progress li { font-size: 0.8rem; font-weight: 700; color: var(--muted); border-top: 5px solid var(--border); padding-top: 6px; }
+.progress li.done { border-color: var(--good); color: var(--good); }
+.progress li.now { border-color: var(--action); color: var(--text); }
+
+/* choice editor */
+.choice { border: 2px solid var(--border); border-radius: 10px; padding: 18px; display: grid; gap: 16px; background: var(--card); }
+.choice header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.choice header input { font: inherit; font-weight: 800; font-size: 1.15rem; border: 0; border-bottom: 2px dashed var(--border); background: transparent; color: var(--text); padding: 2px 0; min-width: 0; width: 100%; }
+.letter { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--navy); color: var(--navy-text); display: grid; place-items: center; font-weight: 800; }
+.empty { border: 2px dashed var(--border); border-radius: 10px; padding: 22px; text-align: center; display: grid; gap: 12px; justify-items: center; }
+
+/* results */
+.best { border: 3px solid var(--good); }
+.badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 800; background: var(--good-soft); color: var(--good); border-radius: 999px; padding: 4px 12px; }
+.badge.plain { background: var(--page); color: var(--muted); }
+.badge.warn { background: var(--late-soft); color: var(--late); }
+.result-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.result-head h3 { display: flex; align-items: center; gap: 10px; }
+.result-head .letter { width: 30px; height: 30px; font-size: 0.9rem; }
+.bignum { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.bignum .n { font-size: 2.6rem; font-weight: 800; line-height: 1; }
+.dots { display: flex; gap: 6px; flex-wrap: wrap; }
+.dots span { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--late); background: var(--late-soft); }
+.dots span.on { border-color: var(--good); background: var(--good); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.fact { background: var(--page); border-radius: 8px; padding: 10px 12px; }
+.fact .k { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+.fact .v { font-weight: 800; font-size: 1.1rem; }
+.weeks svg { width: 100%; height: auto; display: block; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); }
+.legend i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; }
+.callout { border-left: 6px solid var(--action); background: var(--action-soft); padding: 14px 16px; border-radius: 0 8px 8px 0; display: grid; gap: 8px; }
+.callout.good { border-color: var(--good); background: var(--good-soft); }
+textarea { font: inherit; font-size: 1rem; width: 100%; min-height: 120px; border: 2px solid var(--border); border-radius: 8px; padding: 10px; background: var(--card); color: var(--text); }
+.statement { font-size: 1.25rem; font-weight: 600; line-height: 1.5; }
 .tablewrap { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
-th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+th { font-size: 0.8rem; color: var(--muted); }
 td.r, th.r { text-align: right; }
-.banner { background: var(--uncertain-soft); color: var(--warn); border-radius: var(--radius); padding: 12px 14px; font-weight: 600; }
-.statement { font-family: var(--font-display); font-size: 1.15rem; line-height: 1.5; }
-.icons { display: flex; flex-wrap: wrap; gap: 6px; max-width: 380px; }
-.icons span { width: 28px; height: 28px; border-radius: 50%; display: inline-block; }
-.prose { display: grid; gap: 12px; }
-.prose ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; max-width: 68ch; }
-footer { margin-top: 32px; font-size: 0.82rem; color: var(--muted); display: grid; gap: 4px; }
+.sim { background: var(--late-soft); color: var(--late); font-weight: 700; border-radius: 8px; padding: 10px 14px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.kpi { background: var(--page); border-radius: 8px; padding: 12px; display: grid; gap: 2px; }
+.kpi .v { font-size: 1.6rem; font-weight: 800; }
+.kpi .k { font-size: 0.85rem; color: var(--muted); }
+ul.simple { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 
-@media (max-width: 560px) {
-  .inputs { grid-template-columns: 1fr; }
-  .fitbar { grid-template-columns: 90px 1fr 3em; }
-}
+footer { background: var(--navy); color: var(--navy-text); padding-block: 24px; font-size: 0.88rem; }
+footer .inner { display: grid; gap: 6px; }
+
+/* popup and toast */
+.modal-back { position: fixed; inset: 0; background: rgba(6, 18, 34, 0.55); display: grid; place-items: center; z-index: 50;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.modal { background: var(--card); color: var(--text); border-radius: 12px; max-width: 520px; width: 100%; max-height: 85vh; overflow: auto; padding: 24px; display: grid; gap: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+.modal h2 { font-size: 1.35rem; }
+.modal ol { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60;
+  background: var(--navy); color: var(--navy-text); border-radius: 8px; padding: 12px 18px; font-weight: 600; max-width: calc(100% - 32px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
 @media (prefers-reduced-motion: no-preference) {
-  .fitbar .fill { transition: width 0.35s ease; }
+  .toast { animation: rise 0.25s ease-out; }
+  .modal { animation: pop 0.18s ease-out; }
+  @keyframes rise { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @keyframes pop { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+}
+@media (max-width: 520px) {
+  body { font-size: 17px; }
+  .pick.three { grid-template-columns: 1fr; }
+  .card { padding: 18px; }
+  .masthead nav { width: 100%; }
 }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <span class="tag">Research prototype. Pilot results shown are simulated.</span>
-    <h1>Know Your Wait</h1>
-    <p class="lede">Compare offers of a first appointment with a psychologist by how likely you are to be seen by a date that matters to you, what you will pay, and what matters most to you.</p>
-  </header>
-
-  <div class="crisis" role="note" aria-label="Urgent help">
+<header class="masthead gutter">
+  <div class="inner">
+    <a class="brand" href="#home" aria-label="Know Your Wait home">
+      <svg width="38" height="38" viewBox="0 0 38 38" aria-hidden="true"><rect x="3" y="6" width="32" height="29" rx="5" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M3 14h32" stroke="currentColor" stroke-width="2.5"/><path d="M12 3v7M26 3v7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M13 24l4 4 8-9" fill="none" stroke="#ffbf47" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span><b>Know Your Wait</b><small>Compare your choices for seeing a psychologist</small></span>
+    </a>
+    <nav aria-label="Main">
+      <a href="#home" data-nav="home">Home</a>
+      <a href="#clinic" data-nav="clinic">For clinics</a>
+      <a href="#research" data-nav="research">The research</a>
+      <button type="button" id="how-btn">How to use</button>
+    </nav>
+  </div>
+</header>
+<div class="helpbar gutter" role="note" aria-label="Urgent help">
+  <div class="inner">
     <strong>Need help now?</strong>
     <span>Emergency <b>000</b></span>
     <span>Lifeline <b>13 11 14</b></span>
     <span>Beyond Blue <b>1300 22 4636</b></span>
-    <span>Head to Health, Hunter New England and Central Coast <b>1800 595 212</b></span>
+    <span>Head to Health <b>1800 595 212</b></span>
   </div>
-
-  <nav class="tabs" aria-label="Sections">
-    <a href="#compare" data-view="compare">Compare my options</a>
-    <a href="#clinic" data-view="clinic">For clinics</a>
-    <a href="#evidence" data-view="evidence">Pilot evidence</a>
-    <a href="#about" data-view="about">About</a>
-  </nav>
-
-  <!-- ===================== COMPARE ===================== -->
-  <section class="view" id="view-compare" aria-label="Compare my options">
-    <div class="panel">
-      <div class="row">
-        <div class="field">
-          <label for="deadline">I want to be seen by week</label>
-          <div class="row" style="gap:10px;align-items:center">
-            <input type="range" id="deadline" min="1" max="12" value="5">
-            <output id="deadline-out" class="num" for="deadline">5</output>
-          </div>
-        </div>
-        <div class="field">
-          <label for="sessions">Sessions I expect to need</label>
-          <div class="row" style="gap:10px;align-items:center">
-            <input type="range" id="sessions" min="1" max="10" value="6">
-            <output id="sessions-out" class="num" for="sessions">6</output>
-          </div>
-        </div>
-        <div class="field">
-          <span class="label" id="fmt-label">Show waiting times as</span>
-          <div class="seg" role="group" aria-labelledby="fmt-label">
-            <button type="button" id="fmt-chart" aria-pressed="true">Chart</button>
-            <button type="button" id="fmt-words" aria-pressed="false">Words</button>
-          </div>
-        </div>
-        <div class="field">
-          <button type="button" class="btn" id="add-opt">Add an option</button>
-        </div>
-      </div>
-      <p class="note">The examples below are made up. Replace them with the offers you have received. Weeks are counted from today.</p>
-    </div>
-
-    <div class="options" id="options"></div>
-
-    <div class="panel">
-      <h3>What matters to you</h3>
-      <p class="note">Move each slider to show how much it matters to you compared with a typical person in the pilot. The middle position uses the pilot's average weights.</p>
-      <div class="values" id="values"></div>
-    </div>
-
-    <div class="panel summary" id="summary" aria-live="polite"></div>
-  </section>
-
-  <!-- ===================== CLINIC ===================== -->
-  <section class="view" id="view-clinic" hidden>
-    <div class="panel">
-      <h2>Describe your waiting list clearly</h2>
-      <p class="muted">Paste the waits of recent new clients, from referral or booking request to first session. The tool turns them into a plain statement and a chart that you can share with people on your list. Nothing you paste leaves this page.</p>
-      <div class="field">
-        <label for="clinic-data">Recent waits, one per line or separated by commas</label>
-        <textarea id="clinic-data" spellcheck="false"></textarea>
-      </div>
-      <div class="row">
-        <div class="field">
-          <label for="clinic-unit">Units</label>
-          <select id="clinic-unit"><option value="days">Days</option><option value="weeks">Weeks</option></select>
-        </div>
-        <div class="field">
-          <label for="clinic-week">Highlight the chance of being seen by week</label>
-          <div class="row" style="gap:10px;align-items:center">
-            <input type="range" id="clinic-week" min="1" max="16" value="4">
-            <output id="clinic-week-out" class="num" for="clinic-week">4</output>
-          </div>
-        </div>
-        <div class="field">
-          <button type="button" class="link" id="clinic-example">Load example data</button>
-        </div>
-      </div>
-    </div>
-    <div class="panel" id="clinic-out" aria-live="polite"></div>
-  </section>
-
-  <!-- ===================== EVIDENCE ===================== -->
-  <section class="view" id="view-evidence" hidden>
-    <div class="banner">All numbers on this page come from simulated data generated to mirror the planned study. They show what the pilot will report. They are not findings.</div>
-    <div class="kpis" id="kpis"></div>
-    <div class="panel"><h3>Choice model (online sample)</h3><div class="tablewrap" id="tbl-main"></div><p class="note" id="note-main"></p></div>
-    <div class="panel"><h3>Text compared with chart</h3><div class="tablewrap" id="tbl-format"></div><p class="note" id="note-format"></p></div>
-    <div class="panel"><h3>Eye tracking (laboratory sample)</h3><div class="tablewrap" id="tbl-eye"></div><p class="note" id="note-eye"></p></div>
-  </section>
-
-  <!-- ===================== ABOUT ===================== -->
-  <section class="view" id="view-about" hidden>
-    <div class="panel prose">
-      <h2>About this prototype</h2>
-      <p>Know Your Wait is a research prototype from the University of Newcastle pilot study <i>Waiting, cost and certainty: preferences for access to psychological care</i>. It shows how evidence from a discrete choice experiment and an eye-tracking study could help people compare appointment offers, and help services describe uncertain waiting times.</p>
-      <h3>How it works</h3>
-      <ul>
-        <li>Each option is turned into a week-by-week chance of being seen. A confirmed date puts all of the chance on one week. A range spreads it equally over the weeks in the range.</li>
-        <li>From that distribution the tool reports the chance of being seen by your chosen week, the earliest and latest week, the average wait and how much the wait could vary.</li>
-        <li>The fit scores use a conditional logit model. Each option's score combines its average wait, how much the wait varies, its cost per session and whether it is by video, weighted by the pilot's estimates and by your own sliders.</li>
-        <li>The clinic page summarises recent waits with simple percentiles and presents them as natural frequencies, such as "8 in 10 people", which are easier to understand than percentages.</li>
-      </ul>
-      <h3>Limits</h3>
-      <ul>
-        <li>The pilot results are simulated until the study is complete.</li>
-        <li>Fit scores show how well an option matches the priorities you set. They are not clinical advice. Talk to your GP about which care is right for you.</li>
-        <li>The pilot tested expected waits of 4 to 8 weeks, ranges of up to 3 weeks either side and costs of $0 to $120 per session. Options outside these ranges are flagged.</li>
-        <li>The prototype was developed with reference to the International Patient Decision Aid Standards. It has not been evaluated against them.</li>
-      </ul>
-      <h3>Team</h3>
-      <p>Dr Mesfin Genie (lead), Professor Francesco Paolucci, Professor Brendan Boyle, Dr Elaine Xu and Dr Ryan Gallagher, University of Newcastle.</p>
-      <h3>Privacy</h3>
-      <p>Everything runs in your browser. The page does not send or store what you enter.</p>
-    </div>
-  </section>
-
-  <footer>
-    <span>Know Your Wait, version <span id="version">0.1.0</span>. Research prototype. Not a medical device and not clinical advice.</span>
-    <span>Source code and simulation scripts are open under the MIT licence.</span>
-  </footer>
 </div>
+<div class="proto gutter"><div class="inner">Research prototype from the University of Newcastle. Example numbers only. Not medical advice.</div></div>
+
+<main class="gutter">
+<div class="inner">
+
+<!-- HOME -->
+<section id="v-home" class="stack" aria-label="Home">
+  <div class="card">
+    <h1>Waiting to see a psychologist?</h1>
+    <p class="lead">Compare your choices in 3 easy steps. See when you are likely to be seen and how much it will cost.</p>
+    <div class="btnrow"><a class="btn primary big" href="#step-1" id="start-btn">Start now</a><button type="button" class="btn big" id="example-btn">Try an example</button></div>
+    <p class="small muted">Takes about 3 minutes. Nothing you enter leaves this page.</p>
+  </div>
+  <div class="card">
+    <h2>How it works</h2>
+    <div class="facts">
+      <div class="fact"><div class="k">Step 1</div><div class="v">Your goal</div><p class="small">When do you want to be seen?</p></div>
+      <div class="fact"><div class="k">Step 2</div><div class="v">Your choices</div><p class="small">Add the places that offered you a time.</p></div>
+      <div class="fact"><div class="k">Step 3</div><div class="v">What matters</div><p class="small">Cost, speed, a set date, or face to face.</p></div>
+      <div class="fact"><div class="k">Then</div><div class="v">Your results</div><p class="small">See which choice fits you best.</p></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Good to know</h2>
+    <ul class="simple">
+      <li>You usually need a plan from your GP to get a Medicare rebate.</li>
+      <li>Some places are <b>bulk-billed</b>. That means you pay nothing.</li>
+      <li>Some places give you a set date. Others say "sometime in the next few weeks".</li>
+    </ul>
+  </div>
+</section>
+
+<!-- STEP 1 -->
+<section id="v-step-1" class="stack" hidden aria-label="Step 1">
+  <div class="progress"><ol></ol></div>
+  <div class="card">
+    <h2>Step 1. Your goal</h2>
+    <div class="q">
+      <div class="qlabel">I want to be seen within <button type="button" class="info" data-help="goal">Why ask?</button></div>
+      <div class="pick" id="goal-pick"></div>
+    </div>
+    <div class="q">
+      <div class="qlabel">How many visits do you think you need? <button type="button" class="info" data-help="visits">Not sure?</button></div>
+      <div class="stepper" role="group" aria-label="Number of visits"><button type="button" id="visits-minus" aria-label="Fewer visits">&minus;</button><output id="visits-out" aria-live="polite"></output><button type="button" id="visits-plus" aria-label="More visits">+</button></div>
+    </div>
+  </div>
+  <div class="btnrow spread"><a class="btn" href="#home">Back</a><button type="button" class="btn primary big" data-next="step-2">Next: add your choices</button></div>
+</section>
+
+<!-- STEP 2 -->
+<section id="v-step-2" class="stack" hidden aria-label="Step 2">
+  <div class="progress"><ol></ol></div>
+  <div class="card">
+    <h2>Step 2. Your choices</h2>
+    <p class="muted">Add each place that offered you a time. You can add up to 4.</p>
+  </div>
+  <div id="choices" class="stack"></div>
+  <div class="btnrow"><button type="button" class="btn primary" id="add-choice">+ Add a choice</button><button type="button" class="btn" id="load-example">Use example choices</button></div>
+  <div class="btnrow spread"><a class="btn" href="#step-1">Back</a><button type="button" class="btn primary big" data-next="step-3">Next: what matters to you</button></div>
+</section>
+
+<!-- STEP 3 -->
+<section id="v-step-3" class="stack" hidden aria-label="Step 3">
+  <div class="progress"><ol></ol></div>
+  <div class="card">
+    <h2>Step 3. What matters to you?</h2>
+    <p class="muted">Pick one answer for each. There are no wrong answers.</p>
+    <div id="matters" class="stack"></div>
+  </div>
+  <div class="btnrow spread"><a class="btn" href="#step-2">Back</a><button type="button" class="btn primary big" data-next="results">See my results</button></div>
+</section>
+
+<!-- RESULTS -->
+<section id="v-results" class="stack" hidden aria-label="Results">
+  <div class="progress"><ol></ol></div>
+  <div id="results-top"></div>
+  <div class="btnrow"><span class="small muted">Show waiting times as:</span>
+    <div class="pick two" style="min-width:240px"><button type="button" id="fmt-pic" aria-pressed="true">Picture</button><button type="button" id="fmt-words" aria-pressed="false">Words</button></div>
+  </div>
+  <div id="results-list" class="stack"></div>
+  <div class="card">
+    <h3>What next?</h3>
+    <ul class="simple">
+      <li>Call the place you chose to book.</li>
+      <li>Ask: "Is that a set date, or could it change?"</li>
+      <li>Talk to your GP if you are not sure which care is right for you.</li>
+    </ul>
+    <div class="btnrow"><a class="btn" href="#step-2">Change my choices</a><a class="btn" href="#step-3">Change what matters</a><button type="button" class="btn quiet" id="restart">Start again</button></div>
+  </div>
+</section>
+
+<!-- CLINIC -->
+<section id="v-clinic" class="stack" hidden aria-label="For clinics">
+  <div class="card">
+    <h1>For clinics</h1>
+    <p class="lead">Tell people on your waiting list how long they are likely to wait, in words they understand.</p>
+  </div>
+  <div class="card">
+    <h2>1. Paste your recent waits</h2>
+    <p class="muted">Days from first contact to first session, for recent new clients. One number per line, or use commas.</p>
+    <textarea id="clinic-data" aria-label="Recent waits" spellcheck="false"></textarea>
+    <div class="q"><div class="qlabel">These numbers are in</div><div class="pick two" id="unit-pick"><button type="button" data-unit="days" aria-pressed="true">Days</button><button type="button" data-unit="weeks" aria-pressed="false">Weeks</button></div></div>
+    <div class="btnrow"><button type="button" class="btn primary big" id="clinic-go">Make my statement</button><button type="button" class="btn" id="clinic-example">Use example numbers</button></div>
+  </div>
+  <div id="clinic-out" class="stack"></div>
+</section>
+
+<!-- RESEARCH -->
+<section id="v-research" class="stack" hidden aria-label="The research">
+  <div class="card">
+    <h1>The research</h1>
+    <p class="lead">This tool is part of a University of Newcastle study. We want to know how much people value knowing their appointment date, and the best way to show waiting times.</p>
+    <p class="sim">The numbers below are made up (simulated). They show what the study will report. They are not results.</p>
+  </div>
+  <div class="card"><h2>Key numbers</h2><div class="kpis" id="kpis"></div></div>
+  <div class="card"><h2>About the study</h2>
+    <ul class="simple">
+      <li>200 adults will do an online survey. Each person picks between two appointments, 8 times.</li>
+      <li>40 people will do the same tasks in our eye-tracking lab, so we can see what they look at.</li>
+      <li>Half see waiting times in words and half see a picture. We check which is easier to understand.</li>
+      <li>Team: Dr Mesfin Genie (lead), Prof Francesco Paolucci, Prof Brendan Boyle, Dr Elaine Xu and Dr Ryan Gallagher.</li>
+    </ul>
+    <div><button type="button" class="btn" id="details-btn" aria-expanded="false">Show technical details</button></div>
+    <div id="details" hidden class="stack">
+      <h3>Choice model (online, simulated)</h3><div class="tablewrap" id="tbl-main"></div>
+      <h3>Words compared with picture</h3><div class="tablewrap" id="tbl-format"></div>
+      <h3>Eye tracking (lab, simulated)</h3><div class="tablewrap" id="tbl-eye"></div>
+      <p class="small muted" id="tech-note"></p>
+    </div>
+  </div>
+</section>
+
+</div>
+</main>
+
+<footer class="gutter">
+  <div class="inner">
+    <span><b>Know Your Wait</b> version <span id="version">0.2.0</span>. A research prototype by the University of Newcastle, Australia.</span>
+    <span>Not a medical device. Not medical advice. If you are worried about your safety, call 000.</span>
+    <span>Open source under the MIT licence.</span>
+  </div>
+</footer>
+
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
 <!-- Pilot results (simulated). Inserted by scripts/embed_results.py. Do not edit by hand. -->
 <script id="pilot-results" type="application/json">
@@ -290,422 +365,326 @@ footer { margin-top: 32px; font-size: 0.82rem; color: var(--muted); display: gri
 </script>
 
 <script>
-/* ===== ENGINE START (pure functions; tested in tests/engine.test.mjs) ===== */
-const Engine = (() => {
-  const MAX_WEEK = 30;
-
-  function clampInt(x, lo, hi) {
-    x = Math.round(Number(x));
-    if (!Number.isFinite(x)) x = lo;
-    return Math.min(hi, Math.max(lo, x));
-  }
-
-  /** Week-by-week probability of being seen. opt.kind is "confirmed" or "range". */
-  function distribution(opt) {
-    const p = new Array(MAX_WEEK + 1).fill(0);
-    if (opt.kind === "confirmed") {
-      p[clampInt(opt.week, 0, MAX_WEEK)] = 1;
-      return p;
-    }
-    let a = clampInt(opt.from, 0, MAX_WEEK), b = clampInt(opt.to, 0, MAX_WEEK);
-    if (a > b) [a, b] = [b, a];
-    const n = b - a + 1;
-    for (let w = a; w <= b; w++) p[w] = 1 / n;
-    return p;
-  }
-
-  function stats(p) {
-    let mean = 0, first = -1, last = -1;
-    p.forEach((q, w) => { mean += q * w; if (q > 0) { if (first < 0) first = w; last = w; } });
-    let v = 0;
-    p.forEach((q, w) => { v += q * (w - mean) ** 2; });
-    return { mean, sd: Math.sqrt(v), earliest: first, latest: last };
-  }
-
-  function chanceBy(p, week) {
-    let s = 0;
-    for (let w = 0; w <= Math.min(week, p.length - 1); w++) s += p[w];
-    return Math.min(1, s);
-  }
-
-  /** Utility of an option given model coefficients and personal weight multipliers. */
-  function utility(opt, coef, weights) {
-    const st = stats(distribution(opt));
-    const w = Object.assign({ wait: 1, certainty: 1, cost: 1, mode: 1 }, weights || {});
-    return coef.wait * st.mean * w.wait
-      + coef.spread * st.sd * w.certainty
-      + coef.cost * Number(opt.cost || 0) * w.cost
-      + coef.video * (opt.mode === "video" ? 1 : 0) * w.mode;
-  }
-
-  function shares(utils) {
-    const m = Math.max(...utils);
-    const e = utils.map(u => Math.exp(u - m));
-    const s = e.reduce((a, b) => a + b, 0);
-    return e.map(x => x / s);
-  }
-
-  /** Is the option inside the attribute ranges tested in the pilot? */
-  function inTestedRange(opt) {
-    const st = stats(distribution(opt));
-    return st.mean >= 4 - 1e-9 && st.mean <= 8 + 1e-9 && st.sd <= 3 + 1e-9
-      && Number(opt.cost) >= 0 && Number(opt.cost) <= 120;
-  }
-
-  function parseNumbers(text) {
-    return String(text || "").split(/[\s,;]+/).map(Number).filter(x => Number.isFinite(x) && x >= 0);
-  }
-
-  /** Empirical quantile (type 7, as in R and NumPy default). */
-  function quantile(xs, q) {
-    if (!xs.length) return NaN;
-    const s = [...xs].sort((a, b) => a - b);
-    const h = (s.length - 1) * q, lo = Math.floor(h), hi = Math.ceil(h);
-    return s[lo] + (h - lo) * (s[hi] - s[lo]);
-  }
-
-  function shareWithin(xs, limit) {
-    if (!xs.length) return NaN;
-    return xs.filter(x => x <= limit + 1e-9).length / xs.length;
-  }
-
-  /** Natural frequency phrase, e.g. 0.42 -> "about 4 in 10". */
-  function inTen(prob) {
-    if (prob >= 0.995) return "all 10 in 10";
-    if (prob <= 0.005) return "none (0 in 10)";
-    const k = Math.round(prob * 10);
-    if (k === 0) return "fewer than 1 in 10";
-    if (k === 10) return "almost all (10 in 10)";
-    return "about " + k + " in 10";
-  }
-
-  /** Text description of an option's wait, used in the "Words" format. */
-  function describe(opt, deadline) {
-    const p = distribution(opt), st = stats(p), c = chanceBy(p, deadline);
-    if (opt.kind === "confirmed") {
-      return "Your first session is confirmed for week " + st.earliest + ". " +
-        (st.earliest <= deadline ? "That is within week " + deadline + "." : "That is after week " + deadline + ".");
-    }
-    return "You could be seen in any week from week " + st.earliest + " to week " + st.latest +
-      ", with each week equally likely. The average wait is " + fmt1(st.mean) + " weeks. " +
-      "The chance of being seen by week " + deadline + " is " + Math.round(c * 100) + "%, " + inTen(c) + ".";
-  }
-
-  function fmt1(x) { return (Math.round(x * 10) / 10).toString(); }
-
-  return { MAX_WEEK, distribution, stats, chanceBy, utility, shares, inTestedRange, parseNumbers, quantile, shareWithin, inTen, describe, fmt1 };
-})();
-/* ===== ENGINE END ===== */
+/*ENGINE*/
 </script>
 
 <script>
 (() => {
   const E = Engine;
   const R = JSON.parse(document.getElementById("pilot-results").textContent);
-  const coefOf = name => R.main_model.coefs.find(c => c.name === name).est;
-  const COEF = { wait: coefOf("wait"), spread: coefOf("spread"), cost: coefOf("cost"), video: coefOf("video") };
+  const co = n => R.main_model.coefs.find(c => c.name === n).est;
+  const COEF = { wait: co("wait"), spread: co("spread"), cost: co("cost"), video: co("video") };
   const $ = s => document.querySelector(s);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const money = x => "$" + Math.round(x).toLocaleString("en-AU");
+  const LETTERS = "ABCD";
 
   const store = {
-    get(k, d) { try { const v = localStorage.getItem("kyw:" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem("kyw:" + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } }
+    get(k, d) { try { const v = localStorage.getItem("kyw2:" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("kyw2:" + k, JSON.stringify(v)); } catch (e) { /* not available */ } }
   };
+  const EXAMPLES = [
+    { name: "Bulk-billed clinic", kind: "range", week: 6, from: 3, to: 9, cost: 0, mode: "inperson" },
+    { name: "Private psychologist", kind: "confirmed", week: 4, from: 4, to: 4, cost: 90, mode: "inperson" },
+    { name: "Online service", kind: "range", week: 4, from: 2, to: 6, cost: 40, mode: "video" }
+  ];
+  const S = {
+    goal: store.get("goal", 4),
+    visits: store.get("visits", 6),
+    format: store.get("format", "pic"),
+    weights: store.get("weights", { wait: 2, certainty: 2, cost: 2, mode: 2 }),
+    choices: store.get("choices", []),
+    seenWelcome: store.get("seenWelcome", false)
+  };
+  const save = () => ["goal", "visits", "format", "weights", "choices", "seenWelcome"].forEach(k => store.set(k, S[k]));
 
-  // ---------- Routing ----------
-  const VIEWS = ["compare", "clinic", "evidence", "about"];
+  // ---------- popups ----------
+  let lastFocus = null;
+  function popup(title, html, buttons) {
+    lastFocus = document.activeElement;
+    const root = $("#modal-root");
+    const list = buttons || [{ label: "OK", primary: true }];
+    const btns = list.map((b, i) => `<button type="button" class="btn${b.primary ? " primary" : ""}" data-b="${i}">${esc(b.label)}</button>`).join("");
+    root.innerHTML = `<div class="modal-back" data-close="1"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title"><h2 id="m-title">${esc(title)}</h2><div class="stack" style="gap:10px">${html}</div><div class="btnrow">${btns}</div></div></div>`;
+    const onKey = e => { if (e.key === "Escape") close(); };
+    function close() { root.innerHTML = ""; document.removeEventListener("keydown", onKey); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    document.addEventListener("keydown", onKey);
+    root.querySelector(".modal-back").addEventListener("click", e => { if (e.target.dataset.close) close(); });
+    root.querySelectorAll("[data-b]").forEach(el => el.addEventListener("click", () => { close(); const b = list[Number(el.dataset.b)]; if (b && b.onClick) b.onClick(); }));
+    const first = root.querySelector(".btn.primary") || root.querySelector(".btn");
+    if (first) first.focus();
+  }
+  let toastTimer = null;
+  function toast(msg) {
+    const t = $("#toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
+  }
+
+  const HELP = {
+    goal: ["Why we ask", "<p>Maybe you have exams, a new job or a busy month coming up. Pick the latest time you would like your first visit.</p><p>We will show the chance each choice can see you by then.</p>"],
+    visits: ["How many visits?", "<p>Many people start with <b>6 visits</b>. With a GP plan, Medicare can help pay for up to 10 visits a year.</p><p>We use this number to add up the total cost.</p>"],
+    when: ["Set date or a range?", "<p><b>A set date:</b> they gave you a day. For example, \"Tuesday in 4 weeks\".</p><p><b>Sometime in a range:</b> they said something like \"in the next 3 to 9 weeks\". You do not know the exact week.</p>"],
+    cost: ["What will I pay?", "<p>This is what <b>you</b> pay for each visit after the Medicare rebate. Some places call it the \"gap\".</p><p>Bulk-billed means you pay <b>$0</b>. Ask the clinic if you are not sure.</p>"],
+    mode: ["Face to face or video?", "<p><b>Face to face:</b> you go to the clinic.</p><p><b>Video call:</b> you talk from home on a phone or computer.</p>"],
+    chance: ["What does \"chance\" mean?", "<p>Think of 10 people who pick this choice. The green dots show how many would be seen by your goal.</p><p>For example, 4 in 10 means 4 people are seen in time and 6 wait longer.</p>"],
+    best: ["How we pick the best match", "<p>We look at how soon, how sure the date is, the cost, and face to face or video.</p><p>We use what you told us matters to you, and what people told us in our study. The study numbers on this site are examples for now.</p><p>This is not medical advice.</p>"]
+  };
+  document.addEventListener("click", e => {
+    const h = e.target.closest("[data-help]");
+    if (h && HELP[h.dataset.help]) popup(HELP[h.dataset.help][0], HELP[h.dataset.help][1]);
+  });
+  function howTo(start) {
+    popup("How to use this tool", `<ol><li><b>Your goal.</b> Choose when you want to be seen.</li><li><b>Your choices.</b> Add each place that offered you a time.</li><li><b>What matters.</b> Tell us what is most important to you.</li><li><b>Your results.</b> See which choice fits you best.</li></ol><p class="small muted">Tap any small blue button to learn more.</p>`,
+      start ? [{ label: "Start now", primary: true, onClick: () => { location.hash = "#step-1"; } }, { label: "Look around first" }] : [{ label: "Got it", primary: true }]);
+  }
+  $("#how-btn").addEventListener("click", () => howTo(false));
+
+  // ---------- routing ----------
+  const VIEWS = ["home", "step-1", "step-2", "step-3", "results", "clinic", "research"];
   function route() {
-    const h = (location.hash || "#compare").slice(1);
-    const v = VIEWS.includes(h) ? h : "compare";
-    VIEWS.forEach(x => { document.getElementById("view-" + x).hidden = x !== v; });
-    document.querySelectorAll("nav.tabs a").forEach(a => {
-      if (a.dataset.view === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    let v = (location.hash || "#home").slice(1);
+    if (!VIEWS.includes(v)) v = "home";
+    if ((v === "step-3" || v === "results") && S.choices.length === 0) {
+      v = "step-2"; history.replaceState(null, "", "#step-2");
+      popup("Add a choice first", "<p>You need at least one choice before we can show results.</p><p>Tap <b>+ Add a choice</b>, or use the example choices.</p>");
+    }
+    VIEWS.forEach(x => { $("#v-" + x).hidden = x !== v; });
+    document.querySelectorAll("[data-nav]").forEach(a => {
+      const on = a.dataset.nav === v || (a.dataset.nav === "home" && (v.startsWith("step") || v === "results"));
+      if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
+    if (v.startsWith("step") || v === "results") renderProgress(v);
+    if (v === "step-1") renderStep1();
+    if (v === "step-2") renderChoices();
+    if (v === "step-3") renderMatters();
+    if (v === "results") renderResults();
+    window.scrollTo(0, 0);
   }
   window.addEventListener("hashchange", route);
-
-  // ---------- Compare ----------
-  const EXAMPLES = [
-    { name: "Bulk-billed practice", kind: "range", week: 6, from: 3, to: 9, cost: 0, mode: "inperson" },
-    { name: "Private practice", kind: "confirmed", week: 4, from: 4, to: 4, cost: 90, mode: "inperson" },
-    { name: "Telehealth service", kind: "range", week: 4, from: 2, to: 6, cost: 40, mode: "video" }
-  ];
-  let state = {
-    deadline: store.get("deadline", 5),
-    sessions: store.get("sessions", 6),
-    format: store.get("format", "chart"),
-    weights: store.get("weights", { wait: 2, certainty: 2, cost: 2, mode: 2 }),
-    options: store.get("options", EXAMPLES)
-  };
-  const WEIGHT_MULT = [0, 0.5, 1, 1.5, 2];
-  const VALUE_ITEMS = [
-    ["wait", "Being seen sooner"],
-    ["certainty", "Knowing the date"],
-    ["cost", "Keeping costs down"],
-    ["mode", "Seeing someone in person"]
-  ];
-  const save = () => { ["deadline", "sessions", "format", "weights", "options"].forEach(k => store.set(k, state[k])); };
-
-  function chartSVG(p, deadline, accentVar) {
-    const st = E.stats(p);
-    const maxW = Math.max(12, st.latest + 1, deadline + 1);
-    const W = 300, H = 120, padL = 36, padB = 26, padT = 10, padR = 8;
-    const bw = (W - padL - padR) / (maxW + 1);
-    const ymax = Math.max(...p.slice(0, maxW + 1), 0.25);
-    const y = v => padT + (H - padT - padB) * (1 - v / ymax);
-    let bars = "";
-    for (let w = 0; w <= maxW; w++) {
-      const v = p[w] || 0;
-      if (v <= 0) continue;
-      const fill = w <= deadline ? "var(--accent)" : "var(--uncertain)";
-      bars += `<rect x="${(padL + w * bw + 1).toFixed(1)}" y="${y(v).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${(H - padB - y(v)).toFixed(1)}" fill="${fill}" rx="2"></rect>`;
-    }
-    let ticks = "";
-    for (let w = 0; w <= maxW; w += (maxW > 14 ? 4 : 2)) {
-      ticks += `<text x="${(padL + (w + 0.5) * bw).toFixed(1)}" y="${H - 9}" font-size="10" text-anchor="middle" fill="var(--muted)">${w}</text>`;
-    }
-    const dx = padL + (deadline + 1) * bw;
-    const pct = v => Math.round(v * 100) + "%";
-    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Chance of being seen each week">
-      <line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="var(--line)"></line>
-      <text x="${padL - 4}" y="${y(ymax) + 4}" font-size="10" text-anchor="end" fill="var(--muted)">${pct(ymax)}</text>
-      <text x="${padL - 4}" y="${H - padB}" font-size="10" text-anchor="end" fill="var(--muted)">0</text>
-      ${bars}
-      <line x1="${dx.toFixed(1)}" y1="${padT - 4}" x2="${dx.toFixed(1)}" y2="${H - padB}" stroke="var(--ink)" stroke-dasharray="3 3"></line>
-      <text x="${(dx + 3).toFixed(1)}" y="${padT + 6}" font-size="10" fill="var(--ink)">week ${deadline}</text>
-      ${ticks}
-      <text x="${W - padR}" y="${H - 0.5}" font-size="9.5" text-anchor="end" fill="var(--muted)">weeks from today</text>
-    </svg>`;
+  function renderProgress(v) {
+    const names = ["Your goal", "Your choices", "What matters", "Results"];
+    const now = { "step-1": 0, "step-2": 1, "step-3": 2, "results": 3 }[v];
+    const html = names.map((n, i) => `<li class="${i < now ? "done" : i === now ? "now" : ""}">${i < now ? "Done: " : ""}${n}</li>`).join("");
+    document.querySelectorAll(".progress ol").forEach(ol => { ol.innerHTML = html; ol.setAttribute("aria-label", "Step " + (now + 1) + " of 4"); });
   }
-
-  function optionCard(o, i, fitShare, isBest) {
-    const p = E.distribution(o), st = E.stats(p), c = E.chanceBy(p, state.deadline);
-    const inRange = E.inTestedRange(o);
-    const total = Number(o.cost || 0) * state.sessions;
-    const kindSel = `<select id="kind-${i}" data-i="${i}" data-k="kind">
-        <option value="confirmed"${o.kind === "confirmed" ? " selected" : ""}>Confirmed date</option>
-        <option value="range"${o.kind === "range" ? " selected" : ""}>Somewhere in a range</option></select>`;
-    const when = o.kind === "confirmed"
-      ? `<div class="field"><label for="week-${i}">Week of first session</label><input type="number" id="week-${i}" data-i="${i}" data-k="week" min="0" max="30" value="${o.week}"></div><div></div>`
-      : `<div class="field"><label for="from-${i}">Earliest week</label><input type="number" id="from-${i}" data-i="${i}" data-k="from" min="0" max="30" value="${o.from}"></div>
-         <div class="field"><label for="to-${i}">Latest week</label><input type="number" id="to-${i}" data-i="${i}" data-k="to" min="0" max="30" value="${o.to}"></div>`;
-    const view = state.format === "chart"
-      ? `<div class="chart">${chartSVG(p, state.deadline)}</div>`
-      : `<p class="words">${esc(E.describe(o, state.deadline))}</p>`;
-    return `<article class="opt${isBest ? " best" : ""}" aria-label="${esc(o.name)}">
-      <header>
-        <input type="text" id="name-${i}" data-i="${i}" data-k="name" value="${esc(o.name)}" aria-label="Option name">
-        ${isBest ? '<span class="chip fit">Best fit</span>' : ""}
-        ${state.options.length > 1 ? `<button type="button" class="link" data-remove="${i}" aria-label="Remove ${esc(o.name)}">Remove</button>` : ""}
-      </header>
-      <div class="inputs">
-        <div class="field full"><label for="kind-${i}">When could you be seen?</label>${kindSel}</div>
-        ${when}
-        <div class="field"><label for="cost-${i}">Out-of-pocket per session ($)</label><input type="number" id="cost-${i}" data-i="${i}" data-k="cost" min="0" max="400" step="5" value="${o.cost}"></div>
-        <div class="field"><label for="mode-${i}">Mode</label><select id="mode-${i}" data-i="${i}" data-k="mode">
-          <option value="inperson"${o.mode !== "video" ? " selected" : ""}>In person</option>
-          <option value="video"${o.mode === "video" ? " selected" : ""}>Video</option></select></div>
-      </div>
-      <div class="big"><span class="n num">${Math.round(c * 100)}%</span><span>chance of being seen by week ${state.deadline}</span></div>
-      ${view}
-      <dl class="facts">
-        <dt>Earliest to latest</dt><dd>week ${st.earliest} to week ${st.latest}</dd>
-        <dt>Average wait</dt><dd>${E.fmt1(st.mean)} weeks</dd>
-        <dt>Cost for ${state.sessions} session${state.sessions > 1 ? "s" : ""}</dt><dd>${money(total)}</dd>
-        <dt>Fit with your priorities</dt><dd>${Math.round(fitShare * 100)}%</dd>
-      </dl>
-      ${inRange ? "" : '<span class="chip out">Outside the range tested in the pilot. Fit is less reliable.</span>'}
-    </article>`;
-  }
-
-  function renderValues() {
-    const labels = ["Not at all", "", "Typical", "", "A lot"];
-    $("#values").innerHTML = VALUE_ITEMS.map(([k, label]) => `
-      <div class="field">
-        <label for="val-${k}">${label}</label>
-        <input type="range" id="val-${k}" min="0" max="4" step="1" value="${state.weights[k]}" data-w="${k}" aria-valuetext="${labels[state.weights[k]] || "between"}">
-        <div class="scale-labels"><span>Not at all</span><span>Typical</span><span>A lot</span></div>
-      </div>`).join("");
-  }
-
-  function renderCompare() {
-    $("#deadline").value = state.deadline; $("#deadline-out").textContent = state.deadline;
-    $("#sessions").value = state.sessions; $("#sessions-out").textContent = state.sessions;
-    $("#fmt-chart").setAttribute("aria-pressed", state.format === "chart");
-    $("#fmt-words").setAttribute("aria-pressed", state.format === "words");
-    const w = {}; Object.keys(state.weights).forEach(k => { w[k] = WEIGHT_MULT[state.weights[k]]; });
-    const utils = state.options.map(o => E.utility(o, COEF, w));
-    const sh = E.shares(utils);
-    const best = sh.indexOf(Math.max(...sh));
-    const active = document.activeElement && document.activeElement.id;
-    $("#options").innerHTML = state.options.map((o, i) => optionCard(o, i, sh[i], state.options.length > 1 && i === best)).join("");
-    if (active && document.getElementById(active)) { const el = document.getElementById(active); el.focus(); if (el.setSelectionRange && el.type === "text") { const n = el.value.length; el.setSelectionRange(n, n); } }
-    renderSummary(sh, best);
-    save();
-  }
-
-  function renderSummary(sh, best) {
-    const opts = state.options;
-    const vr = R.values.dollars_per_session_confirmed_vs_pm3, vw = R.values.weeks_confirmed_vs_pm3;
-    const bars = opts.map((o, i) => `<div class="fitbar"><span>${esc(o.name)}</span><div class="track"><div class="fill" style="width:${(sh[i] * 100).toFixed(1)}%"></div></div><span class="num">${Math.round(sh[i] * 100)}%</span></div>`).join("");
-    let compare = "";
-    if (opts.length > 1) {
-      const b = opts[best];
-      const others = opts.filter((_, i) => i !== best);
-      const pb = E.chanceBy(E.distribution(b), state.deadline);
-      compare = others.map(o => {
-        const po = E.chanceBy(E.distribution(o), state.deadline);
-        const dc = (Number(b.cost) - Number(o.cost)) * state.sessions;
-        const costText = dc > 0 ? `costs ${money(dc)} more over ${state.sessions} sessions` : dc < 0 ? `costs ${money(-dc)} less over ${state.sessions} sessions` : "costs the same";
-        return `<li>Compared with <b>${esc(o.name)}</b>, <b>${esc(b.name)}</b> ${costText} and gives a ${Math.round(pb * 100)}% rather than ${Math.round(po * 100)}% chance of being seen by week ${state.deadline}.</li>`;
-      }).join("");
-    }
-    $("#summary").innerHTML = `
-      <h3>How the options fit your priorities</h3>
-      ${bars}
-      ${compare ? `<ul class="note" style="margin:0;padding-left:1.2em;display:grid;gap:4px">${compare}</ul>` : ""}
-      <p class="note">In the simulated pilot, people would pay about <b>${money(vr.est)}</b> more per session (95% CI ${money(vr.ci[0])} to ${money(vr.ci[1])}) for a confirmed date instead of a wait that could be 3 weeks earlier or later, or accept about <b>${E.fmt1(vw.est)} weeks</b> longer average wait for it.</p>
-      <p class="note">Fit scores reflect your priorities, not clinical need. Your GP can help you decide which care suits you.</p>`;
-  }
-
-  function onCompareInput(ev) {
-    const t = ev.target;
-    if (t.dataset.w) { state.weights[t.dataset.w] = Number(t.value); renderCompare(); return; }
-    if (t.dataset.i !== undefined) {
-      const o = state.options[Number(t.dataset.i)], k = t.dataset.k;
-      if (k === "name") { o.name = t.value; save(); renderSummaryOnly(); return; }
-      if (k === "kind" && t.value === "confirmed" && o.kind === "range") o.week = Math.round((Number(o.from) + Number(o.to)) / 2);
-      if (k === "kind" && t.value === "range" && o.kind === "confirmed") { o.from = Math.max(0, o.week - 2); o.to = o.week + 2; }
-      o[k] = (k === "name" || k === "kind" || k === "mode") ? t.value : Math.max(0, Number(t.value) || 0);
-      if (ev.type === "change" || t.tagName === "SELECT") renderCompare(); else renderCompareDeferred();
-    }
-  }
-  let timer = null;
-  function renderCompareDeferred() { clearTimeout(timer); timer = setTimeout(renderCompare, 350); }
-  function renderSummaryOnly() {
-    const w = {}; Object.keys(state.weights).forEach(k => { w[k] = WEIGHT_MULT[state.weights[k]]; });
-    const sh = E.shares(state.options.map(o => E.utility(o, COEF, w)));
-    renderSummary(sh, sh.indexOf(Math.max(...sh)));
-  }
-
-  // ---------- Clinic ----------
-  const CLINIC_EXAMPLE = "12, 15, 18, 20, 21, 21, 23, 25, 26, 27, 28, 28, 30, 31, 33, 34, 35, 35, 36, 38, 40, 41, 42, 44, 45, 47, 49, 50, 52, 55, 56, 60, 63, 66, 70, 74, 80, 88, 95, 110";
-  function renderClinic() {
-    const unit = $("#clinic-unit").value;
-    const raw = E.parseNumbers($("#clinic-data").value);
-    const weeks = raw.map(x => unit === "days" ? x / 7 : x);
-    const wk = Number($("#clinic-week").value);
-    $("#clinic-week-out").textContent = wk;
-    if (weeks.length < 5) {
-      $("#clinic-out").innerHTML = `<p>Enter at least 5 waits to see a summary. You have entered ${weeks.length}.</p>`;
+  document.querySelectorAll("[data-next]").forEach(b => b.addEventListener("click", () => {
+    const to = b.dataset.next;
+    if (to === "step-3" && S.choices.length === 0) {
+      popup("Add a choice first", "<p>Add at least one place that offered you a time.</p>", [{ label: "Add a choice", primary: true, onClick: addChoice }, { label: "Use example choices", onClick: loadExample }]);
       return;
     }
-    const q50 = E.quantile(weeks, 0.5), q80 = E.quantile(weeks, 0.8), q90 = E.quantile(weeks, 0.9);
-    const within = E.shareWithin(weeks, wk);
-    const r = x => Math.max(1, Math.ceil(x));
-    const statement = `Of our last ${weeks.length} new clients, half had their first session within ${r(q50)} weeks, 8 in 10 within ${r(q80)} weeks and 9 in 10 within ${r(q90)} weeks. ${E.inTen(within).replace(/^./, c => c.toUpperCase())} were seen within ${wk} weeks.`;
-    const filled = Math.round(within * 20);
-    const icons = Array.from({ length: 20 }, (_, i) => `<span style="background:${i < filled ? "var(--accent)" : "var(--uncertain-soft)"};border:1px solid ${i < filled ? "var(--accent)" : "var(--uncertain)"}"></span>`).join("");
-    // histogram by week
-    const maxW = Math.ceil(Math.max(...weeks));
-    const counts = new Array(maxW + 1).fill(0);
-    weeks.forEach(x => { counts[Math.min(maxW, Math.ceil(x))]++; });
-    const W = 560, H = 170, padL = 30, padB = 30, padT = 12, padR = 10;
-    const bw = (W - padL - padR) / (maxW + 1);
-    const ymax = Math.max(...counts);
-    const y = v => padT + (H - padT - padB) * (1 - v / ymax);
-    let bars = "", ticks = "";
-    counts.forEach((c, w) => { if (c) bars += `<rect x="${(padL + w * bw + 1).toFixed(1)}" y="${y(c).toFixed(1)}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${(H - padB - y(c)).toFixed(1)}" fill="${w <= wk ? "var(--accent)" : "var(--uncertain)"}" rx="2"></rect>`; });
-    const step = maxW > 20 ? 4 : 2;
-    for (let w = 0; w <= maxW; w += step) ticks += `<text x="${(padL + (w + 0.5) * bw).toFixed(1)}" y="${H - 12}" font-size="10" text-anchor="middle" fill="var(--muted)">${w}</text>`;
-    const svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Number of clients by week of first session">
-      <line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="var(--line)"></line>
-      <text x="${padL - 5}" y="${y(ymax) + 4}" font-size="10" text-anchor="end" fill="var(--muted)">${ymax}</text>
-      <text x="${padL - 5}" y="${H - padB}" font-size="10" text-anchor="end" fill="var(--muted)">0</text>
-      ${bars}${ticks}
-      <text x="${W - padR}" y="${H - 1}" font-size="10" text-anchor="end" fill="var(--muted)">weeks to first session</text></svg>`;
-    $("#clinic-out").innerHTML = `
-      <div class="label">Plain-language statement</div>
-      <p class="statement" id="clinic-statement">${esc(statement)}</p>
-      <div class="row"><button type="button" class="btn primary" id="copy-statement">Copy statement</button><span class="note" id="copy-status" role="status"></span></div>
-      <div class="row" style="align-items:center;gap:22px">
-        <div style="display:grid;gap:6px"><div class="label">Out of 20 new clients, seen within ${wk} weeks</div><div class="icons" aria-label="${filled} of 20 seen within ${wk} weeks">${icons}</div></div>
-        <dl class="facts"><dt>Median</dt><dd>${E.fmt1(q50)} weeks</dd><dt>80th percentile</dt><dd>${E.fmt1(q80)} weeks</dd><dt>90th percentile</dt><dd>${E.fmt1(q90)} weeks</dd><dt>Within ${wk} weeks</dt><dd>${Math.round(within * 100)}%</dd></dl>
-      </div>
-      <div class="chart" style="max-width:640px">${svg}</div>
-      <p class="note">Rounded up to whole weeks so the statement does not promise shorter waits than clients experienced. Use waits from the last 3 to 6 months so the statement stays current.</p>`;
-    $("#copy-statement").addEventListener("click", () => {
-      const done = m => { $("#copy-status").textContent = m; };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(statement).then(() => done("Copied."), () => { selectStatement(); done("Select and copy the highlighted text."); });
-      } else { selectStatement(); done("Select and copy the highlighted text."); }
-    });
+    const msg = { "step-2": "Goal saved. Now add your choices.", "step-3": "Choices saved. One more step.", "results": "Here are your results." }[to];
+    location.hash = "#" + to; if (msg) toast(msg);
+  }));
+
+  // ---------- step 1 ----------
+  function renderStep1() {
+    $("#goal-pick").innerHTML = [2, 3, 4, 6, 8, 12].map(w => `<button type="button" data-goal="${w}" aria-pressed="${S.goal === w}">${w} weeks</button>`).join("");
+    $("#visits-out").textContent = S.visits + (S.visits === 1 ? " visit" : " visits");
   }
-  function selectStatement() {
-    const r = document.createRange(); r.selectNodeContents($("#clinic-statement"));
-    const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  $("#goal-pick").addEventListener("click", e => { const b = e.target.closest("[data-goal]"); if (!b) return; S.goal = Number(b.dataset.goal); save(); renderStep1(); toast("Goal: seen within " + S.goal + " weeks"); });
+  $("#visits-minus").addEventListener("click", () => { S.visits = Math.max(1, S.visits - 1); save(); renderStep1(); });
+  $("#visits-plus").addEventListener("click", () => { S.visits = Math.min(10, S.visits + 1); save(); renderStep1(); });
+
+  // ---------- step 2 ----------
+  function stepper(id, label, value) {
+    return `<div class="stepper" role="group" aria-label="${esc(label)}"><button type="button" data-step="${id}" data-d="-1" aria-label="Less">&minus;</button><output>${value}</output><button type="button" data-step="${id}" data-d="1" aria-label="More">+</button></div>`;
+  }
+  function renderChoices() {
+    const box = $("#choices");
+    if (!S.choices.length) {
+      box.innerHTML = `<div class="empty"><p><b>No choices yet.</b></p><p class="muted">Tap the button to add the first place that offered you a time.</p><button type="button" class="btn primary" data-act="add">+ Add a choice</button></div>`;
+    } else {
+      box.innerHTML = S.choices.map((c, i) => `
+      <div class="choice" data-i="${i}">
+        <header><span class="letter" aria-hidden="true">${LETTERS[i]}</span><input type="text" id="cname-${i}" value="${esc(c.name)}" data-name="${i}" aria-label="Name of choice ${LETTERS[i]}"><button type="button" class="btn quiet" data-act="remove" data-i="${i}">Remove</button></header>
+        <div class="q"><div class="qlabel">When can they see you? <button type="button" class="info" data-help="when">What is this?</button></div>
+          <div class="pick two"><button type="button" data-set="kind" data-v="confirmed" data-i="${i}" aria-pressed="${c.kind === "confirmed"}">A set date</button><button type="button" data-set="kind" data-v="range" data-i="${i}" aria-pressed="${c.kind === "range"}">Sometime in a range</button></div>
+          ${c.kind === "confirmed"
+            ? `<div class="btnrow"><span>In</span>${stepper("week:" + i, "Week of the appointment", c.week + " weeks")}</div>`
+            : `<div class="btnrow"><span>From week</span>${stepper("from:" + i, "Earliest week", c.from)}<span>to week</span>${stepper("to:" + i, "Latest week", c.to)}</div>`}
+        </div>
+        <div class="q"><div class="qlabel">What will you pay each visit? <button type="button" class="info" data-help="cost">Help</button></div>
+          <div class="pick">${[0, 40, 80, 120].map(v => `<button type="button" data-set="cost" data-v="${v}" data-i="${i}" aria-pressed="${Number(c.cost) === v}">${v === 0 ? "$0 (bulk-billed)" : "$" + v}</button>`).join("")}</div>
+          <div class="btnrow"><span class="small muted">Different amount?</span>${stepper("cost:" + i, "Cost per visit", "$" + c.cost)}</div>
+        </div>
+        <div class="q"><div class="qlabel">How will you meet? <button type="button" class="info" data-help="mode">Help</button></div>
+          <div class="pick two"><button type="button" data-set="mode" data-v="inperson" data-i="${i}" aria-pressed="${c.mode !== "video"}">Face to face</button><button type="button" data-set="mode" data-v="video" data-i="${i}" aria-pressed="${c.mode === "video"}">Video call</button></div>
+        </div>
+      </div>`).join("");
+    }
+    $("#add-choice").hidden = S.choices.length >= 4;
+  }
+  function addChoice() {
+    if (S.choices.length >= 4) { popup("That is the limit", "<p>You can compare up to 4 choices. Remove one to add another.</p>"); return; }
+    S.choices.push({ name: "Choice " + LETTERS[S.choices.length], kind: "range", week: 4, from: 3, to: 6, cost: 0, mode: "inperson" });
+    save(); renderChoices(); toast("Choice " + LETTERS[S.choices.length - 1] + " added. Now fill in the details.");
+    const last = document.getElementById("cname-" + (S.choices.length - 1)); if (last) { last.focus(); last.select(); }
+  }
+  function loadExample() {
+    const go = () => { S.choices = JSON.parse(JSON.stringify(EXAMPLES)); save(); if (location.hash === "#step-2") renderChoices(); else location.hash = "#step-2"; toast("Example choices added. Change them to match yours."); };
+    if (S.choices.length) popup("Replace your choices?", "<p>This will swap your choices for 3 examples.</p>", [{ label: "Yes, use examples", primary: true, onClick: go }, { label: "Keep mine" }]);
+    else go();
+  }
+  $("#add-choice").addEventListener("click", addChoice);
+  $("#load-example").addEventListener("click", loadExample);
+  $("#example-btn").addEventListener("click", () => { S.choices = JSON.parse(JSON.stringify(EXAMPLES)); save(); location.hash = "#results"; toast("Showing 3 example choices."); });
+  $("#choices").addEventListener("click", e => {
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.dataset.act === "add") return addChoice();
+    if (t.dataset.act === "remove") {
+      const i = Number(t.dataset.i), name = S.choices[i].name;
+      return popup("Remove this choice?", `<p>Remove <b>${esc(name)}</b>?</p>`, [{ label: "Yes, remove", primary: true, onClick: () => { S.choices.splice(i, 1); save(); renderChoices(); toast(name + " removed."); } }, { label: "Cancel" }]);
+    }
+    if (t.dataset.set) {
+      const c = S.choices[Number(t.dataset.i)], k = t.dataset.set, v = t.dataset.v;
+      if (k === "kind" && v !== c.kind) {
+        if (v === "confirmed") c.week = Math.round((Number(c.from) + Number(c.to)) / 2);
+        else { c.from = Math.max(1, c.week - 2); c.to = c.week + 2; }
+      }
+      c[k] = k === "cost" ? Number(v) : v; save(); renderChoices(); return;
+    }
+    if (t.dataset.step) {
+      const [k, i] = t.dataset.step.split(":"), c = S.choices[Number(i)], d = Number(t.dataset.d);
+      if (k === "cost") c.cost = Math.max(0, Math.min(300, Number(c.cost) + 10 * d));
+      if (k === "week") c.week = Math.max(1, Math.min(26, c.week + d));
+      if (k === "from") { c.from = Math.max(1, Math.min(26, c.from + d)); if (c.from > c.to) c.to = c.from; }
+      if (k === "to") { c.to = Math.max(1, Math.min(26, c.to + d)); if (c.to < c.from) c.from = c.to; }
+      save(); renderChoices();
+      const again = document.querySelector(`[data-step="${t.dataset.step}"][data-d="${t.dataset.d}"]`); if (again) again.focus();
+    }
+  });
+  $("#choices").addEventListener("input", e => { if (e.target.dataset.name !== undefined) { S.choices[Number(e.target.dataset.name)].name = e.target.value; save(); } });
+
+  // ---------- step 3 ----------
+  const MATTERS = [
+    ["wait", "Being seen soon", "How much does it matter to be seen quickly?"],
+    ["certainty", "Knowing the date", "How much does it matter to know the exact week?"],
+    ["cost", "Low cost", "How much does the cost matter to you?"],
+    ["mode", "Face to face", "How much does it matter to meet in person?"]
+  ];
+  const LEVEL = [{ v: 0, l: "Not much" }, { v: 2, l: "Some" }, { v: 4, l: "A lot" }];
+  function renderMatters() {
+    $("#matters").innerHTML = MATTERS.map(([k, t, q]) => `<div class="q"><div class="qlabel">${t}</div><p class="small muted">${q}</p>
+      <div class="pick three">${LEVEL.map(L => `<button type="button" data-w="${k}" data-v="${L.v}" aria-pressed="${S.weights[k] === L.v}">${L.l}</button>`).join("")}</div></div>`).join("");
+  }
+  $("#matters").addEventListener("click", e => { const b = e.target.closest("[data-w]"); if (!b) return; S.weights[b.dataset.w] = Number(b.dataset.v); save(); renderMatters(); });
+
+  // ---------- results ----------
+  const MULT = [0, 0.5, 1, 1.5, 2];
+  function weeksSVG(p, goal) {
+    const st = E.stats(p), maxW = Math.max(10, st.latest, goal + 1);
+    const W = 520, H = 110, L = 8, Rr = 8, T = 8, B = 30, bw = (W - L - Rr) / maxW;
+    let g = "";
+    for (let w = 1; w <= maxW; w++) {
+      const v = p[w] || 0, x = L + (w - 1) * bw, inTime = w <= goal;
+      const fill = v > 0 ? (inTime ? "var(--good)" : "var(--late)") : "var(--page)";
+      g += `<rect x="${(x + 2).toFixed(1)}" y="${T}" width="${(bw - 4).toFixed(1)}" height="${H - T - B}" rx="5" fill="${fill}" stroke="var(--border)" stroke-width="${v > 0 ? 0 : 1}"></rect>`;
+      if (maxW <= 14 || w % 2 === 0) g += `<text x="${(x + bw / 2).toFixed(1)}" y="${H - 12}" font-size="13" text-anchor="middle" fill="var(--muted)">${w}</text>`;
+    }
+    const gx = L + goal * bw;
+    g += `<line x1="${gx.toFixed(1)}" y1="2" x2="${gx.toFixed(1)}" y2="${H - B + 4}" stroke="var(--text)" stroke-width="2" stroke-dasharray="4 3"></line>`;
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Weeks when you might be seen, week 1 to week ${maxW}">${g}</svg>`;
+  }
+  function renderResults() {
+    const w = {}; Object.keys(S.weights).forEach(k => { w[k] = MULT[S.weights[k]]; });
+    const sh = E.shares(S.choices.map(c => E.utility(c, COEF, w)));
+    const order = S.choices.map((_, i) => i).sort((a, b) => sh[b] - sh[a]);
+    const best = S.choices[order[0]];
+    const pb = E.chanceBy(E.distribution(best), S.goal);
+    $("#results-top").innerHTML = `<div class="card">
+      <h2>Your results</h2>
+      ${S.choices.length > 1 ? `<div class="callout good"><p style="font-size:1.15rem"><b>Best match for you: ${esc(best.name)}</b></p>
+        <p>${Math.round(pb * 10)} in 10 chance of being seen within ${S.goal} weeks. Costs ${money(best.cost * S.visits)} for ${S.visits} visits.</p>
+        <div><button type="button" class="btn" data-help="best">Why this one?</button></div></div>` : ""}
+      <p class="muted">Your goal: seen within <b>${S.goal} weeks</b>. Visits: <b>${S.visits}</b>.</p></div>`;
+    $("#fmt-pic").setAttribute("aria-pressed", S.format === "pic");
+    $("#fmt-words").setAttribute("aria-pressed", S.format === "words");
+    $("#results-list").innerHTML = order.map((i, rank) => {
+      const c = S.choices[i], p = E.distribution(c), st = E.stats(p), k = Math.round(E.chanceBy(p, S.goal) * 10);
+      const dots = Array.from({ length: 10 }, (_, j) => `<span class="${j < k ? "on" : ""}"></span>`).join("");
+      const when = c.kind === "confirmed" ? `Set date: week ${c.week}` : `Week ${st.earliest} to week ${st.latest}`;
+      const words = c.kind === "confirmed"
+        ? `You have a set date in week ${c.week}. ${c.week <= S.goal ? "That is within your goal." : "That is later than your goal."}`
+        : `You could be seen any week from week ${st.earliest} to week ${st.latest}. Each week is just as likely. ${k} in 10 people would be seen within ${S.goal} weeks.`;
+      const isBest = rank === 0 && S.choices.length > 1;
+      return `<article class="card${isBest ? " best" : ""}" aria-label="${esc(c.name)}">
+        <div class="result-head"><h3><span class="letter" aria-hidden="true">${LETTERS[i]}</span>${esc(c.name)}</h3>
+          ${isBest ? '<span class="badge">Best match</span>' : `<span class="badge plain">Match ${Math.round(sh[i] * 100)}%</span>`}</div>
+        <div class="bignum"><span class="n num">${k} in 10</span><span>chance of being seen within ${S.goal} weeks <button type="button" class="info" data-help="chance">What is this?</button></span></div>
+        ${S.format === "pic"
+          ? `<div class="dots" aria-hidden="true">${dots}</div><div class="weeks">${weeksSVG(p, S.goal)}</div>
+             <div class="legend"><span><i style="background:var(--good)"></i>Seen in time</span><span><i style="background:var(--late)"></i>Seen later</span><span>Dashed line: your goal</span></div>`
+          : `<p>${words}</p>`}
+        <div class="facts">
+          <div class="fact"><div class="k">When</div><div class="v">${when}</div></div>
+          <div class="fact"><div class="k">Cost for ${S.visits} visits</div><div class="v">${money(c.cost * S.visits)}</div></div>
+          <div class="fact"><div class="k">How</div><div class="v">${c.mode === "video" ? "Video call" : "Face to face"}</div></div>
+        </div>
+        ${E.inTestedRange(c) ? "" : '<div><span class="badge warn">Outside what our study tested. The match is less sure.</span></div>'}
+      </article>`;
+    }).join("");
+  }
+  $("#fmt-pic").addEventListener("click", () => { S.format = "pic"; save(); renderResults(); });
+  $("#fmt-words").addEventListener("click", () => { S.format = "words"; save(); renderResults(); });
+  $("#restart").addEventListener("click", () => popup("Start again?", "<p>This clears your goal, choices and answers.</p>", [{ label: "Yes, start again", primary: true, onClick: () => {
+    S.goal = 4; S.visits = 6; S.choices = []; S.weights = { wait: 2, certainty: 2, cost: 2, mode: 2 }; save(); location.hash = "#step-1"; toast("All cleared. Start with your goal."); } }, { label: "Cancel" }]));
+
+  // ---------- clinic ----------
+  const CLINIC_EXAMPLE = "12, 15, 18, 20, 21, 21, 23, 25, 26, 27, 28, 28, 30, 31, 33, 34, 35, 35, 36, 38, 40, 41, 42, 44, 45, 47, 49, 50, 52, 55, 56, 60, 63, 66, 70, 74, 80, 88, 95, 110";
+  let unit = "days";
+  const setUnit = u => { unit = u; $("#unit-pick").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.unit === u))); };
+  $("#unit-pick").addEventListener("click", e => { const b = e.target.closest("[data-unit]"); if (b) setUnit(b.dataset.unit); });
+  $("#clinic-example").addEventListener("click", () => { $("#clinic-data").value = CLINIC_EXAMPLE; setUnit("days"); makeStatement(); });
+  $("#clinic-go").addEventListener("click", makeStatement);
+  function makeStatement() {
+    const weeks = E.parseNumbers($("#clinic-data").value).map(x => unit === "days" ? x / 7 : x);
+    if (weeks.length < 5) { popup("We need more numbers", `<p>Please enter at least 5 waits. You entered ${weeks.length}.</p><p>Or tap <b>Use example numbers</b> to see how it works.</p>`); return; }
+    const r = x => Math.max(1, Math.ceil(x));
+    const q50 = r(E.quantile(weeks, 0.5)), q80 = r(E.quantile(weeks, 0.8)), q90 = r(E.quantile(weeks, 0.9));
+    const text = `Half of our new clients are seen within ${q50} weeks. 8 in 10 are seen within ${q80} weeks. 9 in 10 are seen within ${q90} weeks.`;
+    const row = (lab, k) => `<div class="q"><div class="qlabel">${lab}</div><div class="dots" role="img" aria-label="${k} of 10">${Array.from({ length: 10 }, (_, j) => `<span class="${j < k ? "on" : ""}"></span>`).join("")}</div></div>`;
+    $("#clinic-out").innerHTML = `<div class="card"><h2>2. Your statement</h2>
+      <p class="statement" id="stmt">${esc(text)}</p>
+      <div><button type="button" class="btn primary" id="copy-stmt">Copy statement</button></div>
+      ${row(`Within ${q50} weeks: 5 in 10`, 5)}${row(`Within ${q80} weeks: 8 in 10`, 8)}${row(`Within ${q90} weeks: 9 in 10`, 9)}
+      <p class="small muted">Based on ${weeks.length} recent clients. We round up to whole weeks, so you never promise a shorter wait than people really had. Update it every 3 months.</p></div>`;
+    $("#copy-stmt").addEventListener("click", () => {
+      const sel = () => { const rg = document.createRange(); rg.selectNodeContents($("#stmt")); const s = getSelection(); s.removeAllRanges(); s.addRange(rg); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast("Copied. Paste it into your website, SMS or letter."), () => { sel(); toast("Text selected. Use copy on your keyboard."); });
+      else { sel(); toast("Text selected. Use copy on your keyboard."); }
+    });
+    toast("Your statement is ready.");
+    $("#clinic-out").scrollIntoView({ block: "start" });
   }
 
-  // ---------- Evidence ----------
-  function renderEvidence() {
+  // ---------- research ----------
+  function renderResearch() {
     const v = R.values, c = R.comprehension, et = R.eye_tracking, f = R.format;
     const ci = (a, d = 0) => `${a[0].toFixed(d)} to ${a[1].toFixed(d)}`;
+    const vr = v.dollars_per_session_confirmed_vs_pm3, vw = v.weeks_confirmed_vs_pm3;
     $("#kpis").innerHTML = `
-      <div class="kpi"><span class="label">Value of a confirmed date</span><span class="n num">${money(v.dollars_per_session_confirmed_vs_pm3.est)}</span><span class="note">per session, versus a wait that could be 3 weeks earlier or later (95% CI ${money(v.dollars_per_session_confirmed_vs_pm3.ci[0])} to ${money(v.dollars_per_session_confirmed_vs_pm3.ci[1])})</span></div>
-      <div class="kpi"><span class="label">The same value in weeks</span><span class="n num">${v.weeks_confirmed_vs_pm3.est.toFixed(1)}</span><span class="note">weeks of longer average wait (95% CI ${ci(v.weeks_confirmed_vs_pm3.ci, 1)})</span></div>
-      <div class="kpi"><span class="label">Correct comprehension</span><span class="n num">${Math.round(c.proportion_correct.text * 100)}% vs ${Math.round(c.proportion_correct.graphic * 100)}%</span><span class="note">text vs chart; difference ${Math.round(c.difference.est * 100)} points (95% CI ${Math.round(c.difference.ci[0] * 100)} to ${Math.round(c.difference.ci[1] * 100)})</span></div>
-      <div class="kpi"><span class="label">Attention and reliability</span><span class="n num">${et.attention_choice_model.coefs.slice(-1)[0].est.toFixed(2)}</span><span class="note">change in the reliability coefficient per SD more attention to waiting information (95% CI ${ci(et.attention_choice_model.coefs.slice(-1)[0].ci, 2)})</span></div>`;
-    const labels = { wait: "Expected wait (per week)", spread: "Variability of wait (per week SD)", cost: "Cost (per $1 per session)", video: "Video instead of in person" };
-    $("#tbl-main").innerHTML = `<table><thead><tr><th>Attribute</th><th class="r">Coefficient</th><th class="r">Robust SE</th><th class="r">95% CI</th><th class="r">Assumed true value</th></tr></thead><tbody>
-      ${R.main_model.coefs.map(k => `<tr><td>${labels[k.name]}</td><td class="r">${k.est.toFixed(4)}</td><td class="r">${k.se.toFixed(4)}</td><td class="r">${ci(k.ci, 4)}</td><td class="r">${R.true_parameters[k.name]}</td></tr>`).join("")}
-      </tbody></table>`;
-    $("#note-main").textContent = `Conditional logit, ${R.main_model.respondents} respondents, ${R.main_model.choices} choices, standard errors clustered by respondent. The last column shows the values used to simulate the data, so you can see how well the planned sample recovers them.`;
+      <div class="kpi"><span class="v">${money(vr.est)}</span><span class="k">extra per visit people would pay to know their date</span></div>
+      <div class="kpi"><span class="v">${vw.est.toFixed(1)} weeks</span><span class="k">longer people would wait to know their date</span></div>
+      <div class="kpi"><span class="v">${Math.round(c.proportion_correct.text * 100)}% vs ${Math.round(c.proportion_correct.graphic * 100)}%</span><span class="k">understood the wait: words vs picture</span></div>
+      <div class="kpi"><span class="v">${R.meta.n_online + R.meta.n_lab}</span><span class="k">people in the planned study</span></div>`;
+    const lab = { wait: "Expected wait (per week)", spread: "Uncertainty (per week)", cost: "Cost (per $1)", video: "Video instead of face to face" };
+    $("#tbl-main").innerHTML = `<table><thead><tr><th>Attribute</th><th class="r">Estimate</th><th class="r">95% CI</th><th class="r">Value used to simulate</th></tr></thead><tbody>${R.main_model.coefs.map(k => `<tr><td>${lab[k.name]}</td><td class="r">${k.est.toFixed(4)}</td><td class="r">${ci(k.ci, 4)}</td><td class="r">${R.true_parameters[k.name]}</td></tr>`).join("")}</tbody></table>`;
     const bf = f.by_format;
-    $("#tbl-format").innerHTML = `<table><thead><tr><th>Measure</th><th class="r">Text</th><th class="r">Chart</th></tr></thead><tbody>
-      <tr><td>Value of a confirmed date ($ per session)</td><td class="r">${money(bf.text.value_dollars.est)} (${money(bf.text.value_dollars.ci[0])} to ${money(bf.text.value_dollars.ci[1])})</td><td class="r">${money(bf.graphic.value_dollars.est)} (${money(bf.graphic.value_dollars.ci[0])} to ${money(bf.graphic.value_dollars.ci[1])})</td></tr>
-      <tr><td>Value of a confirmed date (weeks)</td><td class="r">${bf.text.value_weeks.est.toFixed(1)} (${ci(bf.text.value_weeks.ci, 1)})</td><td class="r">${bf.graphic.value_weeks.est.toFixed(1)} (${ci(bf.graphic.value_weeks.ci, 1)})</td></tr>
-      <tr><td>Correct comprehension</td><td class="r">${Math.round(c.proportion_correct.text * 100)}% (n = ${c.n.text})</td><td class="r">${Math.round(c.proportion_correct.graphic * 100)}% (n = ${c.n.graphic})</td></tr>
-      </tbody></table>`;
-    $("#note-format").textContent = `Relative scale of the chart group: ${f.relative_scale_graphic.est.toFixed(2)} (95% profile CI ${ci(f.relative_scale_graphic.ci, 2)}). After allowing for scale, a joint test of preference differences gives chi-square ${f.wald_chi2_df4.toFixed(2)} on 4 degrees of freedom. Odds ratio for correct comprehension with the chart, adjusted for numeracy and setting: ${c.odds_ratio_graphic.est.toFixed(2)} (${ci(c.odds_ratio_graphic.ci, 2)}).`;
-    const rowsEt = [
-      ["Dwell on waiting information (log seconds)", "log_dwell_wait_seconds", 2],
-      ["Dwell per % of screen area (seconds)", "dwell_wait_per_pct_area", 3],
-      ["Revisits to waiting information", "revisits_wait", 2],
-      ["Comparisons between options", "transitions_between_options_wait", 2]
-    ];
-    $("#tbl-eye").innerHTML = `<table><thead><tr><th>Measure per task</th><th class="r">Text</th><th class="r">Chart</th><th class="r">Difference (95% CI)</th></tr></thead><tbody>
-      ${rowsEt.map(([lab, k, d]) => `<tr><td>${lab}</td><td class="r">${et[k].mean.text.toFixed(d)}</td><td class="r">${et[k].mean.graphic.toFixed(d)}</td><td class="r">${et[k].graphic_minus_text.est.toFixed(d)} (${ci(et[k].graphic_minus_text.ci, d)})</td></tr>`).join("")}
-      </tbody></table>`;
-    $("#note-eye").textContent = `${R.meta.n_lab} participants, 8 tasks each, standard errors clustered by participant. Areas of interest are fixed in advance; the chart occupies ${et.aoi_area_pct.graphic.wait}% of the screen and the text ${et.aoi_area_pct.text.wait}%, so dwell is also reported per unit of area. One SD more attention to waiting information is associated with an odds ratio of ${et.attention_predicts_comprehension.odds_ratio_per_sd.toFixed(2)} (${ci(et.attention_predicts_comprehension.ci, 2)}) for correct comprehension.`;
+    $("#tbl-format").innerHTML = `<table><thead><tr><th></th><th class="r">Words</th><th class="r">Picture</th></tr></thead><tbody>
+      <tr><td>Value of a set date ($ per visit)</td><td class="r">${money(bf.text.value_dollars.est)}</td><td class="r">${money(bf.graphic.value_dollars.est)}</td></tr>
+      <tr><td>Value of a set date (weeks)</td><td class="r">${bf.text.value_weeks.est.toFixed(1)}</td><td class="r">${bf.graphic.value_weeks.est.toFixed(1)}</td></tr>
+      <tr><td>Understood correctly</td><td class="r">${Math.round(c.proportion_correct.text * 100)}%</td><td class="r">${Math.round(c.proportion_correct.graphic * 100)}%</td></tr></tbody></table>`;
+    const rows = [["Time looking at waiting information (log s)", "log_dwell_wait_seconds", 2], ["Time per % of screen (s)", "dwell_wait_per_pct_area", 3], ["Times they looked back", "revisits_wait", 2], ["Times they compared the two choices", "transitions_between_options_wait", 2]];
+    $("#tbl-eye").innerHTML = `<table><thead><tr><th>Per task</th><th class="r">Words</th><th class="r">Picture</th><th class="r">Difference (95% CI)</th></tr></thead><tbody>${rows.map(([l, k, d]) => `<tr><td>${l}</td><td class="r">${et[k].mean.text.toFixed(d)}</td><td class="r">${et[k].mean.graphic.toFixed(d)}</td><td class="r">${et[k].graphic_minus_text.est.toFixed(d)} (${ci(et[k].graphic_minus_text.ci, d)})</td></tr>`).join("")}</tbody></table>`;
+    const a = et.attention_choice_model.coefs.slice(-1)[0];
+    $("#tech-note").textContent = `Conditional logit with standard errors clustered by person (${R.main_model.respondents} people, ${R.main_model.choices} choices). The value of a set date compares a confirmed date with a wait that could be 3 weeks earlier or later: ${money(vr.est)} (95% CI ${money(vr.ci[0])} to ${money(vr.ci[1])}). Relative scale of the picture group ${f.relative_scale_graphic.est.toFixed(2)} (${ci(f.relative_scale_graphic.ci, 2)}). More attention to waiting information increases the weight on certainty: ${a.est.toFixed(3)} per SD (${ci(a.ci, 3)}). All values simulated.`;
   }
+  $("#details-btn").addEventListener("click", e => { const d = $("#details"); d.hidden = !d.hidden; e.target.setAttribute("aria-expanded", String(!d.hidden)); e.target.textContent = d.hidden ? "Show technical details" : "Hide technical details"; });
 
-  // ---------- Wire up ----------
-  $("#deadline").addEventListener("input", e => { state.deadline = Number(e.target.value); renderCompare(); });
-  $("#sessions").addEventListener("input", e => { state.sessions = Number(e.target.value); renderCompare(); });
-  $("#fmt-chart").addEventListener("click", () => { state.format = "chart"; renderCompare(); });
-  $("#fmt-words").addEventListener("click", () => { state.format = "words"; renderCompare(); });
-  $("#add-opt").addEventListener("click", () => {
-    if (state.options.length >= 4) return;
-    state.options.push({ name: "Option " + (state.options.length + 1), kind: "range", week: 6, from: 4, to: 8, cost: 60, mode: "inperson" });
-    renderCompare();
-  });
-  $("#options").addEventListener("input", onCompareInput);
-  $("#options").addEventListener("change", onCompareInput);
-  $("#options").addEventListener("click", e => {
-    const r = e.target.closest("[data-remove]");
-    if (r) { state.options.splice(Number(r.dataset.remove), 1); renderCompare(); }
-  });
-  $("#values").addEventListener("input", onCompareInput);
-  $("#clinic-data").value = CLINIC_EXAMPLE;
-  ["#clinic-data", "#clinic-unit", "#clinic-week"].forEach(s => $(s).addEventListener("input", renderClinic));
-  $("#clinic-example").addEventListener("click", () => { $("#clinic-data").value = CLINIC_EXAMPLE; $("#clinic-unit").value = "days"; renderClinic(); });
-
-  renderValues();
-  renderCompare();
-  renderClinic();
-  renderEvidence();
+  renderResearch();
   route();
+  if (!S.seenWelcome && (!location.hash || location.hash === "#home")) { S.seenWelcome = true; save(); howTo(true); }
 })();
 </script>
 </body>

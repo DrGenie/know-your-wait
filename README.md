@@ -14,14 +14,15 @@ The tool comes from the University of Newcastle pilot study *Waiting, cost and c
 
 ## What the tool does
 
+Version 0.2.0 is a guided, plain-language tool written for a wide range of reading levels, with large buttons and pop-up help.
+
 | Page | For | What it does |
 |---|---|---|
-| Compare my options | People offered appointments | Enter up to four offers (confirmed date or a range of weeks, cost per session, in person or video). The tool shows the chance of being seen by your chosen week as a chart or in words, the earliest and latest week, the total cost for your expected number of sessions, and a fit score based on the pilot's choice model and your own priorities. |
-| For clinics | Practices, the PHN, service managers | Paste recent waits. The tool produces a plain-language statement ("half had their first session within 6 weeks, 8 in 10 within 9 weeks"), an icon array and a histogram. |
-| Pilot evidence | Reviewers and researchers | Shows the model estimates the pilot will produce: value of a confirmed date in dollars and weeks, text vs chart comprehension, scale-adjusted format comparison and eye-tracking results. |
-| About | Everyone | Method, limits, team and privacy. |
+| Home and 3 steps | People offered appointments | **Step 1:** pick a goal ("seen within 4 weeks") and the number of visits. **Step 2:** add up to 4 choices with buttons (set date or a range of weeks, cost per visit, face to face or video). **Step 3:** say how much speed, a set date, cost and face to face matter. **Results:** a best match, the chance of being seen in time as "X in 10" with dots and a week-by-week picture (or in words), total cost, and what to do next. |
+| For clinics | Practices, the PHN, service managers | Paste recent waits and get a plain statement ("Half of our new clients are seen within 6 weeks. 8 in 10 within 9 weeks.") with dot pictures and a copy button. |
+| The research | Reviewers and researchers | Key numbers in plain words, plus technical tables (choice model, words vs picture, eye tracking). All simulated until the study is complete. |
 
-Urgent help contacts are shown on every page. Fit scores describe a match to stated priorities and are not clinical advice.
+Pop-ups explain each term (set date, range, bulk-billed, chance, best match). A welcome pop-up shows where to start, and short messages confirm each action. Urgent help numbers are shown on every page.
 
 ## Run it
 
@@ -36,11 +37,12 @@ Everything runs in the browser. Nothing entered is sent anywhere. Settings are r
 
 ```
 index.html                      the tool (generated; do not edit by hand)
-src/index.template.html         tool source with a placeholder for results
+src/index.template.html         page layout, styles and interface code
+src/engine.js                   calculation engine (distributions, chances, fit scores, percentiles)
 simulation/simulate_and_estimate.py   simulates the pilot data and runs the planned analyses
 simulation/results/estimates.json     model results used by the tool
 simulation/results/*_simulated.csv    simulated choice, participant and gaze data
-scripts/embed_results.py        inserts estimates.json into the template to build index.html
+scripts/embed_results.py        builds index.html from the template, engine and estimates.json
 tests/engine.test.mjs           tests of the tool's calculation engine (Node 18+)
 tests/test_results.py           checks that the analysis recovers the assumed parameters
 ```

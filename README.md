@@ -1,28 +1,40 @@
 # Know Your Wait
 
-**Research prototype.** A browser tool that helps people compare offers of a first appointment with a psychologist by:
+**Research prototype, version 0.3.0.** A free web tool that helps people in the Hunter region of NSW get mental health support:
 
-- the chance of being seen by a date that matters to them;
-- the total out-of-pocket cost;
-- how well each option fits their own priorities.
+- find free and low-cost services they can start today;
+- work out what a psychologist will cost after Medicare and private health extras;
+- keep track of waiting lists, with the chance of being seen updated as time passes.
 
-It also includes a page that helps clinics describe their waiting list clearly.
+It also gives clinics a way to describe their waiting times clearly.
 
-The tool comes from the University of Newcastle pilot study *Waiting, cost and certainty: preferences for access to psychological care. A pilot discrete choice and eye-tracking study* (CHSF Pilot Research Scheme 2027 application).
+The tool comes from the University of Newcastle pilot study *Waiting, cost and certainty: preferences for access to psychological care* (CHSF Pilot Research Scheme 2027 application).
 
-> **All pilot results in this repository are simulated.** They were generated to mirror the planned study design and show what the pilot will report. They are not findings. When the study is complete, the simulated estimates will be replaced with the real ones.
+> Service details were checked on 28 October 2026. **The research results on the Evidence page are simulated** until the study is complete.
+
+## Why
+
+- In 2024-25, 25.3% of people who needed a psychologist said cost was a reason they delayed or did not go (ABS Patient Experiences 2024-25).
+- In July 2024, 31% of psychologists could not take new clients, and 49% reported waiting lists of 2 to 4 months (APS member poll).
+- Under Better Access, people on the lowest incomes waited longer for a first session than people on the highest incomes (Pirkis et al. 2022).
+- Longer waits are linked to missed first appointments (Loumidis and Shropshire 1997).
+- Digital support used while waiting is seen as useful, but engagement is low unless a person guides it (Huang et al. 2024).
+
+People often do not know about free services that need no referral, do not know what Medicare will pay, and get no clear information while they wait. This tool addresses those three gaps.
 
 ## What the tool does
 
-Version 0.2.0 is a guided, plain-language tool written for a wide range of reading levels, with large buttons and pop-up help.
+| Page | What it does |
+|---|---|
+| Find support | Six optional questions (age, area, UON student, cost, how you want support, GP plan). The list of 11 verified Hunter and national services updates as you answer, grouped into *start today*, *book a time* and *needs a GP referral*. Each card shows cost, how soon, how to start, why it fits and its source. Services that do not fit are listed with the reason. |
+| My plan | Builds a step-by-step plan from the services you add: start now, see your GP, book and ask about the wait, questions to ask when you call, and what to do if things get worse. Copy it as text. |
+| Work out costs | Live calculator for Better Access. It uses Medicare benefits from 1 July 2026 (psychologist $101.55, MBS item 80110; clinical psychologist $149.05; social worker or OT $89.50) and the 10-sessions-a-year limit. It applies the rule that private health extras cannot top up a Medicare session but can pay for sessions Medicare does not cover. It compares no help, extras only and the best route. |
+| My waiting lists | Add each waiting list (a range of weeks, a set date, or "they did not say", which uses a typical 4 to 17 weeks from the APS poll). Each visit shows time waited, the waiting window on a timeline, the chance of being seen in the next 2 weeks (updated for weeks already passed), and advice for that stage. A look-ahead slider shows how this changes over the coming weeks. |
+| For services | Paste recent waits. Get a website statement (median, 80th and 90th percentile, rounded up), an SMS under 160 characters, a waiting-list letter listing free supports, and a chart. |
+| Evidence | Real figures with sources, plus the pilot study design and simulated results. |
+| Urgent help | 000, NSW Mental Health Line, Lifeline, Suicide Call Back Service, 13YARN, Kids Helpline, Beyond Blue. |
 
-| Page | For | What it does |
-|---|---|---|
-| Home and 3 steps | People offered appointments | **Step 1:** pick a goal ("seen within 4 weeks") and the number of visits. **Step 2:** add up to 4 choices with buttons (set date or a range of weeks, cost per visit, face to face or video). **Step 3:** say how much speed, a set date, cost and face to face matter. **Results:** a best match, the chance of being seen in time as "X in 10" with dots and a week-by-week picture (or in words), total cost, and what to do next. |
-| For clinics | Practices, the PHN, service managers | Paste recent waits and get a plain statement ("Half of our new clients are seen within 6 weeks. 8 in 10 within 9 weeks.") with dot pictures and a copy button. |
-| The research | Reviewers and researchers | Key numbers in plain words, plus technical tables (choice model, words vs picture, eye tracking). All simulated until the study is complete. |
-
-Pop-ups explain each term (set date, range, bulk-billed, chance, best match). A welcome pop-up shows where to start, and short messages confirm each action. Urgent help numbers are shown on every page.
+Everything runs in the browser. Answers, plans and waiting lists are saved on the device only (local storage) and can be deleted from the About page.
 
 ## Run it
 
@@ -38,12 +50,12 @@ Everything runs in the browser. Nothing entered is sent anywhere. Settings are r
 ```
 index.html                      the tool (generated; do not edit by hand)
 src/index.template.html         page layout, styles and interface code
-src/engine.js                   calculation engine (distributions, chances, fit scores, percentiles)
+src/engine.js                   calculation engine (Medicare costs, service matching, waiting-list chances, clinic statements)
 simulation/simulate_and_estimate.py   simulates the pilot data and runs the planned analyses
 simulation/results/estimates.json     model results used by the tool
 simulation/results/*_simulated.csv    simulated choice, participant and gaze data
 scripts/embed_results.py        builds index.html from the template, engine and estimates.json
-tests/engine.test.mjs           tests of the tool's calculation engine (Node 18+)
+tests/engine.test.mjs           25 tests of the calculation engine and page content (Node 18+)
 tests/test_results.py           checks that the analysis recovers the assumed parameters
 ```
 
@@ -100,20 +112,14 @@ The simulation uses a fixed seed (2027), so results are reproducible. It takes u
 
 ## How the tool calculates
 
-- **Distribution.** A confirmed date puts all probability on one week. A range spreads it equally over each week from earliest to latest.
-- **Fit score.** Each option's utility is the sum of the pilot coefficients multiplied by:
-  - mean wait
-  - standard deviation of the wait
-  - cost per session
-  - video indicator
-
-  Each term is then multiplied by a personal weight from the sliders: 0, 0.5, 1 (typical), 1.5 or 2. Fit shares are logit probabilities across the options entered.
-- **Clinic statement.** Empirical percentiles (type 7), rounded up to whole weeks so the statement never promises shorter waits than clients experienced. Proportions are shown as natural frequencies.
-- **Tested range.** Options with mean wait outside 4 to 8 weeks, SD above 3 weeks or cost above $120 are flagged as outside the pilot's tested range.
+- **Waiting lists.** A range such as "3 to 9 weeks" is treated as an equal chance of being seen in each of those weeks. After `w` whole weeks without being seen, the chance of being seen in the next 2 weeks is P(w < T <= w + 2) / P(T > w). Stages: early, waiting, in the window, longer than they said.
+- **Costs.** Medicare sessions are used first, up to 10 a calendar year less those already used. The gap per session is the fee minus the Medicare benefit, or $0 if bulk billed. Remaining sessions use private health extras up to the per-session benefit and yearly limit. Any sessions left after that are paid in full.
+- **Service matching.** A service is shown unless an answer rules it out (age band, area, student-only, hardship-only, mode). Skipped questions never hide a service. Results can be sorted by best fit, soonest start or lowest cost.
+- **Clinic statements.** Empirical percentiles (type 7), rounded up to whole weeks, so a statement never promises a shorter wait than clients had.
 
 ## Limits
 
-- The results are simulated.
+- The research results are simulated. Service details, phone numbers, hours and Medicare amounts change; they were checked on 28 October 2026 and should be reviewed every 3 months.
 - The tool is a research prototype. It was developed with reference to the International Patient Decision Aid Standards, but it has not been evaluated against them.
 - It is not a medical device and does not give clinical advice.
 - Public release would require user testing and ethics review.

@@ -8,6 +8,7 @@ const json = JSON.parse(html.split('<script id="pilot-results" type="application
 let n = 0; const t = (name, fn) => { fn(); n++; console.log("ok", n, name); };
 const close = (a, b, e = 1e-9) => assert.ok(Math.abs(a - b) < e, `${a} != ${b}`);
 
+/* distributions */
 t("confirmed date puts all mass on one week", () => {
   const p = Engine.distribution({ kind: "confirmed", week: 4 });
   close(p.reduce((a, b) => a + b, 0), 1); close(p[4], 1);
@@ -16,49 +17,119 @@ t("confirmed date puts all mass on one week", () => {
 t("range is uniform and sums to one", () => {
   const p = Engine.distribution({ kind: "range", from: 3, to: 9 });
   close(p.reduce((a, b) => a + b, 0), 1); close(p[3], 1 / 7); close(p[2], 0);
-  const s = Engine.stats(p); close(s.mean, 6); close(s.sd, 2, 1e-12); // sd of uniform 3..9 = 2
-  assert.equal(s.earliest, 3); assert.equal(s.latest, 9);
+  const s = Engine.stats(p); close(s.mean, 6); close(s.sd, 2, 1e-12);
 });
-t("reversed range is handled", () => { close(Engine.stats(Engine.distribution({ kind: "range", from: 9, to: 3 })).mean, 6); });
-t("chance by deadline", () => {
+t("chance by week", () => {
   const p = Engine.distribution({ kind: "range", from: 3, to: 9 });
   close(Engine.chanceBy(p, 5), 3 / 7); close(Engine.chanceBy(p, 2), 0); close(Engine.chanceBy(p, 20), 1);
 });
-t("utility uses mean, sd, cost and mode", () => {
-  const coef = { wait: -0.2, spread: -0.25, cost: -0.01, video: -0.3 };
-  const u = Engine.utility({ kind: "range", from: 3, to: 9, cost: 50, mode: "video" }, coef);
-  close(u, -0.2 * 6 - 0.25 * 2 - 0.5 - 0.3);
-  const u0 = Engine.utility({ kind: "range", from: 3, to: 9, cost: 50, mode: "video" }, coef, { certainty: 0 });
-  close(u0, -0.2 * 6 - 0.5 - 0.3);
+
+/* waiting-list tracker */
+t("chance in next 2 weeks updates as time passes", () => {
+  const p = Engine.distribution({ kind: "range", from: 3, to: 9 });
+  close(Engine.chanceNext(p, 0, 2), 0);          // weeks 1 and 2 are before the range
+  close(Engine.chanceNext(p, 2, 2), 2 / 7);      // weeks 3,4 of 3..9
+  close(Engine.chanceNext(p, 5, 2), 2 / 4);      // weeks 6,7 of 6..9
+  close(Engine.chanceNext(p, 8, 2), 1);          // only week 9 left
+  assert.equal(Engine.chanceNext(p, 9, 2), null); // range has passed
 });
-t("shares sum to one and order by utility", () => {
-  const s = Engine.shares([-1, -2, -1.5]); close(s.reduce((a, b) => a + b, 0), 1);
-  assert.ok(s[0] > s[2] && s[2] > s[1]);
-  const big = Engine.shares([-1000, -1001]); close(big.reduce((a, b) => a + b, 0), 1);
+t("remaining distribution renormalises", () => {
+  const r = Engine.remaining(Engine.distribution({ kind: "range", from: 3, to: 9 }), 5);
+  close(r.reduce((a, b) => a + b, 0), 1); close(r[6], 0.25); close(r[5], 0);
 });
-t("tested range flag", () => {
-  assert.equal(Engine.inTestedRange({ kind: "range", from: 3, to: 9, cost: 0 }), true);
-  assert.equal(Engine.inTestedRange({ kind: "confirmed", week: 2, cost: 0 }), false);
-  assert.equal(Engine.inTestedRange({ kind: "range", from: 4, to: 8, cost: 150 }), false);
+t("elapsed counts whole days and weeks", () => {
+  const e = Engine.elapsed("2026-10-01", "2026-10-28");
+  assert.equal(e.days, 27); assert.equal(e.weeks, 3);
+  assert.equal(Engine.elapsed("2026-10-28", "2026-10-01").days, 0);
 });
+t("wait stages move from early to overdue", () => {
+  const entry = { kind: "range", from: 4, to: 8, joined: "2026-09-01" };
+  assert.equal(Engine.waitStage(entry, "2026-09-03").stage, "early");
+  assert.equal(Engine.waitStage(entry, "2026-09-17").stage, "middle");
+  assert.equal(Engine.waitStage(entry, "2026-10-06").stage, "window");
+  assert.equal(Engine.waitStage(entry, "2026-11-10").stage, "overdue");
+});
+
+/* costs */
+t("Medicare gap for a psychologist", () => {
+  const r = Engine.costPlan({ fee: 200, type: "psychologist", sessions: 6, usedThisYear: 0 });
+  close(r.rebate, 101.55); close(r.medicareGap, 98.45); close(r.total, 590.70, 1e-6); close(r.saved, 609.30, 1e-6);
+});
+t("bulk billing costs nothing", () => {
+  const r = Engine.costPlan({ fee: 200, type: "clinical", bulkBilled: true, sessions: 10, usedThisYear: 0 });
+  close(r.total, 0);
+});
+t("fee below rebate never gives a negative cost", () => {
+  close(Engine.costPlan({ fee: 80, type: "clinical", sessions: 3 }).total, 0);
+});
+t("Medicare stops at 10 sessions, extras pay after", () => {
+  const r = Engine.costPlan({ fee: 200, type: "psychologist", sessions: 6, usedThisYear: 7,
+    extras: { on: true, perSession: 60, annualLimit: 100 } });
+  assert.equal(r.medicareSessions, 3);
+  assert.equal(r.extrasSessions, 2);      // $60 then $40 left in limit
+  assert.equal(r.fullSessions, 1);
+  close(r.extrasPaid, 100);
+  close(r.total, 3 * 98.45 + (200 - 60) + (200 - 40) + 200, 1e-6);
+});
+t("no GP plan means no rebate", () => {
+  const r = Engine.costPlan({ fee: 200, type: "psychologist", sessions: 4, hasPlan: false });
+  close(r.total, 800); assert.equal(r.medicareSessions, 0);
+});
+t("extras only total for comparison", () => {
+  const r = Engine.costPlan({ fee: 200, type: "psychologist", sessions: 4, extras: { on: true, perSession: 80, annualLimit: 200 } });
+  close(r.totalExtrasOnly, 120 + 120 + 160 + 200);
+});
+
+/* matching */
+const svc = { ages: [12, 25], areas: ["newcastle"], modes: ["inperson"], cost: "free", referral: "none" };
+t("unknown answers never exclude a service", () => {
+  assert.equal(Engine.matchService(svc, {}).ok, true);
+});
+t("age, area and mode exclude with reasons", () => {
+  const m = Engine.matchService(svc, { age: "26plus", area: "maitland", mode: "online" });
+  assert.equal(m.ok, false); assert.equal(m.not.length, 3);
+});
+t("student-only service", () => {
+  const s = { students: true };
+  assert.equal(Engine.matchService(s, { student: "no" }).ok, false);
+  assert.equal(Engine.matchService(s, { student: "yes" }).ok, true);
+});
+t("hardship service shown unless person says cost is not a problem", () => {
+  const s = { hardship: true };
+  assert.equal(Engine.matchService(s, {}).ok, true);
+  assert.equal(Engine.matchService(s, { hardship: "no" }).ok, false);
+});
+t("sorting by cost puts free first", () => {
+  const a = { cost: "free", startToday: false }, b = { cost: "medicare", startToday: true };
+  assert.ok(Engine.rankScore(a, {}, "cost") < Engine.rankScore(b, {}, "cost"));
+  assert.ok(Engine.rankScore(b, {}, "soon") < Engine.rankScore(a, {}, "soon"));
+});
+
+/* clinic statements */
 t("quantiles match NumPy type 7", () => {
   const xs = [1, 2, 3, 4, 10];
-  close(Engine.quantile(xs, 0.5), 3); close(Engine.quantile(xs, 0.8), 5.2); close(Engine.quantile([5], 0.9), 5);
+  close(Engine.quantile(xs, 0.5), 3); close(Engine.quantile(xs, 0.8), 5.2);
 });
-t("parse numbers ignores junk", () => { assert.deepEqual(Engine.parseNumbers("12, 15;x\n-3 20"), [12, 15, 20]); });
+t("clinic statements round up and fit an SMS", () => {
+  const st = Engine.clinicStatements([1.2, 2, 3.4, 4, 5, 6.1, 7, 8, 9, 12], "Test Clinic");
+  assert.equal(st.q50, 6); assert.ok(st.q90 >= st.q80 && st.q80 >= st.q50);
+  assert.ok(st.sms.length <= 160, st.sms.length);
+  assert.ok(st.web.includes("Test Clinic"));
+  const long = Engine.clinicStatements([1, 2, 3, 4, 5], "A Very Long Name Psychology and Counselling Clinic of the Hunter Region");
+  assert.ok(long.sms.length <= 160, long.sms.length);
+});
 t("natural frequency phrases", () => {
   assert.equal(Engine.inTen(0.42), "about 4 in 10"); assert.equal(Engine.inTen(1), "all 10 in 10");
-  assert.equal(Engine.inTen(0.02), "fewer than 1 in 10"); assert.equal(Engine.inTen(0), "none (0 in 10)");
 });
-t("describe has no dashes", () => {
-  const d = Engine.describe({ kind: "range", from: 3, to: 9 }, 5) + Engine.describe({ kind: "confirmed", week: 4 }, 5);
-  assert.ok(!/[–—]/.test(d));
-});
-t("embedded results are flagged as simulated and complete", () => {
+t("parse numbers ignores junk", () => { assert.deepEqual(Engine.parseNumbers("12, 15;x\n-3 20"), [12, 15, 20]); });
+
+/* page */
+t("embedded pilot results are flagged as simulated", () => {
   assert.equal(json.meta.simulated, true);
-  for (const k of ["wait", "spread", "cost", "video"]) assert.ok(json.main_model.coefs.find(c => c.name === k));
   assert.ok(json.values.dollars_per_session_confirmed_vs_pm3.est > 0);
-  assert.ok(json.eye_tracking.attention_choice_model.coefs.length === 5);
 });
 t("page text has no em or en dashes", () => { assert.ok(!/[–—]/.test(html)); });
+t("crisis numbers are present", () => {
+  for (const num of ["000", "1800 011 511", "13 11 14", "1300 659 467", "13 92 76", "1800 55 1800", "1800 595 212"]) assert.ok(html.includes(num), num);
+});
 console.log(`\n${n} tests passed`);

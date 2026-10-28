@@ -307,7 +307,70 @@ const Engine = (() => {
     return { correct: c, options: uniq.sort((a, b) => a - b) };
   }
 
+  /* ---------- Sharing: compact links ---------- */
+  function b64urlEncode(obj) {
+    const json = JSON.stringify(obj);
+    const bytes = new TextEncoder().encode(json);
+    let bin = ""; bytes.forEach(b => { bin += String.fromCharCode(b); });
+    return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function b64urlDecode(s) {
+    try {
+      let t = String(s).replace(/-/g, "+").replace(/_/g, "/");
+      while (t.length % 4) t += "=";
+      const bin = atob(t), bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return JSON.parse(new TextDecoder().decode(bytes));
+    } catch (e) { return null; }
+  }
+
+  /* ---------- Camera calibration: ridge regression ---------- */
+  /** Solve (X'X + lambda I) w = X'y. X rows are feature vectors (first column is 1, not penalised). */
+  function ridgeFit(X, y, lambda) {
+    const k = X[0].length, A = Array.from({ length: k }, () => new Array(k).fill(0)), b = new Array(k).fill(0);
+    X.forEach((row, n) => { for (let i = 0; i < k; i++) { b[i] += row[i] * y[n]; for (let j = 0; j < k; j++) A[i][j] += row[i] * row[j]; } });
+    for (let i = 1; i < k; i++) A[i][i] += lambda;
+    // Gaussian elimination with partial pivoting
+    for (let c = 0; c < k; c++) {
+      let p = c; for (let r = c + 1; r < k; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+      [A[c], A[p]] = [A[p], A[c]]; [b[c], b[p]] = [b[p], b[c]];
+      const d = A[c][c] || 1e-12;
+      for (let r = 0; r < k; r++) if (r !== c) { const f = A[r][c] / d; for (let j = c; j < k; j++) A[r][j] -= f * A[c][j]; b[r] -= f * b[c]; }
+    }
+    return b.map((v, i) => v / (A[i][i] || 1e-12));
+  }
+  function dot(w, x) { return w.reduce((s, v, i) => s + v * x[i], 0); }
+
+  /* ---------- Attention (from camera or pointer) ---------- */
+  const AOIS = ["when", "weeks", "pay", "how"];
+  /** Sum seconds per area across tasks. byTask: [{ A: {when,..}, B: {...} }] */
+  function attentionTotals(byTask) {
+    const t = { when: 0, weeks: 0, pay: 0, how: 0 };
+    (byTask || []).forEach(task => { if (!task) return; ["A", "B"].forEach(c => { const x = task[c] || {}; AOIS.forEach(a => { t[a] += x[a] || 0; }); }); });
+    const total = AOIS.reduce((s, a) => s + t[a], 0);
+    const share = {}; AOIS.forEach(a => { share[a] = total > 0 ? t[a] / total : 0; });
+    return { seconds: t, total, share, waitShare: total > 0 ? (t.when + t.weeks) / total : 0 };
+  }
+  /** Did the person barely look at the waiting time of the option they picked? */
+  function missedWait(task, pick, minTotal) {
+    if (!task) return false;
+    const c = task[pick === 0 ? "A" : "B"] || {};
+    const tot = AOIS.reduce((s, a) => s + (c[a] || 0), 0) + AOIS.reduce((s, a) => s + ((task[pick === 0 ? "B" : "A"] || {})[a] || 0), 0);
+    if (tot < (minTotal || 1.5)) return false;
+    return ((c.when || 0) + (c.weeks || 0)) / tot < 0.12;
+  }
+  /**
+   * The eye-tracking study links attention to the waiting time with the weight on certainty:
+   * spread weight = base + coef * z, where z is attention share in standard deviations.
+   */
+  function attentionAdjust(b, waitShare, mean, sd, coef) {
+    if (!(sd > 0) || !Number.isFinite(waitShare)) return Object.assign({}, b);
+    const z = Math.max(-2, Math.min(2, (waitShare - mean) / sd));
+    return Object.assign({}, b, { spread: Math.min(-0.01, b.spread + coef * z) });
+  }
+
   return {
+    b64urlEncode, b64urlDecode, ridgeFit, dot, AOIS, attentionTotals, missedWait, attentionAdjust,
     MAX_WEEK, REBATE, MEDICARE_SESSIONS_PER_YEAR, AGE_BANDS,
     distribution, stats, chanceBy, chanceNext, remaining, elapsed, waitStage,
     costPlan, matchService, rankScore,

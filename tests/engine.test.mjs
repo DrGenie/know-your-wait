@@ -167,7 +167,51 @@ t("quick check always includes the right answer", () => {
   for (const p of [0, 0.1, 0.43, 0.5, 0.86, 1]) { const q = Engine.quizChoices(p); assert.ok(q.options.includes(q.correct)); assert.ok(q.options.length >= 2); }
 });
 
+/* sharing and attention (v0.5) */
+t("share payload survives a round trip, bad links give null", () => {
+  const p = { v: 1, n: "Café psychology", k: "r", f: 3, t: 9, c: 78, s: ["mmh", "mindspot"] };
+  const s = Engine.b64urlEncode(p);
+  assert.ok(/^[A-Za-z0-9_-]+$/.test(s)); assert.deepEqual(Engine.b64urlDecode(s), p);
+  assert.equal(Engine.b64urlDecode("%%%not-base64"), null);
+});
+t("ridge fit recovers known weights", () => {
+  const X = [], y = []; let s = 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 60; i++) { const x = [1, r(), r(), r()]; X.push(x); y.push(0.2 + 0.5 * x[1] - 0.3 * x[2] + 0.1 * x[3]); }
+  const w = Engine.ridgeFit(X, y, 1e-6);
+  [0.2, 0.5, -0.3, 0.1].forEach((v, i) => close(w[i], v, 1e-3)); close(Engine.dot(w, X[0]), y[0], 1e-3);
+});
+t("attention totals give shares that sum to one", () => {
+  const a = Engine.attentionTotals([{ A: { when: 2, weeks: 1, pay: 1 }, B: { how: 1 } }, null, { A: {}, B: { pay: 5 } }]);
+  close(a.total, 10); close(a.share.pay, 0.6); close(a.waitShare, 0.3);
+  close(Object.values(a.share).reduce((x, y) => x + y, 0), 1);
+  assert.equal(Engine.attentionTotals([]).total, 0);
+});
+t("missed wait only fires with enough looking and little time on the wait", () => {
+  assert.equal(Engine.missedWait({ A: { pay: 3, how: 1 }, B: {} }, 0, 1.5), true);
+  assert.equal(Engine.missedWait({ A: { pay: 3, when: 1 }, B: {} }, 0, 1.5), false);
+  assert.equal(Engine.missedWait({ A: { pay: 0.5 }, B: {} }, 0, 1.5), false);
+  assert.equal(Engine.missedWait(undefined, 0, 1.5), false);
+});
+t("more attention to waiting makes uncertainty weigh more", () => {
+  const b = { wait: -0.2, spread: -0.25, cost: -0.0125, video: -0.3 };
+  const hi = Engine.attentionAdjust(b, 0.7, 0.54, 0.086, -0.12), lo = Engine.attentionAdjust(b, 0.4, 0.54, 0.086, -0.12);
+  assert.ok(hi.spread < b.spread && lo.spread > b.spread && lo.spread < 0);
+  close(hi.cost, b.cost);
+});
+
 /* page */
+t("user-facing text never says simulated outside technical details", () => {
+  const body = html.split("<body>")[1].split('<script id="pilot-results"')[0];
+  const outside = body.replace(/<details class="tech">[\s\S]*?<\/details>/, "");
+  assert.ok(!/simulat/i.test(outside), "found 'simulat' in user-facing markup");
+  const app = html.split("/* ---------- Research values")[1];
+  const s = app.replace(/\(function how\(\)[\s\S]*?\}\)\(\);/, "");
+  assert.ok(!/simulat/i.test(s), "found 'simulat' in app script outside the technical section");
+});
+t("only Dr Mesfin Genie is credited", () => {
+  assert.ok(html.includes("Developed by")); assert.ok(html.includes("Dr Mesfin Genie"));
+  for (const nm of ["Paolucci", "Boyle", "Elaine Xu", "Gallagher"]) assert.ok(!html.includes(nm), nm);
+});
 t("embedded pilot results are flagged as simulated", () => {
   assert.equal(json.meta.simulated, true);
   assert.ok(json.values.dollars_per_session_confirmed_vs_pm3.est > 0);

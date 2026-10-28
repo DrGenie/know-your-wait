@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Know Your Wait</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Waiting to see a psychologist? Compare your options in 3 minutes, find out what matters most to you, and get a plan for while you wait. A University of Newcastle prototype.">
+<meta name="description" content="Waiting to see a psychologist? Compare your options in 3 minutes, find out what matters most to you, get a plan you can share, and track your wait.">
 <style>
-/* Layout: public-service site. Navy masthead, crisis strip, guided journey in a 780px column with a step bar; tools pages use the 1100px column. */
+/* Layout: public-service site. Navy masthead, crisis strip, journey ribbon on every page; the guided journey sits in a 780px column, tool pages use 1100px. */
 :root {
   --bg: #ffffff;
   --bg-alt: #f2f4f6;
@@ -31,6 +31,7 @@
   --crisis-bg: #fff1c2;
   --crisis-text: #4a3500;
   --late: #c26a12;
+  --wa: #128c4a;
   --font: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color-scheme: light;
 }
@@ -39,14 +40,14 @@
     --bg: #11161c; --bg-alt: #1a2129; --text: #e9edf1; --muted: #a8b1bb; --rule: #313b46; --field: #7d8893;
     --brand: #07182e; --brand-text: #ffffff; --brand-alt: #0f2a4d; --action: #6cb4f0; --action-hover: #a0cff6; --action-bg: #16304a;
     --focus: #b89af0; --ok: #6fd39a; --ok-bg: #14321f; --warn: #f4ad66; --warn-bg: #3a2711; --bad: #f19b94; --bad-bg: #3d1a18;
-    --crisis-bg: #3b3011; --crisis-text: #ffe39a; --late: #f0a04e; color-scheme: dark;
+    --crisis-bg: #3b3011; --crisis-text: #ffe39a; --late: #f0a04e; --wa: #4fd18b; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #11161c; --bg-alt: #1a2129; --text: #e9edf1; --muted: #a8b1bb; --rule: #313b46; --field: #7d8893;
   --brand: #07182e; --brand-text: #ffffff; --brand-alt: #0f2a4d; --action: #6cb4f0; --action-hover: #a0cff6; --action-bg: #16304a;
   --focus: #b89af0; --ok: #6fd39a; --ok-bg: #14321f; --warn: #f4ad66; --warn-bg: #3a2711; --bad: #f19b94; --bad-bg: #3d1a18;
-  --crisis-bg: #3b3011; --crisis-text: #ffe39a; --late: #f0a04e; color-scheme: dark;
+  --crisis-bg: #3b3011; --crisis-text: #ffe39a; --late: #f0a04e; --wa: #4fd18b; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -56,8 +57,8 @@ body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.55 var
 .narrow { max-width: 780px; margin: 0 auto; }
 h1, h2, h3, h4 { margin: 0; line-height: 1.2; text-wrap: balance; font-weight: 700; }
 h1 { font-size: clamp(1.85rem, 4.2vw, 2.6rem); letter-spacing: -0.01em; }
-h2 { font-size: 1.55rem; }
-h3 { font-size: 1.2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.18rem; }
 h4 { font-size: 1rem; }
 p { margin: 0; max-width: 70ch; }
 a { color: var(--action); text-decoration-thickness: 1px; text-underline-offset: 3px; }
@@ -71,6 +72,7 @@ a:hover { color: var(--action-hover); text-decoration-thickness: 2px; }
 .stack-lg { display: grid; gap: 32px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.ic-svg { width: 28px; height: 28px; flex: none; color: var(--action); }
 
 .skip { position: absolute; left: 8px; top: -60px; background: var(--bg); color: var(--action); padding: 8px 12px; z-index: 100; }
 .skip:focus { top: 8px; }
@@ -93,14 +95,28 @@ ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 .crisis .wrap { display: flex; flex-wrap: wrap; gap: 4px 20px; padding-block: 9px; align-items: baseline; }
 .crisis b { white-space: nowrap; }
 .crisis a { color: var(--crisis-text); }
-.proto { border-bottom: 1px solid var(--rule); font-size: 0.88rem; }
-.proto .wrap { padding-block: 8px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
-.tag { display: inline-block; background: var(--warn-bg); color: var(--warn); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; border-radius: 3px; padding: 1px 7px; }
+
+/* journey ribbon */
+.ribbon { border-bottom: 1px solid var(--rule); background: var(--bg-alt); }
+.ribbon .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 20px; padding-block: 10px; }
+.ribbon ol { list-style: none; margin: 0; padding: 0; display: flex; gap: 0; align-items: center; flex-wrap: wrap; }
+.ribbon li { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--muted); }
+.ribbon li + li::before { content: ""; width: 22px; height: 2px; background: var(--rule); margin: 0 6px; }
+.ribbon li.done + li::before, .ribbon li.done::before { background: var(--ok); }
+.ribbon .dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--field); display: grid; place-items: center; background: var(--bg); }
+.ribbon li.done .dot { background: var(--ok); border-color: var(--ok); }
+.ribbon li.done .dot::after { content: ""; width: 4px; height: 8px; border: solid var(--bg); border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-1px, -1px); }
+.ribbon li.now { color: var(--text); }
+.ribbon li.now .dot { border-color: var(--action); box-shadow: 0 0 0 3px var(--action-bg); }
+.ribbon .next { font-size: 0.92rem; font-weight: 700; }
+.proto { border-bottom: 1px solid var(--rule); font-size: 0.85rem; }
+.proto .wrap { padding-block: 6px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.tag { display: inline-block; background: var(--warn-bg); color: var(--warn); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.05em; border-radius: 3px; padding: 1px 7px; }
 main { padding-block: 24px 64px; }
 .crumbs { font-size: 0.9rem; color: var(--muted); margin-bottom: 18px; }
 .crumbs ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .crumbs li + li::before { content: "/"; margin-right: 6px; color: var(--rule); }
-.page-head { display: grid; gap: 12px; margin-bottom: 28px; }
+.page-head { display: grid; gap: 12px; margin-bottom: 26px; }
 
 /* buttons */
 .btn { font: inherit; font-weight: 700; font-size: 1rem; line-height: 1.2; min-height: 44px; padding: 10px 18px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; border: 2px solid var(--action); background: var(--action); color: var(--bg); }
@@ -111,12 +127,13 @@ main { padding-block: 24px 64px; }
 .btn.tertiary:hover { color: var(--action-hover); background: transparent; }
 .btn.small { min-height: 36px; padding: 6px 12px; font-size: 0.92rem; }
 .btn.big { font-size: 1.15rem; min-height: 54px; padding: 12px 26px; }
+.btn.wa { background: var(--wa); border-color: var(--wa); color: var(--bg); }
+.btn svg { width: 20px; height: 20px; flex: none; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .btnrow { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
 .btnrow.spread { justify-content: space-between; }
 .helpbtn { font: inherit; font-size: 0.88rem; font-weight: 700; color: var(--action); background: transparent; border: 0; text-decoration: underline; cursor: pointer; padding: 0 2px; }
 
-/* alerts and callouts */
 .callout { background: var(--bg-alt); border-left: 6px solid var(--brand-alt); padding: 16px 18px; display: grid; gap: 8px; }
 .alert { border: 2px solid; border-radius: 4px; padding: 14px 16px; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: start; }
 .alert .ic { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 0.85rem; color: var(--bg); margin-top: 2px; }
@@ -124,27 +141,35 @@ main { padding-block: 24px 64px; }
 .alert.info { border-color: var(--action); background: var(--action-bg); } .alert.info .ic { background: var(--action); }
 .alert.ok { border-color: var(--ok); background: var(--ok-bg); } .alert.ok .ic { background: var(--ok); }
 .alert.warn { border-color: var(--warn); background: var(--warn-bg); } .alert.warn .ic { background: var(--warn); }
-.alert.bad { border-color: var(--bad); background: var(--bad-bg); } .alert.bad .ic { background: var(--bad); }
 
 /* home */
 .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: center; padding-bottom: 32px; border-bottom: 1px solid var(--rule); }
 .hero-card { border: 1px solid var(--rule); border-top: 6px solid var(--ok); padding: 18px; display: grid; gap: 10px; background: var(--bg); }
 .hero-card .big { font-size: 2rem; font-weight: 700; }
-.how3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--rule); }
-.how3 > div { padding: 18px; display: grid; gap: 6px; align-content: start; }
-.how3 > div + div { border-left: 1px solid var(--rule); }
-.how3 .k { font-size: 0.8rem; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+.map { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; border: 1px solid var(--rule); }
+.map > a { padding: 16px; display: grid; gap: 6px; align-content: start; text-decoration: none; color: var(--text); position: relative; }
+.map > a + a { border-left: 1px solid var(--rule); }
+.map > a:hover { background: var(--action-bg); }
+.map > a:hover h3 { text-decoration: underline; }
+.map .k { font-size: 0.78rem; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+.map h3 { color: var(--action); font-size: 1.05rem; }
+.map p { font-size: 0.92rem; }
+.map .done-tag { font-size: 0.78rem; font-weight: 700; color: var(--ok); }
+.dash { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.dash > div { border: 1px solid var(--rule); border-top: 6px solid var(--action); padding: 16px; display: grid; gap: 8px; align-content: start; }
+.dash .big { font-size: 1.6rem; font-weight: 700; }
 .facts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
 .facts-row > div { padding: 16px 16px 16px 0; display: grid; gap: 4px; }
-.facts-row .n { font-size: 1.9rem; font-weight: 700; color: var(--brand-alt); }
+.facts-row .n { font-size: 1.9rem; font-weight: 700; color: var(--action); }
 
 /* journey */
-.stepbar { list-style: none; margin: 0 0 26px; padding: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-.stepbar li { border-top: 5px solid var(--rule); padding-top: 6px; font-size: 0.75rem; font-weight: 700; color: var(--muted); line-height: 1.2; }
+.stepbar { list-style: none; margin: 0 0 26px; padding: 0; display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+.stepbar li { border-top: 5px solid var(--rule); padding-top: 6px; font-size: 0.72rem; font-weight: 700; color: var(--muted); line-height: 1.2; }
 .stepbar li.done { border-color: var(--ok); color: var(--ok); }
 .stepbar li.now { border-color: var(--action); color: var(--text); }
 .stepcount { font-size: 0.9rem; color: var(--muted); font-weight: 600; }
 .step { display: grid; gap: 22px; }
+.step > *, .share > *, .stack > * { min-width: 0; }
 .q { display: grid; gap: 10px; }
 .q > .ql { font-weight: 700; font-size: 1.08rem; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
@@ -162,8 +187,6 @@ select { font: inherit; color: var(--text); background: var(--bg); border: 2px s
 .crisis-panel { border: 3px solid var(--bad); padding: 18px; display: grid; gap: 12px; background: var(--bad-bg); }
 .crisis-panel .line { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; font-size: 1.1rem; }
 .crisis-panel .line b { font-size: 1.4rem; }
-
-/* option cards */
 .opt-card { border: 1px solid var(--rule); border-left: 6px solid var(--brand-alt); padding: 16px 18px; display: grid; gap: 10px; }
 .opt-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px 16px; flex-wrap: wrap; }
 .opt-facts { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 0.95rem; }
@@ -178,8 +201,6 @@ select { font: inherit; color: var(--text); background: var(--bg); border: 2px s
 .stepper output { min-width: 4.6em; display: grid; place-items: center; font-weight: 700; padding: 0 8px; font-variant-numeric: tabular-nums; }
 .edit-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
 .edit-row > span:first-child { min-width: 7.5em; font-weight: 600; }
-
-/* week strip */
 .strip { display: grid; gap: 4px; }
 .strip svg { width: 100%; height: auto; display: block; max-width: 560px; }
 .strip .cap { font-size: 0.9rem; }
@@ -194,14 +215,16 @@ select { font: inherit; color: var(--text); background: var(--bg); border: 2px s
 .pips i.now { background: var(--action); }
 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .pick { font: inherit; text-align: left; color: var(--text); background: var(--bg); border: 2px solid var(--field); border-radius: 4px; padding: 16px; cursor: pointer; display: grid; gap: 10px; align-content: start; min-width: 0; }
-.pick:hover { border-color: var(--action); background: var(--action-bg); }
+.pick:hover { border-color: var(--action); }
 .pick[aria-pressed="true"] { border-color: var(--ok); box-shadow: inset 0 0 0 2px var(--ok); background: var(--ok-bg); }
 .pick .lab { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; color: var(--muted); }
-.pick dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 0.98rem; }
-.pick dt { color: var(--muted); }
-.pick dd { margin: 0; font-weight: 700; }
+.pick .row { display: grid; grid-template-columns: 5.2em 1fr; gap: 10px; padding: 4px 0; border-bottom: 1px solid var(--rule); }
+.pick .row span:first-child { color: var(--muted); }
+.pick .row span:last-child { font-weight: 700; }
 .pick .go { font-weight: 700; color: var(--action); }
 .feedback { min-height: 1.6em; font-weight: 600; color: var(--ok); }
+.camcard { border: 1px dashed var(--action); background: var(--action-bg); padding: 14px 16px; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; }
+.camcard .btnrow { grid-column: 2; }
 @media (prefers-reduced-motion: no-preference) {
   .step-anim { animation: stepIn 0.28s ease-out; }
   @keyframes stepIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -218,6 +241,7 @@ select { font: inherit; color: var(--text); background: var(--bg); border: 2px s
 .meter .mark { position: absolute; top: -6px; width: 6px; height: 24px; background: var(--action); transform: translateX(-3px); }
 .meter .avg { position: absolute; top: -3px; width: 2px; height: 18px; background: var(--muted); }
 .meter .ends { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); gap: 8px; }
+.eye { border: 1px solid var(--rule); padding: 18px; display: grid; gap: 14px; }
 .res-card { border: 1px solid var(--rule); border-left: 6px solid var(--brand-alt); padding: 16px 18px; display: grid; gap: 12px; }
 .res-card.first { border-left-color: var(--ok); }
 .res-card.chosen { box-shadow: inset 0 0 0 2px var(--ok); }
@@ -238,7 +262,7 @@ details.why summary { cursor: pointer; font-weight: 700; color: var(--action); }
 .compare { display: grid; gap: 8px; margin-top: 10px; }
 .compare .r { display: grid; grid-template-columns: minmax(140px, 220px) 1fr 1fr; gap: 10px; font-size: 0.92rem; border-bottom: 1px solid var(--rule); padding-bottom: 6px; }
 
-/* plan */
+/* plan and share */
 .plan-step { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 16px 0; border-top: 1px solid var(--rule); }
 .plan-step .no { width: 40px; height: 40px; border-radius: 50%; background: var(--brand-alt); color: var(--brand-text); display: grid; place-items: center; font-weight: 700; }
 .checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
@@ -249,8 +273,13 @@ details.why summary { cursor: pointer; font-weight: 700; color: var(--action); }
 .opt input[type="radio"]:checked::after { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--action); }
 .opt input[type="checkbox"]:checked { background: var(--action); }
 .opt input[type="checkbox"]:checked::after { content: ""; width: 6px; height: 11px; border: solid var(--bg); border-width: 0 3px 3px 0; transform: rotate(45deg) translate(-1px, -1px); }
+.share { display: grid; grid-template-columns: 230px 1fr; gap: 24px; align-items: start; border: 1px solid var(--rule); padding: 18px; }
+.qr { background: #ffffff; padding: 10px; border: 1px solid var(--rule); width: 100%; max-width: 230px; }
+.qr svg { display: block; width: 100%; height: auto; }
+.qr.small { max-width: 112px; padding: 6px; }
+.msg { background: var(--bg-alt); border-left: 4px solid var(--wa); padding: 12px 14px; white-space: pre-line; overflow-wrap: anywhere; font-size: 0.95rem; max-height: 260px; overflow: auto; }
 
-/* forms on tool pages */
+/* tool pages */
 fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
 legend { font-weight: 700; padding: 0; margin-bottom: 4px; }
 .hint { font-size: 0.88rem; color: var(--muted); }
@@ -276,13 +305,11 @@ th { font-size: 0.82rem; color: var(--muted); }
 td.r, th.r { text-align: right; padding-right: 0; }
 .tablewrap { overflow-x: auto; }
 .bars { display: grid; gap: 10px; }
-.hbar { display: grid; grid-template-columns: minmax(120px, 190px) 1fr auto; gap: 10px; align-items: center; font-size: 0.92rem; }
+.hbar { display: grid; grid-template-columns: minmax(110px, 190px) 1fr auto; gap: 10px; align-items: center; font-size: 0.92rem; }
 .hbar .track { height: 18px; background: var(--bg); border: 1px solid var(--rule); display: block; }
-.hbar .fill { height: 100%; background: var(--brand-alt); display: block; }
+.hbar .fill { height: 100%; background: var(--action); display: block; }
 .hbar.best .fill { background: var(--ok); }
 @media (prefers-reduced-motion: no-preference) { .hbar .fill, .timeline .done { transition: all 0.35s ease; } }
-
-/* waiting lists */
 .wl { border: 1px solid var(--rule); padding: 18px; display: grid; gap: 14px; }
 .wl-head { display: flex; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; align-items: baseline; }
 .status { display: inline-block; font-weight: 700; font-size: 0.85rem; padding: 3px 10px; border-radius: 3px; }
@@ -290,10 +317,11 @@ td.r, th.r { text-align: right; padding-right: 0; }
 .status.window { background: var(--ok-bg); color: var(--ok); }
 .status.overdue { background: var(--bad-bg); color: var(--bad); }
 .status.seen { background: var(--bg-alt); color: var(--muted); }
+.src-tag { font-size: 0.78rem; font-weight: 700; color: var(--muted); }
 .timeline { position: relative; height: 34px; margin-top: 18px; }
 .timeline .base { position: absolute; left: 0; right: 0; top: 12px; height: 10px; background: var(--bg-alt); border: 1px solid var(--rule); }
 .timeline .window { position: absolute; top: 12px; height: 10px; background: var(--ok-bg); border: 1px solid var(--ok); }
-.timeline .done { position: absolute; left: 0; top: 12px; height: 10px; background: var(--brand-alt); }
+.timeline .done { position: absolute; left: 0; top: 12px; height: 10px; background: var(--action); }
 .timeline .today { position: absolute; top: 0; width: 2px; height: 34px; background: var(--text); }
 .timeline .today span { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
 .tl-labels { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); }
@@ -304,45 +332,62 @@ td.r, th.r { text-align: right; padding-right: 0; }
 .out-box { border: 1px solid var(--rule); padding: 16px; display: grid; gap: 10px; }
 .out-box .text { font-size: 1.05rem; background: var(--bg-alt); padding: 12px 14px; }
 .chart svg { width: 100%; height: auto; display: block; }
-
-/* how it works */
 .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .flow > div { border: 1px solid var(--rule); border-top: 6px solid var(--brand-alt); padding: 16px; display: grid; gap: 8px; align-content: start; }
 .flow .k { font-size: 0.8rem; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
 .flow .to { font-weight: 700; color: var(--ok); }
 .into { text-align: center; font-weight: 700; color: var(--muted); padding: 6px 0; }
 .youbox { border: 3px solid var(--ok); padding: 16px; display: grid; gap: 6px; text-align: center; justify-items: center; }
-.sim { background: var(--warn-bg); color: var(--warn); font-weight: 700; padding: 10px 14px; }
+details.tech { border: 1px solid var(--rule); padding: 14px 16px; }
+details.tech summary { cursor: pointer; font-weight: 700; color: var(--action); }
 .refs { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; font-size: 0.92rem; }
+.dev { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
 
 footer { background: var(--brand); color: var(--brand-text); font-size: 0.9rem; }
 footer .wrap { padding-block: 28px; display: grid; gap: 14px; }
 footer a { color: var(--brand-text); }
-footer .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+footer .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; align-items: start; }
 footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
+
+/* camera */
+.cam-pill { position: fixed; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: var(--brand); color: var(--brand-text); padding: 8px; display: flex; gap: 10px; align-items: center; border-left: 6px solid var(--ok); max-width: calc(100% - 24px); }
+.cam-pill video { width: 96px; height: 72px; object-fit: cover; transform: scaleX(-1); background: #000000; display: block; }
+.cam-pill .t { display: grid; gap: 4px; font-size: 0.85rem; }
+.cam-pill button { font: inherit; font-size: 0.85rem; font-weight: 700; background: transparent; color: var(--brand-text); border: 2px solid var(--brand-text); border-radius: 4px; padding: 4px 10px; cursor: pointer; }
+.gaze-dot { position: fixed; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 3px solid var(--action); background: rgba(0, 89, 158, 0.15); pointer-events: none; z-index: 45; left: 0; top: 0; }
+.calib { position: fixed; inset: 0; z-index: 70; background: var(--bg); color: var(--text); }
+.calib .msg-c { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; max-width: 440px; display: grid; gap: 10px; padding: 0 16px; }
+.calib .target { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 4px solid var(--action); background: var(--bg); cursor: pointer; padding: 0; }
+.calib .target::after { content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--action); }
 
 .modal-back { position: fixed; inset: 0; background: rgba(5, 15, 28, 0.6); z-index: 50; display: grid; place-items: center;
   padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .modal { background: var(--bg); color: var(--text); border-top: 6px solid var(--action); max-width: 560px; width: 100%; max-height: 85vh; overflow: auto; padding: 24px; display: grid; gap: 14px; }
+.modal ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; background: var(--brand); color: var(--brand-text); padding: 12px 18px; font-weight: 600; max-width: calc(100% - 32px); border-left: 6px solid var(--ok); }
 
 @media (max-width: 860px) {
-  .hero, .two-col, .flow { grid-template-columns: 1fr; }
-  .how3 { grid-template-columns: 1fr; }
-  .how3 > div + div { border-left: 0; border-top: 1px solid var(--rule); }
+  .hero, .two-col, .flow, .share { grid-template-columns: 1fr; }
+  .map { grid-template-columns: 1fr; }
+  .map > a + a { border-left: 0; border-top: 1px solid var(--rule); }
   .answer { position: static; }
   .menu-btn { display: inline-block; }
   .mainnav ul { display: none; flex-direction: column; }
   .mainnav.open ul { display: flex; }
   .mainnav a { border-bottom: 0; border-left: 4px solid transparent; }
   .mainnav a[aria-current="page"] { border-left-color: var(--brand-text); }
+  .qr { max-width: 200px; }
 }
 @media (max-width: 560px) {
   .pair, .safe { grid-template-columns: 1fr; }
   .stepbar li span { display: none; }
+  .ribbon li span.lbl { display: none; }
+  .ribbon li.now span.lbl { display: inline; }
   .compare .r { grid-template-columns: 1fr 1fr; }
   .compare .r > :first-child { grid-column: 1 / -1; font-weight: 700; }
+  .camcard { grid-template-columns: 1fr; }
+  .camcard .btnrow { grid-column: 1; }
 }
 </style>
 </head>
@@ -363,8 +408,8 @@ footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
       <li><a href="#home" data-nav="home">Home</a></li>
       <li><a href="#start" data-nav="start">Compare my options</a></li>
       <li><a href="#waiting" data-nav="waiting">My waiting lists <span class="count" id="wl-count" hidden>0</span></a></li>
-      <li><a href="#costs" data-nav="costs">Cost calculator</a></li>
-      <li><a href="#services" data-nav="services">For services</a></li>
+      <li><a href="#costs" data-nav="costs">Costs</a></li>
+      <li><a href="#services" data-nav="services">For clinics</a></li>
       <li><a href="#how" data-nav="how">How it works</a></li>
     </ul>
   </div>
@@ -378,65 +423,28 @@ footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
     <span><a href="#urgent">More urgent help</a></span>
   </div>
 </div>
-<div class="proto">
-  <div class="wrap"><span class="tag">PROTOTYPE</span><span>A University of Newcastle research prototype. Waiting times and study results are simulated for testing. Service and Medicare details were checked on 28 October 2026. Not medical advice.</span></div>
-</div>
+<div class="ribbon" id="ribbon" aria-label="Your journey"></div>
+<div class="proto"><div class="wrap"><span class="tag">PROTOTYPE</span><span>Waiting times in this prototype are estimates for testing. Service and Medicare details were checked on 28 October 2026. This is not medical advice.</span></div></div>
 
 <main id="main" class="wrap" tabindex="-1">
 
-<!-- ================= HOME ================= -->
-<section id="v-home" class="stack-lg" aria-labelledby="h-home">
-  <div class="hero">
-    <div class="stack">
-      <h1 id="h-home">Waiting to see a psychologist? Make a plan that suits you.</h1>
-      <p class="lead">Compare the options you have, find out what matters most to you, and know what to do while you wait. It takes about 3 minutes.</p>
-      <div class="btnrow"><a class="btn big" href="#start" id="start-btn">Start</a><a class="btn secondary" href="#waiting">I am already on a waiting list</a></div>
-      <p class="small muted">Free. Private: nothing you enter leaves your device.</p>
-    </div>
-    <div class="hero-card" aria-label="Example result">
-      <span class="small muted">Example result</span>
-      <span class="big">7 in 10</span>
-      <span>chance of being seen within 6 weeks with your best match</span>
-      <span class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span>
-      <span class="small">"Knowing the date is worth about $70 a session to you. That is more than most people."</span>
-    </div>
-  </div>
-  <div class="stack">
-    <h2>How it works</h2>
-    <div class="how3">
-      <div><span class="k">1. Your options</span><h3>See what you can get</h3><p>We show typical waits and costs for psychologists in your area. Change them to match any offers you have.</p></div>
-      <div><span class="k">2. Six quick choices</span><h3>Find what matters to you</h3><p>Pick between pairs of appointments. Your answers show how you trade off waiting, cost and knowing the date.</p></div>
-      <div><span class="k">3. Your plan</span><h3>Know what to do next</h3><p>See your best match, the chance of being seen in time, free support to start today, and what to ask when you call.</p></div>
-    </div>
-  </div>
-  <div class="stack">
-    <h2>Why this matters</h2>
-    <div class="facts-row">
-      <div><span class="n">1 in 4</span><span>people who needed a psychologist delayed or did not go because of cost (2024-25)</span></div>
-      <div><span class="n">31%</span><span>of psychologists could not take new clients (2024)</span></div>
-      <div><span class="n">2 to 4 months</span><span>is the most common waiting-list length psychologists report (2024)</span></div>
-    </div>
-    <p class="small muted">Sources: ABS Patient Experiences 2024-25; Australian Psychological Society member poll, July 2024. <a href="#how">How the research shapes this tool</a>.</p>
-  </div>
-</section>
+<section id="v-home" aria-labelledby="h-home"></section>
 
-<!-- ================= JOURNEY ================= -->
 <section id="v-start" hidden aria-label="Compare my options">
-  <div class="narrow">
-    <ol class="stepbar" id="stepbar"></ol>
-    <div id="journey"></div>
-  </div>
+  <div class="narrow"><ol class="stepbar" id="stepbar"></ol><div id="journey"></div></div>
 </section>
 
-<!-- ================= WAITING ================= -->
+<section id="v-shared" hidden aria-labelledby="h-shared"><div class="narrow" id="shared-body"></div></section>
+
 <section id="v-waiting" hidden aria-labelledby="h-waiting">
   <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>My waiting lists</li></ol></nav>
   <div class="page-head">
     <h1 id="h-waiting">My waiting lists</h1>
-    <p class="lead">Each time you come back, this page works out how long you have waited and the chance you will be seen in the next 2 weeks. It tells you what to do at each stage.</p>
+    <p class="lead">Every time you come back, this page works out how long you have waited, the chance you will be seen in the next 2 weeks, and what to do now.</p>
   </div>
   <div class="stack-lg">
     <div class="btnrow"><button type="button" class="btn" id="wl-add-btn">Add a waiting list</button><button type="button" class="btn secondary" id="wl-example">Show an example</button></div>
+    <p class="small muted">Got a letter from a clinic with a Know Your Wait QR code? Scan it with your phone camera and the waiting list is added for you.</p>
     <form class="addform" id="wl-form" hidden aria-label="Add a waiting list" onsubmit="return false"></form>
     <div id="wl-list" class="stack-lg"></div>
     <div class="lookahead" id="lookahead" hidden>
@@ -447,12 +455,12 @@ footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
   </div>
 </section>
 
-<!-- ================= COSTS ================= -->
 <section id="v-costs" hidden aria-labelledby="h-costs">
-  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>Cost calculator</li></ol></nav>
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>Costs</li></ol></nav>
   <div class="page-head">
     <h1 id="h-costs">What will I pay?</h1>
     <p class="lead">For seeing a psychologist with a GP mental health plan. Change any answer and the cost updates.</p>
+    <div id="cost-from-plan"></div>
   </div>
   <div class="two-col">
     <form class="panel" id="cost-form" aria-label="Cost details" onsubmit="return false">
@@ -475,12 +483,11 @@ footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
   </div>
 </section>
 
-<!-- ================= SERVICES ================= -->
 <section id="v-services" hidden aria-labelledby="h-services">
-  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>For services</li></ol></nav>
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>For clinics</li></ol></nav>
   <div class="page-head">
     <h1 id="h-services">Tell people how long they will wait</h1>
-    <p class="lead">For practices, clinics and the Primary Health Network. Paste the waiting times of your recent new clients. You get a clear message for your website, an SMS and a letter. In a full version, these waiting times would also update the options people see in this tool.</p>
+    <p class="lead">For practices, clinics and the Primary Health Network. Paste the waiting times of your recent new clients. You get a message for your website, an SMS, a letter and a QR code. When people scan the QR code, your waiting list is added to their Know Your Wait tracker with your real waiting times.</p>
   </div>
   <div class="two-col">
     <form class="panel" aria-label="Your waiting times" onsubmit="return false">
@@ -494,56 +501,59 @@ footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
   </div>
 </section>
 
-<!-- ================= HOW IT WORKS ================= -->
 <section id="v-how" hidden aria-labelledby="h-how">
   <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>How it works</li></ol></nav>
   <div class="page-head">
-    <h1 id="h-how">How the research shapes this tool</h1>
-    <p class="lead">Know Your Wait is built on a University of Newcastle study. Each part of the study changes something you see.</p>
-    <p class="sim">The study has not started. All study numbers on this site are simulated to show how the tool will work.</p>
+    <h1 id="h-how">How it works</h1>
+    <p class="lead">Know Your Wait is built on research at the University of Newcastle. Each part of the research changes something you see.</p>
   </div>
   <div class="stack-lg">
     <div class="flow">
-      <div><span class="k">Online choice study</span><h3>200 adults choose between appointments</h3><p>Each person makes 8 choices between appointments with different waits, costs and certainty.</p><p class="to">Gives the starting point for your trade-offs</p><p class="small" id="how-dce"></p></div>
-      <div><span class="k">Eye-tracking study</span><h3>40 people in our lab</h3><p>A camera records what people look at when they read waiting times as words or as a picture.</p><p class="to">Decides how waiting times are shown to you</p><p class="small" id="how-et"></p></div>
-      <div><span class="k">Services</span><h3>Clinics share their waiting times</h3><p>Services turn their recent waits into a range, using the For services page.</p><p class="to">Gives the waits and costs for your options</p><p class="small">In this prototype, Hunter waiting times are simulated.</p></div>
+      <div><span class="k">Choice study</span><h3>People choose between appointments</h3><p>200 adults pick between appointments with different waits, costs and certainty.</p><p class="to">This is the starting point for your 6 choices</p></div>
+      <div><span class="k">Eye-tracking study</span><h3>What people look at</h3><p>40 people read waiting times as words or as a picture while a camera follows their eyes.</p><p class="to">This decides how waiting times are shown, and what the tool checks with you</p></div>
+      <div><span class="k">Clinics</span><h3>Real waiting times</h3><p>Clinics turn their recent waits into a clear range and a QR code.</p><p class="to">This gives the waits for your options and waiting lists</p></div>
     </div>
     <div class="into" aria-hidden="true">These come together with your answers</div>
-    <div class="youbox"><h3>Your 6 choices</h3><p>Your answers update the study's starting point to fit you. We then rank your options, show the chance of being seen in time, and build your plan.</p></div>
+    <div class="youbox"><h3>Your 6 choices, and what you look at</h3><p>Your answers fit the research to you. We rank your options, show the chance of being seen in time, and build a plan you can share.</p></div>
     <div class="stack">
-      <h2>What the study found (simulated)</h2>
-      <div class="facts-row" id="sim-kpis"></div>
-      <details><summary class="btn tertiary" style="display:inline-flex">Show technical details</summary>
-        <div class="stack" style="margin-top:12px">
-          <h3>Choice model (simulated online sample)</h3><div class="tablewrap" id="tbl-main"></div>
-          <h3>Eye tracking (simulated laboratory sample)</h3><div class="tablewrap" id="tbl-eye"></div>
-          <h3>How your answers are used</h3>
-          <p class="small">We start from the study's average weights for waiting time, uncertainty, cost and video, and allow each weight to vary by 50% between people. We draw 4,000 possible sets of weights, score how well each set explains your 6 choices with a logit model, and take the weighted average. Your comparison with others uses the spread between people in the study (30%).</p>
-          <p class="small muted" id="tech-note"></p>
-        </div>
-      </details>
+      <h2>Your privacy</h2>
+      <ul class="plain">
+        <li>Everything runs in your web browser. Your answers are saved on this device only.</li>
+        <li>If you turn on your camera, the video stays on your device. It is never recorded, saved or sent. Nobody sees it.</li>
+        <li>When you share your plan, only the people you send it to can see it.</li>
+      </ul>
+      <p><button type="button" class="helpbtn" id="wipe">Delete everything saved on this device</button></p>
     </div>
     <div class="stack">
-      <h2>Real evidence behind the tool</h2>
+      <h2>Why this matters</h2>
       <ul class="plain">
         <li>1 in 4 people who needed a psychologist delayed or did not go because of cost (ABS 2025).</li>
-        <li>Under Better Access, people on the lowest incomes waited longer for a first session than people on the highest incomes (Pirkis et al. 2022).</li>
-        <li>People who wait longer are less likely to attend their first appointment (Loumidis and Shropshire 1997).</li>
-        <li>Support while waiting is seen as useful, but people stay with it better when a person guides them (Huang et al. 2024).</li>
-        <li>Showing chances as "X in 10" with simple pictures helps people with low numeracy (Galesic et al. 2009).</li>
+        <li>People on the lowest incomes wait longer for a first session than people on the highest incomes (Pirkis et al. 2022).</li>
+        <li>People who wait longer are less likely to go to their first appointment (Loumidis and Shropshire 1997).</li>
+        <li>Support while waiting helps more when a person guides it (Huang et al. 2024).</li>
+        <li>Showing chances as "X in 10" with simple pictures helps people understand them (Galesic et al. 2009).</li>
       </ul>
     </div>
+    <details class="tech"><summary>Technical details</summary>
+      <div class="stack" style="margin-top:14px">
+        <p class="small"><b>Study status.</b> The study starts in 2027. All study figures in this prototype come from simulated data generated to match the study design. Hunter waiting times and fees for the example options are also simulated. Medicare rules, rebates and service details are real and were checked on 28 October 2026.</p>
+        <div class="facts-row" id="sim-kpis"></div>
+        <h3>Choice model (simulated online sample)</h3><div class="tablewrap" id="tbl-main"></div>
+        <h3>Eye tracking (simulated laboratory sample)</h3><div class="tablewrap" id="tbl-eye"></div>
+        <h3>How your 6 choices are used</h3>
+        <p class="small">Prior for each weight (expected wait, weeks earlier or later, cost per session, video): the study estimate with a standard deviation of 50% of its size. We take 4,000 seeded draws, weight each by the conditional logit probability of the person's answers, and use the weighted mean. Comparisons with other people use a 30% standard deviation, the simulated spread between people. Values: set date = 3 x spread / cost; weeks to save $50 = 50 x cost / wait; face to face = video / cost.</p>
+        <h3>How the camera is used</h3>
+        <p class="small">MediaPipe Face Landmarker (Apache 2.0) runs in the browser and finds the eyes and irises in each video frame. Features: the position of each iris within its eye, and the position of the nose. A 9-point calibration fits a ridge regression from these features to screen position. About 30 times a second, the predicted gaze point is matched to the part of the choice card under it (when, waiting weeks, cost, how). Webcam eye tracking can reach about 1.4 degrees of accuracy (Kaduk et al. 2023); simpler set-ups are less accurate (Papoutsaki et al. 2016), so the tool only uses large areas. Video frames are never stored. The program and model are downloaded from jsDelivr and Google the first time the camera is turned on. If the camera is not used, desktop pointer position is used instead, in the style of mouse-tracking studies.</p>
+        <p class="small"><b>Using attention.</b> In the simulated eye-tracking study, each standard deviation more attention to waiting information changed the weight on uncertainty by <span id="attn-coef"></span>. When the camera is on, the tool applies this to the person's weights. If someone chooses an option but barely looked at its waiting weeks, the tool asks them to check the latest week first.</p>
+        <p class="small muted" id="tech-note"></p>
+      </div>
+    </details>
     <div class="stack"><h2>Sources</h2><ol class="refs" id="refs"></ol></div>
-    <div class="stack">
-      <h2>About and privacy</h2>
-      <p>Everything runs in your browser. What you enter is saved on this device only. Nothing is sent to anyone. <button type="button" class="helpbtn" id="wipe">Delete everything saved on this device</button></p>
-      <p>Made by Dr Mesfin Genie (lead), Professor Francesco Paolucci, Professor Brendan Boyle, Dr Elaine Xu and Dr Ryan Gallagher, University of Newcastle. Contact: mesfin.genie@newcastle.edu.au</p>
-      <p class="small muted">Version <span id="version">0.4.0</span>. Information checked 28 October 2026.</p>
-    </div>
+    <div class="stack"><h2>Developer</h2><div class="dev" id="dev-how"></div></div>
+    <p class="small muted">Version <span id="version">0.5.0</span>. Information checked 28 October 2026.</p>
   </div>
 </section>
 
-<!-- ================= URGENT ================= -->
 <section id="v-urgent" hidden aria-labelledby="h-urgent">
   <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>Urgent help</li></ol></nav>
   <div class="page-head"><h1 id="h-urgent">Urgent help</h1><p class="lead">If you or someone else is in danger, call <b>000</b> or go to your nearest emergency department.</p></div>
@@ -555,22 +565,28 @@ footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
 <footer>
   <div class="wrap">
     <div class="cols">
-      <div><b>Know Your Wait</b><p class="small" style="margin-top:6px">A research prototype by the University of Newcastle. Not a government service. Not medical advice.</p></div>
-      <div><ul><li><a href="#start">Compare my options</a></li><li><a href="#waiting">My waiting lists</a></li><li><a href="#costs">Cost calculator</a></li></ul></div>
-      <div><ul><li><a href="#services">For services</a></li><li><a href="#how">How it works and privacy</a></li><li><a href="#urgent">Urgent help</a></li></ul></div>
+      <div><b>Know Your Wait</b><p class="small" style="margin-top:6px">A research prototype from the University of Newcastle. Not a government service. Not medical advice.</p></div>
+      <div><ul><li><a href="#start">Compare my options</a></li><li><a href="#waiting">My waiting lists</a></li><li><a href="#costs">Costs</a></li><li><a href="#services">For clinics</a></li><li><a href="#how">How it works and privacy</a></li><li><a href="#urgent">Urgent help</a></li></ul></div>
+      <div class="dev" id="dev-foot"></div>
     </div>
     <p class="ack small">We acknowledge the Traditional Custodians of the lands across the Hunter and pay our respects to Elders past and present.</p>
   </div>
 </footer>
 
+<div class="cam-pill" id="cam-pill" hidden><video id="cam-video" playsinline muted></video><div class="t"><b id="cam-status">Camera on</b><span>Video stays on your device</span><div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" id="cam-dot">Show my gaze</button><button type="button" id="cam-stop">Turn off</button></div></div></div>
+<div class="gaze-dot" id="gaze-dot" hidden></div>
+<div class="calib" id="calib" hidden></div>
 <div id="modal-root"></div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<!-- Pilot results (simulated). Inserted by scripts/embed_results.py. Do not edit by hand. -->
 <script id="pilot-results" type="application/json">
 {"meta":{"simulated":true,"seed":2027,"n_online":200,"n_lab":40,"tasks_per_person":8,"design_d_error":0.01756962091720797,"note":"All results are SIMULATED for demonstration. They are not findings."},"true_parameters":{"wait":-0.2,"spread":-0.25,"cost":-0.012,"video":-0.3},"main_model":{"coefs":[{"name":"wait","est":-0.19585313559034773,"se":0.027211796722321095,"ci":[-0.24918825716609708,-0.14251801401459838],"z":-7.197361408689884},{"name":"spread","est":-0.26391755276640244,"se":0.02802630446752011,"ci":[-0.31884910952274187,-0.208985996010063],"z":-9.416780334783647},{"name":"cost","est":-0.013817812316806484,"se":0.001061016456070235,"ci":[-0.015897404570704144,-0.011738220062908825],"z":-13.023183794890924},{"name":"video","est":-0.34609683712574374,"se":0.06189019789082693,"ci":[-0.4674016249917645,-0.22479204925972296],"z":-5.592110688291087}],"loglik":-990.489555062882,"choices":1600,"respondents":200},"values":{"dollars_per_session_confirmed_vs_pm3":{"est":57.29942194512264,"se":5.365040342802088,"ci":[46.783942873230544,67.81490101701473]},"weeks_confirmed_vs_pm3":{"est":4.042583520108971,"se":0.5358404038941963,"ci":[2.9923363284763456,5.092830711741596]},"dollars_per_week_shorter_wait":{"est":14.173961195878546,"se":1.96366087895106,"ci":[10.325185873134469,18.022736518622622]},"dollars_in_person_vs_video":{"est":25.04715140071697,"se":4.5701209127911575,"ci":[16.089714411646302,34.00458838978764]}},"format":{"by_format":{"text":{"coefs":[{"name":"wait","est":-0.16707618368533672,"se":0.04090986546291912,"ci":[-0.24725951999265822,-0.08689284737801524],"z":-4.084007165381057},{"name":"spread","est":-0.2297813142957931,"se":0.03753006137531069,"ci":[-0.303340234591402,-0.15622239400018414],"z":-6.1225936189636965},{"name":"cost","est":-0.013586276864790367,"se":0.0015339496189466094,"ci":[-0.01659281811792572,-0.010579735611655013],"z":-8.857055471039724},{"name":"video","est":-0.4316199266711976,"se":0.09265117342791106,"ci":[-0.6132162265899033,-0.2500236267524919],"z":-4.65854787049219}],"respondents":100,"value_dollars":{"est":50.738252263492036,"se":7.716626372729846,"ci":[35.61366457294154,65.86283995404253]},"value_weeks":{"est":4.125925836238016,"se":0.938855771283384,"ci":[2.2857685245225836,5.966083147953449]}},"graphic":{"coefs":[{"name":"wait","est":-0.22732262908664008,"se":0.03643131083291772,"ci":[-0.2987279983191588,-0.15591725985412136],"z":-6.239759807962809},{"name":"spread","est":-0.30147147344521613,"se":0.041747480121468894,"ci":[-0.38329653448329515,-0.21964641240713711],"z":-7.221309467494844},{"name":"cost","est":-0.01420231908685713,"se":0.0014904550571173238,"ci":[-0.017123610998807087,-0.011281027174907176],"z":-9.528847595261082},{"name":"video","est":-0.26043560484973477,"se":0.08341474860145785,"ci":[-0.42392851210859217,-0.09694269759087737],"z":-3.1221769437207545}],"respondents":100,"value_dollars":{"est":63.68075627681089,"se":7.31963360395121,"ci":[49.33427441306652,78.02723814055526]},"value_weeks":{"est":3.9785498873099274,"se":0.6248306964042035,"ci":[2.7538817223576886,5.203218052262166]}}},"relative_scale_graphic":{"est":1.05,"ci":[0.8,1.3900000000000001]},"interactions_after_scale":[{"name":"wait x graphic","est":-0.049421558301939825,"se":0.05350704302939212,"ci":[-0.15429536263954838,0.05545224603566873],"z":-0.923645851160041},{"name":"spread x graphic","est":-0.0573343746996508,"se":0.05453716171230796,"ci":[-0.16422721165577442,0.0495584622564728],"z":-1.0512900359959796},{"name":"cost x graphic","est":6.025868683120727e-05,"se":0.0020847010280450225,"ci":[-0.004025755328137037,0.004146272701799451],"z":0.028905193608369},{"name":"video x graphic","est":0.18358601729049834,"se":0.12173955127376812,"ci":[-0.055023503206087176,0.42219553778708385],"z":1.5080227861005482}],"wald_chi2_df4":4.037024430107633},"comprehension":{"proportion_correct":{"text":0.5916666666666667,"graphic":0.8},"n":{"text":120,"graphic":120},"difference":{"est":0.20833333333333337,"se":0.057850181663660474,"ci":[0.09494697727255884,0.3217196893941079]},"odds_ratio_graphic":{"est":3.044721988020204,"ci":[1.656544903260855,5.5961851478250635]}},"eye_tracking":{"log_dwell_wait_seconds":{"mean":{"text":0.6531460173541447,"graphic":0.7607409114109933},"graphic_minus_text":{"est":0.10759489405684855,"se":0.11198058889824096,"ci":[-0.11188706018370373,0.3270768482974008]}},"dwell_wait_per_pct_area":{"mean":{"text":0.3603843748651242,"graphic":0.17710201095883185},"graphic_minus_text":{"est":-0.18328236390629232,"se":0.03001667307905156,"ci":[-0.2421150431412334,-0.12444968467135126]}},"revisits_wait":{"mean":{"text":1.675,"graphic":2.49375},"graphic_minus_text":{"est":0.8187500000000002,"se":0.19893043333711485,"ci":[0.4288463506592551,1.2086536493407454]}},"transitions_between_options_wait":{"mean":{"text":3.18125,"graphic":2.025},"graphic_minus_text":{"est":-1.1562500000000004,"se":0.16483164487999918,"ci":[-1.4793200239647988,-0.8331799760352021]}},"attention_share_wait":{"mean":0.5386466455489103,"sd":0.08634615736880723,"by_format":{"text":0.5247802470821004,"graphic":0.5525130440157202}},"attention_predicts_comprehension":{"odds_ratio_per_sd":2.658121982482671,"ci":[1.0849436355508675,6.512423541864572]},"attention_choice_model":{"coefs":[{"name":"wait","est":-0.14879619436340807,"se":0.06727927735279192,"ci":[-0.28066357797488023,-0.01692881075193592],"z":-2.2116199849051057},{"name":"spread","est":-0.32072693720897644,"se":0.06445412647908258,"ci":[-0.4470570251079783,-0.19439684930997458],"z":-4.976049707431262},{"name":"cost","est":-0.015112467323001947,"se":0.0024378855670205246,"ci":[-0.019890723034362175,-0.01033421161164172],"z":-6.1990060269611975},{"name":"video","est":-0.3333485210481788,"se":0.13355841643864194,"ci":[-0.5951230172679169,-0.07157402482844061],"z":-2.4959005200643603},{"name":"spread x attention (per SD)","est":-0.12031677037668019,"se":0.03831544205660696,"ci":[-0.19541503680762984,-0.04521850394573054],"z":-3.140163963107226}],"choices":320,"respondents":40},"aoi_area_pct":{"text":{"wait":6.0,"cost":3.0,"video":3.0},"graphic":{"wait":14.0,"cost":3.0,"video":3.0}}}}
 </script>
-
+<script>
+// Copyright (c) 2009 Kazuhiko Arase
+// Licensed under the MIT license:
+var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={},c=function(t,r){o=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(i=4*e+17),l(0,0),l(i-7,0),l(0,i-7),s(),h(),d(t,r),e>=7&&v(t),null==a&&(a=p(e,n,u)),w(a,r)},l=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||i<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||i<=r+n||(o[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},h=function(){for(var t=8;t<i-8;t+=1)null==o[t][6]&&(o[t][6]=t%2==0);for(var r=8;r<i-8;r+=1)null==o[6][r]&&(o[6][r]=r%2==0)},s=function(){for(var t=B.getPatternPosition(e),r=0;r<t.length;r+=1)for(var n=0;n<t.length;n+=1){var i=t[r],a=t[n];if(null==o[i][a])for(var u=-2;u<=2;u+=1)for(var f=-2;f<=2;f+=1)o[i+u][a+f]=-2==u||2==u||-2==f||2==f||0==u&&0==f}},v=function(t){for(var r=B.getBCHTypeNumber(e),n=0;n<18;n+=1){var a=!t&&1==(r>>n&1);o[Math.floor(n/3)][n%3+i-8-3]=a}for(n=0;n<18;n+=1){a=!t&&1==(r>>n&1);o[n%3+i-8-3][Math.floor(n/3)]=a}},d=function(t,r){for(var e=n<<3|r,a=B.getBCHTypeInfo(e),u=0;u<15;u+=1){var f=!t&&1==(a>>u&1);u<6?o[u][8]=f:u<8?o[u+1][8]=f:o[i-15+u][8]=f}for(u=0;u<15;u+=1){f=!t&&1==(a>>u&1);u<8?o[8][i-u-1]=f:u<9?o[8][15-u-1+1]=f:o[8][15-u-1]=f}o[i-8][8]=!t},w=function(t,r){for(var e=-1,n=i-1,a=7,u=0,f=B.getMaskFunction(r),c=i-1;c>0;c-=2)for(6==c&&(c-=1);;){for(var g=0;g<2;g+=1)if(null==o[n][c-g]){var l=!1;u<t.length&&(l=1==(t[u]>>>a&1)),f(n,c-g)&&(l=!l),o[n][c-g]=l,-1==(a-=1)&&(u+=1,a=7)}if((n+=e)<0||i<=n){n-=e,e=-e;break}}},p=function(t,r,e){for(var n=A.getRSBlocks(t,r),o=b(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=k(i[u],l.getLength()-1).mod(l);for(a[u]=new Array(l.getLength()-1),g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=s>=0?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};f.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=M(t);break;case"Alphanumeric":e=x(t);break;case"Byte":e=m(t);break;case"Kanji":e=L(t);break;default:throw"mode:"+r}u.push(e),a=null},f.isDark=function(t,r){if(t<0||i<=t||r<0||i<=r)throw t+","+r;return o[t][r]},f.getModuleCount=function(){return i},f.make=function(){if(e<1){for(var t=1;t<40;t++){for(var r=A.getRSBlocks(t,n),o=b(),i=0;i<u.length;i++){var a=u[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var g=0;for(i=0;i<r.length;i++)g+=r[i].dataCount;if(o.getLengthInBits()<=8*g)break}e=t}c(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){c(!0,e);var n=B.getLostPoint(f);(0==e||t>n)&&(t=n,r=e)}return r}())},f.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<f.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<f.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=f.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="<\/tr>"}return e+="<\/tbody>",e+="<\/table>"},f.createSvgTag=function(t,r,e,n){var o={};"object"==typeof arguments[0]&&(t=(o=arguments[0]).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,c,g=f.getModuleCount()*t+2*r,l="";for(c="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",l+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',l+=o.scalable?"":' width="'+g+'px" height="'+g+'px"',l+=' viewBox="0 0 '+g+" "+g+'" ',l+=' preserveAspectRatio="xMinYMin meet"',l+=n.text||e.text?' role="img" aria-labelledby="'+y([n.id,e.id].join(" ").trim())+'"':"",l+=">",l+=n.text?'<title id="'+y(n.id)+'">'+y(n.text)+"<\/title>":"",l+=e.text?'<description id="'+y(e.id)+'">'+y(e.text)+"<\/description>":"",l+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',l+='<path d="',a=0;a<f.getModuleCount();a+=1)for(u=a*t+r,i=0;i<f.getModuleCount();i+=1)f.isDark(a,i)&&(l+="M"+(i*t+r)+","+u+c);return l+='" stroke="transparent" fill="black"/>',l+="<\/svg>"},f.createDataURL=function(t,r){t=t||2,r=void 0===r?4*t:r;var e=f.getModuleCount()*t+2*r,n=r,o=e-r;return I(e,e,(function(r,e){if(n<=r&&r<o&&n<=e&&e<o){var i=Math.floor((r-n)/t),a=Math.floor((e-n)/t);return f.isDark(a,i)?0:1}return 1}))},f.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=f.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=f.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=y(e),o+='"'),o+="/>"};var y=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return f.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*f.getModuleCount()+2*t,u=t,c=a-t,g={"██":"█","█ ":"▀"," █":"▄","  ":" "},l={"██":"▀","█ ":"▀"," █":" ","  ":" "},h="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<c&&u<=r&&r<c&&f.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<c&&u<=r+1&&r+1<c&&f.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",h+=t<1&&r+1>=c?l[i]:g[i];h+="\n"}return a%2&&t>0?h.substring(0,h.length-a-1)+Array(a+1).join("▀"):h.substring(0,h.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=f.getModuleCount()*t+2*r,u=r,c=a-r,g=Array(t+1).join("██"),l=Array(t+1).join("  "),h="",s="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),s="",n=0;n<a;n+=1)i=1,u<=n&&n<c&&u<=e&&e<c&&f.isDark(o,Math.floor((n-u)/t))&&(i=0),s+=i?g:l;for(o=0;o<t;o+=1)h+=s+"\n"}return h.substring(0,h.length-1)},f.renderTo2dContext=function(t,r){r=r||2;for(var e=f.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=f.isDark(n,o)?"black":"white",t.fillRect(n*r,o*r,r,r)},f};t.stringToBytes=(t.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,t.createStringToBytes=function(t,r){var e=function(){for(var e=S(t),n=function(){var t=e.read();if(-1==t)throw"eof";return t},o=0,i={};;){var a=e.read();if(-1==a)break;var u=n(),f=n()<<8|n();i[String.fromCharCode(a<<8|u)]=f,o+=1}if(o!=r)throw o+" != "+r;return i}(),n="?".charCodeAt(0);return function(t){for(var r=[],o=0;o<t.length;o+=1){var i=t.charCodeAt(o);if(i<128)r.push(i);else{var a=e[t.charAt(o)];"number"==typeof a?(255&a)==a?r.push(a):(r.push(a>>>8),r.push(255&a)):r.push(n)}}return r}};var r,e,n,o,i,a=1,u=2,f=4,c=8,g={L:1,M:0,Q:3,H:2},l=0,h=1,s=2,v=3,d=4,w=5,p=6,y=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],e=1335,n=7973,i=function(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r},(o={}).getBCHTypeInfo=function(t){for(var r=t<<10;i(r)-i(e)>=0;)r^=e<<i(r)-i(e);return 21522^(t<<10|r)},o.getBCHTypeNumber=function(t){for(var r=t<<12;i(r)-i(n)>=0;)r^=n<<i(r)-i(n);return t<<12|r},o.getPatternPosition=function(t){return r[t-1]},o.getMaskFunction=function(t){switch(t){case l:return function(t,r){return(t+r)%2==0};case h:return function(t,r){return t%2==0};case s:return function(t,r){return r%3==0};case v:return function(t,r){return(t+r)%3==0};case d:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case w:return function(t,r){return t*r%2+t*r%3==0};case p:return function(t,r){return(t*r%2+t*r%3)%2==0};case y:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},o.getErrorCorrectPolynomial=function(t){for(var r=k([1],0),e=0;e<t;e+=1)r=r.multiply(k([1,C.gexp(e)],0));return r},o.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case f:case c:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case f:return 16;case c:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case f:return 16;case c:return 12;default:throw"mode:"+t}}},o.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);i>5&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},o),C=function(){for(var t=new Array(256),r=new Array(256),e=0;e<8;e+=1)t[e]=1<<e;for(e=8;e<256;e+=1)t[e]=t[e-4]^t[e-5]^t[e-6]^t[e-8];for(e=0;e<255;e+=1)r[t[e]]=e;var n={glog:function(t){if(t<1)throw"glog("+t+")";return r[t]},gexp:function(r){for(;r<0;)r+=255;for(;r>=256;)r-=255;return t[r]}};return n}();function k(t,r){if(void 0===t.length)throw t.length+"/"+r;var e=function(){for(var e=0;e<t.length&&0==t[e];)e+=1;for(var n=new Array(t.length-e+r),o=0;o<t.length-e;o+=1)n[o]=t[o+e];return n}(),n={getAt:function(t){return e[t]},getLength:function(){return e.length},multiply:function(t){for(var r=new Array(n.getLength()+t.getLength()-1),e=0;e<n.getLength();e+=1)for(var o=0;o<t.getLength();o+=1)r[e+o]^=C.gexp(C.glog(n.getAt(e))+C.glog(t.getAt(o)));return k(r,0)},mod:function(t){if(n.getLength()-t.getLength()<0)return n;for(var r=C.glog(n.getAt(0))-C.glog(t.getAt(0)),e=new Array(n.getLength()),o=0;o<n.getLength();o+=1)e[o]=n.getAt(o);for(o=0;o<t.getLength();o+=1)e[o]^=C.gexp(C.glog(t.getAt(o))+r);return k(e,0).mod(t)}};return n}var A=function(){var t=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],r=function(t,r){var e={};return e.totalCount=t,e.dataCount=r,e},e={};return e.getRSBlocks=function(e,n){var o=function(r,e){switch(e){case g.L:return t[4*(r-1)+0];case g.M:return t[4*(r-1)+1];case g.Q:return t[4*(r-1)+2];case g.H:return t[4*(r-1)+3];default:return}}(e,n);if(void 0===o)throw"bad rs block @ typeNumber:"+e+"/errorCorrectionLevel:"+n;for(var i=o.length/3,a=[],u=0;u<i;u+=1)for(var f=o[3*u+0],c=o[3*u+1],l=o[3*u+2],h=0;h<f;h+=1)a.push(r(c,l));return a},e}(),b=function(){var t=[],r=0,e={getBuffer:function(){return t},getAt:function(r){var e=Math.floor(r/8);return 1==(t[e]>>>7-r%8&1)},put:function(t,r){for(var n=0;n<r;n+=1)e.putBit(1==(t>>>r-n-1&1))},getLengthInBits:function(){return r},putBit:function(e){var n=Math.floor(r/8);t.length<=n&&t.push(0),e&&(t[n]|=128>>>r%8),r+=1}};return e},M=function(t){var r=a,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+2<r.length;)t.put(o(r.substring(n,n+3)),10),n+=3;n<r.length&&(r.length-n==1?t.put(o(r.substring(n,n+1)),4):r.length-n==2&&t.put(o(r.substring(n,n+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return n},x=function(t){var r=u,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+1<r.length;)t.put(45*o(r.charAt(n))+o(r.charAt(n+1)),11),n+=2;n<r.length&&t.put(o(r.charAt(n)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return n},m=function(r){var e=f,n=t.stringToBytes(r),o={getMode:function(){return e},getLength:function(t){return n.length},write:function(t){for(var r=0;r<n.length;r+=1)t.put(n[r],8)}};return o},L=function(r){var e=c,n=t.stringToBytesFuncs.SJIS;if(!n)throw"sjis not supported.";!function(t,r){var e=n("友");if(2!=e.length||38726!=(e[0]<<8|e[1]))throw"sjis not supported."}();var o=n(r),i={getMode:function(){return e},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return i},D=function(){var t=[],r={writeByte:function(r){t.push(255&r)},writeShort:function(t){r.writeByte(t),r.writeByte(t>>>8)},writeBytes:function(t,e,n){e=e||0,n=n||t.length;for(var o=0;o<n;o+=1)r.writeByte(t[o+e])},writeString:function(t){for(var e=0;e<t.length;e+=1)r.writeByte(t.charCodeAt(e))},toByteArray:function(){return t},toString:function(){var r="";r+="[";for(var e=0;e<t.length;e+=1)e>0&&(r+=","),r+=t[e];return r+="]"}};return r},S=function(t){var r=t,e=0,n=0,o=0,i={read:function(){for(;o<8;){if(e>=r.length){if(0==o)return-1;throw"unexpected end of file./"+o}var t=r.charAt(e);if(e+=1,"="==t)return o=0,-1;t.match(/^\s$/)||(n=n<<6|a(t.charCodeAt(0)),o+=6)}var i=n>>>o-8&255;return o-=8,i}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return i},I=function(t,r,e){for(var n=function(t,r){var e=t,n=r,o=new Array(t*r),i={setPixel:function(t,r,n){o[r*e+t]=n},write:function(t){t.writeString("GIF87a"),t.writeShort(e),t.writeShort(n),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(e),t.writeShort(n),t.writeByte(0);var r=a(2);t.writeByte(2);for(var o=0;r.length-o>255;)t.writeByte(255),t.writeBytes(r,o,255),o+=255;t.writeByte(r.length-o),t.writeBytes(r,o,r.length-o),t.writeByte(0),t.writeString(";")}},a=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,i=u(),a=0;a<r;a+=1)i.add(String.fromCharCode(a));i.add(String.fromCharCode(r)),i.add(String.fromCharCode(e));var f,c,g,l=D(),h=(f=l,c=0,g=0,{write:function(t,r){if(t>>>r!=0)throw"length over";for(;c+r>=8;)f.writeByte(255&(t<<c|g)),r-=8-c,t>>>=8-c,g=0,c=0;g|=t<<c,c+=r},flush:function(){c>0&&f.writeByte(g)}});h.write(r,n);var s=0,v=String.fromCharCode(o[s]);for(s+=1;s<o.length;){var d=String.fromCharCode(o[s]);s+=1,i.contains(v+d)?v+=d:(h.write(i.indexOf(v),n),i.size()<4095&&(i.size()==1<<n&&(n+=1),i.add(v+d)),v=d)}return h.write(i.indexOf(v),n),h.write(e,n),h.flush(),l.toByteArray()},u=function(){var t={},r=0,e={add:function(n){if(e.contains(n))throw"dup key:"+n;t[n]=r,r+=1},size:function(){return r},indexOf:function(r){return t[r]},contains:function(r){return void 0!==t[r]}};return e};return i}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=D();n.write(a);for(var u=function(){var t=0,r=0,e=0,n="",o={},i=function(t){n+=String.fromCharCode(a(63&t))},a=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return o.writeByte=function(n){for(t=t<<8|255&n,r+=8,e+=1;r>=6;)i(t>>>r-6),r-=6},o.flush=function(){if(r>0&&(i(t<<6-r),t=0,r=0),e%3!=0)for(var o=3-e%3,a=0;a<o;a+=1)n+="="},o.toString=function(){return n},o}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return t}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||n>=57344?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}((function(){return qrcode}));
+</script>
 <script>
 /* ===== ENGINE START (pure functions; tested in tests/engine.test.mjs) ===== */
 const Engine = (() => {
@@ -881,7 +897,70 @@ const Engine = (() => {
     return { correct: c, options: uniq.sort((a, b) => a - b) };
   }
 
+  /* ---------- Sharing: compact links ---------- */
+  function b64urlEncode(obj) {
+    const json = JSON.stringify(obj);
+    const bytes = new TextEncoder().encode(json);
+    let bin = ""; bytes.forEach(b => { bin += String.fromCharCode(b); });
+    return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function b64urlDecode(s) {
+    try {
+      let t = String(s).replace(/-/g, "+").replace(/_/g, "/");
+      while (t.length % 4) t += "=";
+      const bin = atob(t), bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return JSON.parse(new TextDecoder().decode(bytes));
+    } catch (e) { return null; }
+  }
+
+  /* ---------- Camera calibration: ridge regression ---------- */
+  /** Solve (X'X + lambda I) w = X'y. X rows are feature vectors (first column is 1, not penalised). */
+  function ridgeFit(X, y, lambda) {
+    const k = X[0].length, A = Array.from({ length: k }, () => new Array(k).fill(0)), b = new Array(k).fill(0);
+    X.forEach((row, n) => { for (let i = 0; i < k; i++) { b[i] += row[i] * y[n]; for (let j = 0; j < k; j++) A[i][j] += row[i] * row[j]; } });
+    for (let i = 1; i < k; i++) A[i][i] += lambda;
+    // Gaussian elimination with partial pivoting
+    for (let c = 0; c < k; c++) {
+      let p = c; for (let r = c + 1; r < k; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+      [A[c], A[p]] = [A[p], A[c]]; [b[c], b[p]] = [b[p], b[c]];
+      const d = A[c][c] || 1e-12;
+      for (let r = 0; r < k; r++) if (r !== c) { const f = A[r][c] / d; for (let j = c; j < k; j++) A[r][j] -= f * A[c][j]; b[r] -= f * b[c]; }
+    }
+    return b.map((v, i) => v / (A[i][i] || 1e-12));
+  }
+  function dot(w, x) { return w.reduce((s, v, i) => s + v * x[i], 0); }
+
+  /* ---------- Attention (from camera or pointer) ---------- */
+  const AOIS = ["when", "weeks", "pay", "how"];
+  /** Sum seconds per area across tasks. byTask: [{ A: {when,..}, B: {...} }] */
+  function attentionTotals(byTask) {
+    const t = { when: 0, weeks: 0, pay: 0, how: 0 };
+    (byTask || []).forEach(task => { if (!task) return; ["A", "B"].forEach(c => { const x = task[c] || {}; AOIS.forEach(a => { t[a] += x[a] || 0; }); }); });
+    const total = AOIS.reduce((s, a) => s + t[a], 0);
+    const share = {}; AOIS.forEach(a => { share[a] = total > 0 ? t[a] / total : 0; });
+    return { seconds: t, total, share, waitShare: total > 0 ? (t.when + t.weeks) / total : 0 };
+  }
+  /** Did the person barely look at the waiting time of the option they picked? */
+  function missedWait(task, pick, minTotal) {
+    if (!task) return false;
+    const c = task[pick === 0 ? "A" : "B"] || {};
+    const tot = AOIS.reduce((s, a) => s + (c[a] || 0), 0) + AOIS.reduce((s, a) => s + ((task[pick === 0 ? "B" : "A"] || {})[a] || 0), 0);
+    if (tot < (minTotal || 1.5)) return false;
+    return ((c.when || 0) + (c.weeks || 0)) / tot < 0.12;
+  }
+  /**
+   * The eye-tracking study links attention to the waiting time with the weight on certainty:
+   * spread weight = base + coef * z, where z is attention share in standard deviations.
+   */
+  function attentionAdjust(b, waitShare, mean, sd, coef) {
+    if (!(sd > 0) || !Number.isFinite(waitShare)) return Object.assign({}, b);
+    const z = Math.max(-2, Math.min(2, (waitShare - mean) / sd));
+    return Object.assign({}, b, { spread: Math.min(-0.01, b.spread + coef * z) });
+  }
+
   return {
+    b64urlEncode, b64urlDecode, ridgeFit, dot, AOIS, attentionTotals, missedWait, attentionAdjust,
     MAX_WEEK, REBATE, MEDICARE_SESSIONS_PER_YEAR, AGE_BANDS,
     distribution, stats, chanceBy, chanceNext, remaining, elapsed, waitStage,
     costPlan, matchService, rankScore,
@@ -904,35 +983,52 @@ const Engine = (() => {
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const money = (x, cents) => "$" + (cents ? Number(x).toFixed(2) : Math.round(x).toLocaleString("en-AU"));
   const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const finePointer = window.matchMedia && window.matchMedia("(pointer: fine)").matches;
+  const BASE = (/^https?:$/.test(location.protocol) && !/claude\.ai|claudeusercontent|localhost|127\.0\.0\.1/.test(location.host)) ? location.origin + location.pathname : "https://mesfingenie.com/know-your-wait/";
+  const MP = { url: "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs", wasm: "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm", model: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task" };
 
-  /* ============ Study results used by the tool (simulated) ============ */
+  /* ---------- Research values used by the tool ---------- */
   const COEF = Object.fromEntries(R.main_model.coefs.map(c => [c.name, c.est]));
   const PRIOR = Object.fromEntries(Object.entries(COEF).map(([k, v]) => [k, { mu: v, sd: 0.5 * Math.abs(v) }]));
   const POP = Object.fromEntries(Object.entries(COEF).map(([k, v]) => [k, { mu: v, sd: 0.3 * Math.abs(v) }]));
-  const PRIOR_DRAWS = E.draws(PRIOR, 4000, 2027);
-  const POP_DRAWS = E.draws(POP, 4000, 99);
+  const PRIOR_DRAWS = E.draws(PRIOR, 4000, 2027), POP_DRAWS = E.draws(POP, 4000, 99);
   const STUDY = E.values(COEF);
-  const COMP = R.comprehension.proportion_correct;
+  const ATTN = { mean: R.eye_tracking.attention_share_wait.mean, sd: R.eye_tracking.attention_share_wait.sd, coef: R.eye_tracking.attention_choice_model.coefs.slice(-1)[0].est };
 
-  /* ============ Data ============ */
+  /* ---------- Icons ---------- */
+  const ICON = {
+    compare: '<svg class="ic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v18M5 7h14M5 7l-3 7h6zM19 7l-3 7h6z"/></svg>',
+    plan: '<svg class="ic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>',
+    share: '<svg class="ic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>',
+    wait: '<svg class="ic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>',
+    seen: '<svg class="ic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>',
+    eye: '<svg class="ic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+    wa: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.8-1.2.2-.6.2-1.1.1-1.2 0-.1-.2-.2-.4-.3z"/></svg>',
+    sms: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+    link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>'
+  };
+
+  /* ---------- QR ---------- */
+  function qrSVG(text) {
+    try { const q = qrcode(0, text.length > 300 ? "L" : "M"); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); }
+    catch (e) { return '<p class="small">This link is too long for a QR code.</p>'; }
+  }
+  const VCARD = ["BEGIN:VCARD", "VERSION:3.0", "N:Genie;Mesfin;;Dr;", "FN:Dr Mesfin Genie", "ORG:The University of Newcastle", "TITLE:Senior Lecturer in Health Economics", "EMAIL:mesfin.genie@newcastle.edu.au", "URL:https://mesfingenie.com", "END:VCARD"].join("\n");
+  const devHTML = light => `<div class="qr small" aria-label="QR code with contact details">${qrSVG(VCARD)}</div><div class="small" style="display:grid;gap:2px"><span>Developed by</span><b style="font-size:1rem">Dr Mesfin Genie</b><span>mesfin.genie@newcastle.edu.au</span><span>mesfingenie.com</span><span${light ? "" : ' style="opacity:.85"'}>Scan to save my contact</span></div>`;
+  $("#dev-foot").innerHTML = devHTML(false); $("#dev-how").innerHTML = devHTML(true);
+
+  /* ---------- Data ---------- */
   const AREAS = [["", "Choose an area"], ["newcastle", "Newcastle"], ["lakemac", "Lake Macquarie"], ["maitland", "Maitland"], ["cessnock", "Cessnock"], ["portstephens", "Port Stephens"], ["upperhunter", "Singleton, Muswellbrook or Upper Hunter"], ["dungog", "Dungog"], ["other", "Somewhere else"]];
   const REBATE = E.REBATE.psychologist;
-  // Typical options in the Hunter. Waiting times and fees are SIMULATED for this prototype.
   const OPTION_TEMPLATES = [
-    { id: "bulk", name: "Bulk-billing psychologist", note: "Medicare pays the full fee", kind: "range", from: 6, to: 14, cost: 0, mode: "inperson", needsPlan: true },
-    { id: "private", name: "Private psychologist", note: "Fee $220, Medicare pays $101.55", kind: "confirmed", week: 3, cost: Math.round(220 - REBATE), mode: "inperson", needsPlan: true },
-    { id: "tele", name: "Telehealth psychologist", note: "Fee $180, Medicare pays $101.55", kind: "range", from: 1, to: 4, cost: Math.round(180 - REBATE), mode: "video", needsPlan: true },
-    { id: "phn", name: "Free PHN psychology", note: "For people who find it hard to pay", kind: "range", from: 4, to: 10, cost: 0, mode: "inperson", needsPlan: false, when: p => p.hardship === "yes" },
-    { id: "headspace", name: "headspace centre", note: "For ages 12 to 25", kind: "range", from: 2, to: 8, cost: 0, mode: "inperson", needsPlan: false, when: p => ["12to15", "16to17", "18to25"].includes(p.age) },
-    { id: "uon", name: "UON Counselling", note: "Free for UON students", kind: "confirmed", week: 1, cost: 0, mode: "inperson", needsPlan: false, when: p => p.student === "yes" }
+    { id: "bulk", name: "Bulk-billing psychologist", note: "Medicare pays the full fee", kind: "range", from: 6, to: 14, cost: 0, fee: 0, bulk: true, mode: "inperson", needsPlan: true },
+    { id: "private", name: "Private psychologist", note: "Fee $220, Medicare pays $101.55", kind: "confirmed", week: 3, cost: Math.round(220 - REBATE), fee: 220, mode: "inperson", needsPlan: true },
+    { id: "tele", name: "Telehealth psychologist", note: "Fee $180, Medicare pays $101.55", kind: "range", from: 1, to: 4, cost: Math.round(180 - REBATE), fee: 180, mode: "video", needsPlan: true },
+    { id: "phn", name: "Free PHN psychology", note: "For people who find it hard to pay", kind: "range", from: 4, to: 10, cost: 0, fee: 0, bulk: true, mode: "inperson", needsPlan: false, when: p => p.hardship === "yes" },
+    { id: "headspace", name: "headspace centre", note: "For ages 12 to 25", kind: "range", from: 2, to: 8, cost: 0, fee: 0, bulk: true, mode: "inperson", needsPlan: false, when: p => ["12to15", "16to17", "18to25"].includes(p.age) },
+    { id: "uon", name: "UON Counselling", note: "Free for UON students", kind: "confirmed", week: 1, cost: 0, fee: 0, bulk: true, mode: "inperson", needsPlan: false, when: p => p.student === "yes" }
   ];
-  const SRC = {
-    mmh: "https://www.medicarementalhealth.gov.au/", checkin: "https://www.health.gov.au/news/medicare-mental-health-check-in-online-now",
-    cessnock: "https://www.health.gov.au/ministers/the-hon-emma-mcbride-mp/media/delivering-mental-health-care-support-in-cessnock",
-    muswellbrook: "https://newcastleweekly.com.au/muswellbrook-medicare-mental-health-centre-opens/", mindspot: "https://mindspot.org.au/what-we-do",
-    twu: "https://thiswayup.org.au/", eheadspace: "https://headspace.org.au/contact-us/"
-  };
-  // Free support you can start today (real services, checked 28 October 2026).
   const TODAY = [
     { id: "mmh", name: "Medicare Mental Health phone service", how: "Call 1800 595 212 (Mon to Fri, 8:30am to 5pm)", what: "Talk to a mental health worker who can find local support, including free options.", cost: "free", referral: "none", startToday: true, modes: ["phone"] },
     { id: "checkin", name: "Medicare Mental Health Check In", how: "Search \"Medicare Mental Health Check In\" or call 1800 595 212", what: "Free guided sessions by phone or video for stress, worry, low mood and sleep. Age 16 and over.", cost: "free", referral: "none", startToday: true, modes: ["phone", "online"], ages: [16, 120] },
@@ -942,7 +1038,6 @@ const Engine = (() => {
     { id: "muswellbrook", name: "Medicare Mental Health Centre, Muswellbrook", how: "Walk in: Bridge Street, Muswellbrook", what: "Free walk-in support for people from Singleton to Scone.", cost: "free", referral: "none", startToday: true, modes: ["inperson"], areas: ["upperhunter"] },
     { id: "twu", name: "THIS WAY UP", how: "Go to thiswayup.org.au", what: "Online courses for anxiety, worry and low mood. $59, or free if a clinician prescribes it.", cost: "low", referral: "none", startToday: true, modes: ["online"] }
   ];
-  // The six choice tasks, in the same format as the study.
   const TASKS = [
     [{ kind: "confirmed", week: 6, cost: 0, mode: "inperson" }, { kind: "range", from: 2, to: 10, cost: 0, mode: "inperson" }],
     [{ kind: "confirmed", week: 8, cost: 0, mode: "inperson" }, { kind: "range", from: 3, to: 7, cost: 0, mode: "inperson" }],
@@ -951,6 +1046,12 @@ const Engine = (() => {
     [{ kind: "range", from: 3, to: 5, cost: 0, mode: "video" }, { kind: "range", from: 5, to: 9, cost: 0, mode: "inperson" }],
     [{ kind: "confirmed", week: 5, cost: 40, mode: "video" }, { kind: "range", from: 2, to: 10, cost: 40, mode: "inperson" }]
   ];
+  const TIPS = {
+    date: "Ask: \"Can you give me a set date?\"",
+    bulk: "Ask: \"Do you bulk bill, or have a lower fee?\"",
+    cancel: "Ask: \"Can I go on your cancellation list?\"",
+    video: "Ask: \"Do you offer video sessions? Are they sooner?\""
+  };
   const CRISIS = [
     ["Emergency (police, ambulance, fire)", "000", "24 hours", "Anyone in danger"],
     ["NSW Mental Health Line", "1800 011 511", "24 hours", "Anyone in NSW. Advice, assessment and referral to local mental health teams"],
@@ -961,28 +1062,28 @@ const Engine = (() => {
     ["Beyond Blue", "1300 22 4636", "24 hours", "Anyone feeling anxious or low"]
   ];
   const REFS = [
-    ["Australian Bureau of Statistics (2025). Patient Experiences, 2024-25. Released 18 November 2025.", "https://www.abs.gov.au/statistics/health/health-services/patient-experiences/latest-release"],
-    ["Australian Psychological Society (2024). APS member poll shows cost remains the biggest barrier to care. 15 August 2024.", "https://psychology.org.au/insights/aps-member-poll-shows-cost-remains-the-biggest-bar"],
-    ["Pirkis J, Currier D, Harris M, Mihalopoulos C, et al. (2022). Evaluation of Better Access. University of Melbourne for the Department of Health and Aged Care.", "https://www.health.gov.au/sites/default/files/2022-12/executive-summary-evaluation-of-the-better-access-initiative.pdf"],
+    ["Australian Bureau of Statistics (2025). Patient Experiences, 2024-25.", "https://www.abs.gov.au/statistics/health/health-services/patient-experiences/latest-release"],
+    ["Australian Psychological Society (2024). APS member poll shows cost remains the biggest barrier to care.", "https://psychology.org.au/insights/aps-member-poll-shows-cost-remains-the-biggest-bar"],
+    ["Pirkis J, Currier D, Harris M, Mihalopoulos C, et al. (2022). Evaluation of Better Access.", "https://www.health.gov.au/sites/default/files/2022-12/executive-summary-evaluation-of-the-better-access-initiative.pdf"],
     ["Department of Health, Disability and Ageing (2025). Better Access: fact sheet for patients.", "https://www.health.gov.au/sites/default/files/2025-10/better-access-fact-sheet-patients_0.pdf"],
-    ["Medicare Benefits Schedule, item 80110. Schedule fee updated 1 July 2026.", "https://www9.health.gov.au/mbs/search.cfm?q=80110"],
-    ["Loumidis KS, Shropshire JM (1997). Effects of waiting time on appointment attendance with clinical psychologists and length of treatment. Irish Journal of Psychological Medicine 14(2):49-54.", "https://doi.org/10.1017/S0790966700002986"],
-    ["Huang S, Wang Y, Li G, Hall BJ, Nyman TJ (2024). Digital mental health interventions for alleviating depression and anxiety during psychotherapy waiting lists: systematic review. JMIR Mental Health 11:e56650.", "https://doi.org/10.2196/56650"],
-    ["Galesic M, Garcia-Retamero R, Gigerenzer G (2009). Using icon arrays to communicate medical risks: overcoming low numeracy. Health Psychology 28(2):210-216.", "https://doi.org/10.1037/a0014474"],
-    ["Department of Health, Disability and Ageing (2026). Medicare Mental Health Check In: online now.", SRC.checkin],
-    ["Medicare Mental Health Centres fact sheet (2026); Cessnock centre media release; Muswellbrook centre, Newcastle Weekly (2024).", SRC.cessnock],
-    ["MindSpot; THIS WAY UP; headspace (eheadspace), service pages checked 28 October 2026.", SRC.mindspot],
+    ["Medicare Benefits Schedule, item 80110 (fee from 1 July 2026).", "https://www9.health.gov.au/mbs/search.cfm?q=80110"],
+    ["Loumidis KS, Shropshire JM (1997). Effects of waiting time on appointment attendance with clinical psychologists. Irish Journal of Psychological Medicine 14(2):49-54.", "https://doi.org/10.1017/S0790966700002986"],
+    ["Huang S, et al. (2024). Digital mental health interventions during psychotherapy waiting lists: systematic review. JMIR Mental Health 11:e56650.", "https://doi.org/10.2196/56650"],
+    ["Galesic M, Garcia-Retamero R, Gigerenzer G (2009). Using icon arrays to communicate medical risks. Health Psychology 28(2):210-216.", "https://doi.org/10.1037/a0014474"],
+    ["Kaduk T, et al. (2023). Webcam eye tracking close to laboratory standards. Behavior Research Methods.", "https://doi.org/10.3758/s13428-023-02237-8"],
+    ["Papoutsaki A, et al. (2016). WebGazer: scalable webcam eye tracking using user interactions. IJCAI-16.", "https://jeffhuang.com/papers/WebGazer_IJCAI16.pdf"],
+    ["Department of Health, Disability and Ageing (2026). Medicare Mental Health Check In.", "https://www.health.gov.au/news/medicare-mental-health-check-in-online-now"],
     ["Hunter New England and Central Coast PHN. Psychological services.", "https://thephn.com.au/what-we-do/mental-health/psychological-services"]
   ];
 
-  /* ============ Storage ============ */
+  /* ---------- Storage ---------- */
   const store = {
-    get(k, d) { try { const v = localStorage.getItem("kyw4:" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem("kyw4:" + k, JSON.stringify(v)); } catch (e) { /* not available */ } },
-    wipe() { try { Object.keys(localStorage).filter(k => k.startsWith("kyw4:")).forEach(k => localStorage.removeItem(k)); } catch (e) { /* ignore */ } }
+    get(k, d) { try { const v = localStorage.getItem("kyw5:" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("kyw5:" + k, JSON.stringify(v)); } catch (e) { /* not available */ } },
+    wipe() { try { Object.keys(localStorage).filter(k => k.startsWith("kyw5:")).forEach(k => localStorage.removeItem(k)); } catch (e) { /* ignore */ } }
   };
-  const NEW_JOURNEY = () => ({ step: 1, safe: null, age: "", area: "", student: "", hardship: "", goal: 6, gpplan: "", options: [], optKey: "", answers: [], q: 0, format: "picture", chosen: null, quiz: null });
-  const J = Object.assign(NEW_JOURNEY(), store.get("journey", {}));
+  const NEW_J = () => ({ step: 1, safe: null, age: "", area: "", student: "", hardship: "", goal: 6, gpplan: "", options: [], optKey: "", answers: [], q: 0, format: "picture", chosen: null, quiz: null, attn: [], attnSrc: null, checks: 0, planDone: false, shared: false, audience: "me", tracked: false });
+  const J = Object.assign(NEW_J(), store.get("journey", {}));
   const S = {
     cost: Object.assign({ type: "psychologist", hasPlan: "yes", fee: 220, bulk: false, sessions: 6, used: 0, extrasOn: "no", exPer: 60, exLimit: 500 }, store.get("cost", {})),
     lists: store.get("lists", []),
@@ -991,7 +1092,7 @@ const Engine = (() => {
   const saveJ = () => store.set("journey", J);
   const save = k => store.set(k, S[k]);
 
-  /* ============ Popups, toasts, routing ============ */
+  /* ---------- Popups and toasts ---------- */
   let lastFocus = null;
   function popup(title, html, buttons) {
     lastFocus = document.activeElement;
@@ -1001,38 +1102,23 @@ const Engine = (() => {
     function close() { root.innerHTML = ""; document.removeEventListener("keydown", onKey); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     document.addEventListener("keydown", onKey);
     root.querySelector(".modal-back").addEventListener("click", e => { if (e.target.dataset.close) close(); });
-    root.querySelectorAll("[data-b]").forEach(el => el.addEventListener("click", () => { const vals = {}; root.querySelectorAll("input").forEach(i => { vals[i.id] = i.value; }); close(); const b = list[Number(el.dataset.b)]; if (b.onClick) b.onClick(vals); }));
+    root.querySelectorAll("[data-b]").forEach(el => el.addEventListener("click", () => { const vals = {}; root.querySelectorAll("input").forEach(i => { vals[i.id] = i.type === "checkbox" ? i.checked : i.value; }); close(); const b = list[Number(el.dataset.b)]; if (b.onClick) b.onClick(vals); }));
     (root.querySelector(".btn") || root).focus();
+    return close;
   }
   let toastT = null;
   function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2600); }
   const HELP = {
     plan: ["GP mental health plan", "<p>Your GP talks with you about how you are feeling and writes a Mental Health Treatment Plan.</p><p>With the plan and a referral, Medicare helps pay for up to 10 sessions a year with a psychologist.</p><p>Book a longer GP appointment and say it is for a mental health plan.</p>"],
-    range: ["Why do waits come as a range?", "<p>Most services cannot promise a date. They know roughly how long people wait, so they give a range, such as \"3 to 9 weeks\".</p><p>In our eye-tracking study, people often skip past the latest week in a range. So we colour the late weeks orange and say the latest week in words.</p>"],
+    range: ["Why do waits come as a range?", "<p>Most services cannot promise a date. They know roughly how long people wait, so they give a range, such as \"3 to 9 weeks\".</p><p>People often miss the latest week in a range. So we colour the later weeks orange and say the latest week in words.</p>"],
     chance: ["What does \"7 in 10\" mean?", "<p>Think of 10 people who choose this option. The green dots show how many would be seen by your goal.</p><p>It is a guide, based on the range of weeks.</p>"],
-    howcalc: ["How we worked this out", "<p>We started with what 200 people in our study chose (simulated for now). Then we adjusted it to fit your 6 choices.</p><p>Each option gets a score from its wait, how sure the date is, the cost per session and whether it is face to face. The match is the share of the total score each option gets.</p>"],
-    picture: ["Why a picture?", "<p>In our study (simulated), " + Math.round(COMP.graphic * 100) + " in 100 people understood waiting times shown as a picture, compared with " + Math.round(COMP.text * 100) + " in 100 shown as words. So we show the picture first. You can switch to words.</p>"],
+    howcalc: ["How we worked this out", "<p>We started with how people in our research trade off waiting, cost and knowing the date. Then we adjusted it to fit your 6 choices.</p><p>Each option gets a score from its wait, how sure the date is, the cost and whether it is face to face. The match is each option's share of the total score.</p><p>More detail is in Technical details on the How it works page.</p>"],
+    picture: ["Why a picture?", "<p>Pictures help many people understand chances. Our eye-tracking study is testing whether pictures or words work best for waiting times.</p><p>You can switch to words at any time.</p>"],
     extras: ["Medicare or my health fund?", "<p>You cannot use both for the same session. Once you have used your Medicare sessions for the year, your health fund can pay for more, if your cover includes psychology.</p>"]
   };
   document.addEventListener("click", e => { const h = e.target.closest("[data-help]"); if (h && HELP[h.dataset.help]) popup(HELP[h.dataset.help][0], HELP[h.dataset.help][1]); });
-  const VIEWS = ["home", "start", "waiting", "costs", "services", "how", "urgent"];
-  const RENDER = {};
-  function route() {
-    let v = (location.hash || "#home").slice(1);
-    if (!VIEWS.includes(v)) v = "home";
-    VIEWS.forEach(x => { $("#v-" + x).hidden = x !== v; });
-    $$("[data-nav]").forEach(a => { if (a.dataset.nav === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
-    $("#mainnav").classList.remove("open"); $("#menu-btn").setAttribute("aria-expanded", "false");
-    if (RENDER[v]) RENDER[v]();
-    window.scrollTo(0, 0);
-  }
-  window.addEventListener("hashchange", route);
-  $("#menu-btn").addEventListener("click", e => { const o = $("#mainnav").classList.toggle("open"); e.target.setAttribute("aria-expanded", String(o)); });
-  function counts() { const w = S.lists.filter(l => !l.seen).length; $("#wl-count").textContent = w; $("#wl-count").hidden = w === 0; }
 
-  /* ============ Shared display: the week strip ============
-   * Format chosen from the eye-tracking study: a picture of weeks with the goal line,
-   * and the latest week said in words because people tend to miss it. */
+  /* ---------- Shared display ---------- */
   function weekStrip(o, goal, compact) {
     const p = E.distribution(o), st = E.stats(p);
     const maxW = Math.max(12, st.latest + 1, goal < 99 ? goal + 1 : 0);
@@ -1056,43 +1142,114 @@ const Engine = (() => {
   const whenText = o => o.kind === "confirmed" ? `Set date, week ${o.week}` : `Week ${Math.min(o.from, o.to)} to ${Math.max(o.from, o.to)}`;
   const costText = o => Number(o.cost) === 0 ? "$0" : money(o.cost);
   const modeText = o => o.mode === "video" ? "Video" : "Face to face";
+  const dots = k => `<span class="dots" aria-hidden="true">${Array.from({ length: 10 }, (_, j) => `<i class="${j < k ? "on" : ""}"></i>`).join("")}</span>`;
+  function countUp(root) {
+    if (reduced) return;
+    root.querySelectorAll("[data-count]").forEach(el => {
+      const end = Number(el.dataset.count), pre = el.dataset.pre || "", suf = el.dataset.suf || "", dec = Number(el.dataset.dec || 0), t0 = performance.now();
+      const tick = t => { const f = Math.min(1, (t - t0) / 700), v = end * (1 - Math.pow(1 - f, 3)); el.textContent = pre + (dec ? v.toFixed(dec) : Math.round(v).toLocaleString("en-AU")) + suf; if (f < 1) requestAnimationFrame(tick); };
+      requestAnimationFrame(tick);
+    });
+  }
 
-  /* ============ Journey ============ */
-  const STEPS = ["Safety", "About you", "Your goal", "Your options", "6 choices", "Results", "Your plan"];
+  /* ---------- Journey stage across tabs ---------- */
+  const chosenOpt = () => J.options[J.chosen] || null;
+  function stage() {
+    const compared = J.step >= 6 && J.answers.some(a => a === 0 || a === 1);
+    const waiting = S.lists.some(l => !l.seen), seen = S.lists.some(l => l.seen);
+    return { compared, planned: J.planDone, shared: J.shared, waiting: waiting || seen, seen };
+  }
+  function renderRibbon() {
+    const st = stage();
+    if (!st.compared && !S.lists.length && J.step <= 1) { $("#ribbon").innerHTML = ""; $("#ribbon").hidden = true; return; }
+    $("#ribbon").hidden = false;
+    const stops = [["compared", "Compare"], ["planned", "Plan"], ["shared", "Share"], ["waiting", "Wait"], ["seen", "Seen"]];
+    const firstOpen = stops.findIndex(([k]) => !st[k]);
+    const NEXT = { compared: ["Continue comparing", "#start"], planned: ["Make your plan", "#start"], shared: ["Share your plan", "#start"], waiting: ["Track your wait", "#waiting"], seen: ["Check your waiting list", "#waiting"] };
+    const nx = firstOpen >= 0 ? NEXT[stops[firstOpen][0]] : ["Your waiting lists", "#waiting"];
+    $("#ribbon").innerHTML = `<div class="wrap"><ol>${stops.map(([k, l], i) => `<li class="${st[k] ? "done" : i === firstOpen ? "now" : ""}"><span class="dot"></span><span class="lbl">${l}</span></li>`).join("")}</ol><a class="next" href="${nx[1]}" data-ribbon="${firstOpen >= 0 ? stops[firstOpen][0] : ""}">Next: ${nx[0]}</a></div>`;
+  }
+  document.addEventListener("click", e => {
+    const a = e.target.closest("[data-ribbon]"); if (!a) return;
+    const k = a.dataset.ribbon;
+    if (k === "planned" && J.step >= 6) { e.preventDefault(); location.hash = "#start"; setTimeout(() => go(7), 0); }
+    if (k === "shared" && J.planDone) { e.preventDefault(); location.hash = "#start"; setTimeout(() => go(8), 0); }
+  });
+  function counts() { const w = S.lists.filter(l => !l.seen).length; $("#wl-count").textContent = w; $("#wl-count").hidden = w === 0; renderRibbon(); }
+
+  /* ---------- Home ---------- */
+  function renderHome() {
+    const st = stage(), o = chosenOpt(), started = J.step > 1 || S.lists.length > 0;
+    const goal = Number(J.goal) >= 99 ? 12 : Number(J.goal);
+    const mapItems = [
+      ["compare", "1. Compare", "See your options", "Typical waits and costs near you, plus any offers you have.", "#start", st.compared],
+      ["plan", "2. Plan", "Find what matters", "6 quick choices show how you trade off waiting, cost and certainty.", "#start", st.planned],
+      ["share", "3. Share", "Send it on", "A QR code or a WhatsApp or text message, for you or someone who supports you.", "#start", st.shared],
+      ["wait", "4. Wait", "Track your wait", "See how long you have waited and the chance of being seen soon.", "#waiting", st.waiting],
+      ["seen", "5. Seen", "Get started", "Mark when you are seen. Tell us what helped.", "#waiting", st.seen]
+    ];
+    const lists = S.lists.filter(l => !l.seen);
+    let dash = "";
+    if (started) {
+      const l = lists[0], ws = l ? E.waitStage(l, isoToday()) : null, k2 = ws && ws.next2 !== null ? Math.round(ws.next2 * 10) : null;
+      dash = `<div class="stack"><h2>Welcome back</h2><div class="dash">
+        <div><span class="small muted">Your choice</span>${o ? `<span class="big">${esc(o.name)}</span><span>${Math.round(E.chanceBy(E.distribution(o), goal) * 10)} in 10 chance of being seen within ${goal} weeks. ${costText(o)} a session.</span><div class="btnrow"><a class="btn small secondary" href="#start" data-jump="6">See results</a><a class="btn small tertiary" href="#costs">Work out the cost</a></div>` : `<span class="big">Not chosen yet</span><div><a class="btn small" href="#start">Continue</a></div>`}</div>
+        <div><span class="small muted">Your plan</span>${J.planDone ? `<span class="big">Ready</span><span>${J.shared ? "You have shared it." : "Share it so it is easy to find."}</span><div class="btnrow"><a class="btn small secondary" href="#start" data-jump="7">Open my plan</a><a class="btn small tertiary" href="#start" data-jump="8">Share</a></div>` : `<span class="big">Not made yet</span><div><a class="btn small" href="#start">Continue</a></div>`}</div>
+        <div><span class="small muted">Waiting lists</span>${l ? `<span class="big">${lists.length} active</span><span>${esc(l.name)}: waited ${ws.weeks} week${ws.weeks === 1 ? "" : "s"}${k2 !== null ? `, ${k2} in 10 chance in the next 2 weeks` : ""}.</span><div><a class="btn small secondary" href="#waiting">Open</a></div>` : `<span class="big">None yet</span><div><a class="btn small secondary" href="#waiting">Add one</a></div>`}</div>
+      </div></div>`;
+    }
+    $("#v-home").innerHTML = `<div class="stack-lg">
+      ${started ? dash : `<div class="hero"><div class="stack">
+        <h1 id="h-home">Waiting to see a psychologist? Make a plan that suits you.</h1>
+        <p class="lead">Compare your options, find out what matters most to you, and know what to do while you wait. It takes about 3 minutes.</p>
+        <div class="btnrow"><a class="btn big" href="#start" id="start-btn">Start</a><a class="btn secondary" href="#waiting">I am already on a waiting list</a></div>
+        <p class="small muted">Free and private. Nothing you enter leaves your device unless you choose to share it.</p></div>
+        <div class="hero-card" aria-label="Example result"><span class="small muted">Example result</span><span class="big">7 in 10</span><span>chance of being seen within 6 weeks with your best match</span>${dots(7)}<span class="small">"Knowing the date is worth about $70 a session to you. That is more than most people."</span></div></div>`}
+      <div class="stack"><h2${started ? "" : ' id="h-home-map"'}>Your journey</h2><div class="map">${mapItems.map(([ic, k, t, d, href, done]) => `<a href="${href}">${ICON[ic]}<span class="k">${k}</span><h3>${t}</h3><p>${d}</p>${done ? '<span class="done-tag">Done</span>' : ""}</a>`).join("")}</div></div>
+      <div class="stack"><h2>Why this matters</h2><div class="facts-row">
+        <div><span class="n">1 in 4</span><span>people who needed a psychologist delayed or did not go because of cost (2024-25)</span></div>
+        <div><span class="n">31%</span><span>of psychologists could not take new clients (2024)</span></div>
+        <div><span class="n">2 to 4 months</span><span>is the most common waiting-list length psychologists report (2024)</span></div></div>
+        <p class="small muted">Sources: ABS Patient Experiences 2024-25; Australian Psychological Society member poll, July 2024.</p></div>
+      ${!started ? "" : `<div class="callout"><h3>Not sure what to do?</h3><p>Call the Medicare Mental Health phone service on <b>1800 595 212</b> (Mon to Fri, 8:30am to 5pm). It is free.</p></div>`}
+    </div>`;
+    if (started) $("#v-home").setAttribute("aria-label", "Welcome back"); else $("#v-home").removeAttribute("aria-label");
+  }
+  document.addEventListener("click", e => { const a = e.target.closest("[data-jump]"); if (!a) return; e.preventDefault(); const s = Number(a.dataset.jump); location.hash = "#start"; setTimeout(() => go(s), 0); });
+
+  /* ---------- Journey ---------- */
+  const STEPS = ["Safety", "About you", "Goal", "Options", "6 choices", "Results", "Plan", "Share"];
   function stepbar() {
     $("#stepbar").innerHTML = STEPS.map((s, i) => `<li class="${i + 1 < J.step ? "done" : i + 1 === J.step ? "now" : ""}"><span>${s}</span></li>`).join("");
     $("#stepbar").setAttribute("aria-label", `Step ${J.step} of ${STEPS.length}: ${STEPS[J.step - 1]}`);
   }
-  function go(step) { J.step = step; saveJ(); renderJourney(true); window.scrollTo(0, 0); const h = $("#journey h1"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); } }
+  function go(step) {
+    if (J.step === 5 && step !== 5 && Cam.on) { camStop(); toast("Camera turned off. Nothing was saved."); }
+    if (step === 5 && J.step === 4) { J.q = 0; J.attn = []; J.checks = 0; J.attnSrc = null; }
+    J.step = step; saveJ(); renderJourney(true); renderRibbon(); window.scrollTo(0, 0);
+    const h = $("#journey h1"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+  }
   const head = (title, sub) => `<div class="stack" style="gap:8px"><span class="stepcount">Step ${J.step} of ${STEPS.length}</span><h1 style="font-size:clamp(1.6rem,4vw,2.2rem)">${title}</h1>${sub ? `<p class="lead">${sub}</p>` : ""}</div>`;
   const nav = (backTo, nextLabel, nextEnabled) => `<div class="btnrow spread">${backTo ? `<button type="button" class="btn secondary" data-go="${backTo}">Back</button>` : "<span></span>"}${nextLabel ? `<button type="button" class="btn big" data-next="1"${nextEnabled === false ? " disabled" : ""}>${nextLabel}</button>` : ""}</div>`;
   const tiles = (key, opts, cls) => `<div class="tiles${cls ? " " + cls : ""}" data-key="${key}">${opts.map(([v, l, s]) => `<button type="button" data-val="${v}" aria-pressed="${String(J[key]) === String(v)}">${esc(l)}${s ? `<small>${esc(s)}</small>` : ""}</button>`).join("")}</div>`;
-
-  const VIEWS_J = {};
-  VIEWS_J[1] = () => `${head("First, are you safe right now?")}
-    <div class="safe">
-      <button type="button" data-safe="yes"><b>Yes, I am safe</b><span class="muted">Continue to compare my options</span></button>
-      <button type="button" class="danger" data-safe="no"><b>No, I need help now</b><span class="muted">Show me who to call</span></button>
-    </div>
+  const V = {};
+  V[1] = () => `${head("First, are you safe right now?")}
+    <div class="safe"><button type="button" data-safe="yes"><b>Yes, I am safe</b><span class="muted">Continue to compare my options</span></button><button type="button" class="danger" data-safe="no"><b>No, I need help now</b><span class="muted">Show me who to call</span></button></div>
     ${J.safe === "no" ? `<div class="crisis-panel" role="alert"><h2>Get help now</h2>
-      <div class="line"><span>Emergency</span><b>000</b></div>
-      <div class="line"><span>NSW Mental Health Line, 24 hours</span><b>1800 011 511</b></div>
-      <div class="line"><span>Lifeline, 24 hours</span><b>13 11 14</b></div>
-      <div class="line"><span>Suicide Call Back Service, 24 hours</span><b>1300 659 467</b></div>
-      <p>You can also go to your nearest hospital emergency department.</p>
-      <div><button type="button" class="btn secondary" data-safe="yes">I am safe now. Continue.</button></div></div>` : ""}`;
-  VIEWS_J[2] = () => `${head("About you", "This helps us show options that suit you. You can skip any question.")}
+      <div class="line"><span>Emergency</span><b>000</b></div><div class="line"><span>NSW Mental Health Line, 24 hours</span><b>1800 011 511</b></div>
+      <div class="line"><span>Lifeline, 24 hours</span><b>13 11 14</b></div><div class="line"><span>Suicide Call Back Service, 24 hours</span><b>1300 659 467</b></div>
+      <p>You can also go to your nearest hospital emergency department.</p><div><button type="button" class="btn secondary" data-safe="yes">I am safe now. Continue.</button></div></div>` : ""}`;
+  V[2] = () => `${head("About you", "This helps us show options that suit you. You can skip any question.")}
     <div class="q"><span class="ql">How old are you?</span>${tiles("age", [["12to15", "12 to 15"], ["16to17", "16 or 17"], ["18to25", "18 to 25"], ["26plus", "26 or older"]])}</div>
     <div class="q"><label class="ql" for="j-area">Where do you live?</label><select id="j-area">${AREAS.map(([v, l]) => `<option value="${v}"${J.area === v ? " selected" : ""}>${l}</option>`).join("")}</select></div>
     <div class="q"><span class="ql">Are you a University of Newcastle student?</span>${tiles("student", [["yes", "Yes"], ["no", "No"]], "two")}</div>
     <div class="q"><span class="ql">Is cost a big problem for you?</span>${tiles("hardship", [["yes", "Yes", "For example, I have a Health Care Card"], ["no", "No"]], "two")}</div>
     ${nav(1, "Next: your goal")}`;
-  VIEWS_J[3] = () => `${head("When would you like to start?", "Think about exams, work, a move or anything else coming up.")}
+  V[3] = () => `${head("When would you like to start?", "Think about exams, work, a move or anything else coming up.")}
     <div class="q"><span class="ql">I would like my first session within</span>${tiles("goal", [[2, "2 weeks"], [4, "4 weeks"], [6, "6 weeks"], [8, "8 weeks"], [12, "12 weeks"], [99, "No set time"]])}</div>
     <div class="q"><span class="ql">Do you have a GP mental health plan? <button type="button" class="helpbtn" data-help="plan">What is this?</button></span>${tiles("gpplan", [["yes", "Yes"], ["no", "No"], ["unsure", "Not sure"]])}
       ${J.gpplan && J.gpplan !== "yes" ? `<p class="small">That is fine. We will add about 1 week to options that need a GP plan, so you have time to see your GP.</p>` : ""}</div>
     ${nav(2, "Next: see your options")}`;
-
   function buildOptions() {
     const key = [J.age, J.student, J.hardship, J.gpplan].join("|");
     if (J.options.length && J.optKey === key) return;
@@ -1112,53 +1269,58 @@ const Engine = (() => {
       ${o.kind === "confirmed" ? `<div class="edit-row"><span>Week</span>${st("week", "Week", o.week)}</div>` : `<div class="edit-row"><span>From week</span>${st("from", "From week", o.from)}<span style="min-width:0">to week</span>${st("to", "To week", o.to)}</div>`}
       <div class="edit-row"><span>You pay</span>${st("cost", "Cost per session", "$" + o.cost)}<span class="small muted" style="min-width:0">per session, after Medicare</span></div>
       <div class="edit-row"><span>How</span><div class="seg" role="group" aria-label="How"><button type="button" data-set="mode:${i}" data-v="inperson" aria-pressed="${o.mode !== "video"}">Face to face</button><button type="button" data-set="mode:${i}" data-v="video" aria-pressed="${o.mode === "video"}">Video</button></div></div>
-      <div class="btnrow"><button type="button" class="btn small" data-done="${i}">Done</button><button type="button" class="btn tertiary small" data-remove="${i}">Remove this option</button></div>
-    </div>`;
+      <div class="btnrow"><button type="button" class="btn small" data-done="${i}">Done</button><button type="button" class="btn tertiary small" data-remove="${i}">Remove this option</button></div></div>`;
   }
-  VIEWS_J[4] = () => {
+  V[4] = () => {
     buildOptions();
     const goal = Number(J.goal);
     return `${head("Your options", "These are typical options in the Hunter for someone like you. If a service has offered you a time, press Change and enter it.")}
-    <div class="alert info"><span class="ic">i</span><div><p><b>Waiting times here are simulated.</b> In a full version, local services would update them through the For services page. <button type="button" class="helpbtn" data-help="range">Why ranges?</button></p></div></div>
+    <div class="alert info"><span class="ic">i</span><div><p>Waiting times are estimates. They change from week to week. <button type="button" class="helpbtn" data-help="range">Why ranges?</button></p></div></div>
     ${J.options.map((o, i) => `<article class="opt-card" aria-labelledby="o-${i}">
       <div class="opt-top"><h3 id="o-${i}">${esc(o.name)}</h3><span class="small muted">${esc(o.note || "Your offer")}</span></div>
       <div class="opt-facts"><span>Wait: <b>${whenText(o)}</b>${o.gpShift ? " (includes 1 week to see your GP)" : ""}</span><span>You pay: <b>${costText(o)}</b> a session</span><span>How: <b>${modeText(o)}</b></span></div>
       ${weekStrip(o, goal, true)}
-      ${editing === i ? optEditor(o, i) : `<div class="btnrow"><button type="button" class="btn secondary small" data-edit="${i}">Change</button></div>`}
-    </article>`).join("")}
+      ${editing === i ? optEditor(o, i) : `<div class="btnrow"><button type="button" class="btn secondary small" data-edit="${i}">Change</button></div>`}</article>`).join("")}
     <div class="btnrow">${J.options.length < 6 ? `<button type="button" class="btn secondary" id="add-offer">+ Add an offer I got</button>` : ""}<button type="button" class="btn tertiary small" id="reset-offers">Reset to typical options</button></div>
     ${nav(3, "Next: 6 quick choices", J.options.length > 0)}`;
   };
-  VIEWS_J[5] = () => {
+  V[5] = () => {
     const q = Math.min(J.q, TASKS.length - 1), [a, b] = TASKS[q], picked = J.answers[q];
     const card = (o, idx) => `<button type="button" class="pick" data-pick="${idx}" aria-pressed="${picked === idx}">
       <span class="lab">APPOINTMENT ${idx === 0 ? "A" : "B"}</span>
-      <dl><dt>When</dt><dd>${whenText(o)}</dd><dt>You pay</dt><dd>${costText(o)} a session</dd><dt>How</dt><dd>${modeText(o)}</dd></dl>
-      ${weekStrip(o, 99, true)}
+      <div data-aoi="when" class="row"><span>When</span><span>${whenText(o)}</span></div>
+      <div data-aoi="pay" class="row"><span>You pay</span><span>${costText(o)} a session</span></div>
+      <div data-aoi="how" class="row"><span>How</span><span>${modeText(o)}</span></div>
+      <div data-aoi="weeks">${weekStrip(o, 99, true)}</div>
       <span class="go">${picked === idx ? "Chosen" : "Choose " + (idx === 0 ? "A" : "B")}</span></button>`;
+    const camOffer = q === 0 && !Cam.on && !J.camAsked ? `<div class="camcard">${ICON.eye}<div><b>Want to see what catches your eye?</b><p class="small">Turn on your camera and we will show you which parts you looked at most. The video never leaves your device.</p></div><div class="btnrow"><button type="button" class="btn small" id="cam-try">Try it</button><button type="button" class="btn tertiary small" id="cam-no">No thanks</button></div></div>` : "";
     return `${head("Which would you choose?", "There are no right answers. Pick the one you would take if these were your only two choices.")}
+      ${camOffer}
       <div class="game-head"><span class="stepcount">Choice ${q + 1} of ${TASKS.length}</span><span class="pips" aria-hidden="true">${TASKS.map((_, i) => `<i class="${i < q ? "done" : i === q ? "now" : ""}"></i>`).join("")}</span></div>
-      <div class="pair step-anim">${card(a, 0)}${card(b, 1)}</div>
+      <div class="pair step-anim" id="pair">${card(a, 0)}${card(b, 1)}</div>
       <p class="feedback" id="feedback" aria-live="polite"></p>
       <div class="btnrow spread"><button type="button" class="btn secondary" id="q-back">Back</button><button type="button" class="btn tertiary" id="q-skip">I cannot choose, skip this one</button></div>`;
   };
-
   function personal() {
     const ans = J.answers.map((p, i) => (p === 0 || p === 1) ? { a: E.attrs(TASKS[i][0]), b: E.attrs(TASKS[i][1]), pick: p } : null).filter(Boolean);
-    const b = E.posterior(PRIOR_DRAWS, ans).mean, v = E.values(b);
+    let b = E.posterior(PRIOR_DRAWS, ans).mean;
+    const at = E.attentionTotals(J.attn);
+    const usedCam = J.attnSrc === "camera" && at.total > 3;
+    if (usedCam) b = E.attentionAdjust(b, at.waitShare, ATTN.mean, ATTN.sd, ATTN.coef);
+    const v = E.values(b);
     const pct = { certainty: E.percentile(POP_DRAWS, "certainty", v.certainty), weeksFor50: E.percentile(POP_DRAWS, "weeksFor50", v.weeksFor50), faceToFace: E.percentile(POP_DRAWS, "faceToFace", v.faceToFace) };
-    return { b, v, pct, n: ans.length };
+    return { b, v, pct, n: ans.length, at, usedCam };
   }
   function compareWord(p, more, less) {
-    if (p >= 0.6) return `<b>${more}</b> than ${Math.round(p * 100)} in 100 people in the study.`;
-    if (p <= 0.4) return `<b>${less}</b> than ${Math.round((1 - p) * 100)} in 100 people in the study.`;
-    return "<b>About the same</b> as most people in the study.";
+    if (p >= 0.6) return `<b>${more}</b> than ${Math.round(p * 100)} in 100 people.`;
+    if (p <= 0.4) return `<b>${less}</b> than ${Math.round((1 - p) * 100)} in 100 people.`;
+    return "<b>About the same</b> as most people.";
   }
-  function meter(label, shown, value, p, studyVal, max, lowLab, highLab, sentence, more, less) {
+  function meter(label, shownHTML, value, p, studyVal, max, lowLab, highLab, sentence, more, less) {
     const pos = Math.max(1, Math.min(99, 100 * value / max)), avg = Math.max(0, Math.min(100, 100 * studyVal / max));
-    return `<div class="meter"><div class="row"><span><b>${label}</b></span><span class="val num">${shown}</span></div>
+    return `<div class="meter"><div class="row"><span><b>${label}</b></span><span class="val num">${shownHTML}</span></div>
       <div class="bar" aria-hidden="true"><span class="avg" style="left:${avg}%"></span><span class="mark" style="left:${pos}%"></span></div>
-      <div class="ends"><span>${lowLab}</span><span>Blue: you. Grey: study average.</span><span>${highLab}</span></div>
+      <div class="ends"><span>${lowLab}</span><span>Blue: you. Grey: most people.</span><span>${highLab}</span></div>
       <p class="small">${sentence} ${compareWord(p, more, less)}</p></div>`;
   }
   function reasonText(best, second, b) {
@@ -1175,90 +1337,120 @@ const Engine = (() => {
     if (xa.cost > xb.cost) t += ` It costs ${money(xa.cost - xb.cost)} more a session, but your choices show that is worth it to you.`;
     return t;
   }
-  VIEWS_J[6] = () => {
+  function eyeSection(P) {
+    const at = P.at;
+    if (at.total < 2) return "";
+    const src = J.attnSrc === "camera" ? "your camera" : "your mouse pointer";
+    const rows = [["Waiting time", at.share.when + at.share.weeks], ["Cost", at.share.pay], ["Face to face or video", at.share.how]];
+    const top = rows.slice().sort((a, b) => b[1] - a[1])[0][0];
+    return `<section class="eye" aria-labelledby="eye-h"><div class="btnrow">${ICON.eye}<h2 id="eye-h">What caught your eye</h2></div>
+      <p class="small muted">From ${src}, over ${Math.round(at.total)} seconds.</p>
+      <div class="bars">${rows.map(([l, v]) => `<div class="hbar${l === top ? " best" : ""}"><span>${l}</span><span class="track"><span class="fill" style="width:${(100 * v).toFixed(1)}%"></span></span><span class="num"><b>${Math.round(100 * v)}%</b></span></div>`).join("")}</div>
+      <p>You looked most at <b>${top.toLowerCase()}</b>. ${P.usedCam ? (at.waitShare > ATTN.mean ? "People who look longer at waiting times usually care more about knowing the date, so we gave a set date a little more weight for you." : "People who look less at waiting times usually care less about knowing the date, so we gave a set date a little less weight for you.") : ""}</p>
+      ${J.checks ? `<p class="small">We asked you to check the latest week ${J.checks === 1 ? "once" : J.checks + " times"}, because the waiting time got little attention before you chose.</p>` : ""}</section>`;
+  }
+  V[6] = () => {
     const P = personal(), goal = Number(J.goal), g = goal >= 99 ? 12 : goal;
-    const sh = E.rank(P.b, J.options);
-    const order = J.options.map((_, i) => i).sort((a, b) => sh[b] - sh[a]);
+    const sh = E.rank(P.b, J.options), order = J.options.map((_, i) => i).sort((a, b) => sh[b] - sh[a]);
     if (J.chosen === null || !J.options[J.chosen]) { J.chosen = order[0]; saveJ(); }
     const best = J.options[order[0]], second = J.options[order[1]];
     const pBest = E.chanceBy(E.distribution(best), g), quiz = E.quizChoices(pBest), v = P.v;
     const cert = Math.max(0, v.certainty), wk = Math.max(0, v.weeksFor50), f2f = v.faceToFace;
     return `${head("Your results", `Based on your ${P.n} choices${goal < 99 ? ` and your goal of starting within ${goal} weeks` : ""}.`)}
-      <div class="top-match"><span class="small"><b>Your best match</b></span><span class="name">${esc(best.name)}</span>
-        <p>${reasonText(best, second, P.b)}</p>
-        <p><b>${Math.round(pBest * 10)} in 10</b> chance of being seen within ${g} weeks. You pay ${costText(best)} a session.</p>
+      <div class="top-match"><span class="small"><b>Your best match</b></span><span class="name">${esc(best.name)}</span><p>${reasonText(best, second, P.b)}</p>
+        <p><b><span data-count="${Math.round(pBest * 10)}">${Math.round(pBest * 10)}</span> in 10</b> chance of being seen within ${g} weeks. You pay ${costText(best)} a session.</p>
         <div><button type="button" class="helpbtn" data-help="howcalc">How we worked this out</button></div></div>
       <section class="you" aria-labelledby="you-h"><h2 id="you-h">What matters to you</h2>
-        ${meter("Knowing the date", money(cert), cert, P.pct.certainty, STUDY.certainty, 160, "$0", "$160", `A set date, instead of a wait that could be 3 weeks earlier or later, is worth about <b>${money(cert)} a session</b> to you.`, "More", "Less")}
-        ${meter("Waiting to save money", wk.toFixed(1) + " weeks", wk, P.pct.weeksFor50, STUDY.weeksFor50, 10, "0 weeks", "10 weeks", `To save $50 a session, you would wait about <b>${wk.toFixed(1)} weeks</b> longer.`, "Longer", "Shorter")}
-        ${meter("Face to face", f2f >= 0 ? money(f2f) : "Prefers video", Math.max(0, f2f), P.pct.faceToFace, STUDY.faceToFace, 80, "$0", "$80", f2f >= 0 ? `Seeing someone face to face instead of by video is worth about <b>${money(f2f)} a session</b> to you.` : "You would rather have video sessions.", "More", "Less")}
-        <details class="why"><summary>Compare with the study average</summary><div class="compare">
-          <div class="r"><span></span><b>You</b><b>Study average (simulated)</b></div>
-          <div class="r"><span>Set date, per session</span><span class="num">${money(cert)}</span><span class="num">${money(STUDY.certainty)}</span></div>
-          <div class="r"><span>Weeks to save $50</span><span class="num">${wk.toFixed(1)}</span><span class="num">${STUDY.weeksFor50.toFixed(1)}</span></div>
-          <div class="r"><span>Face to face, per session</span><span class="num">${money(Math.max(0, f2f))}</span><span class="num">${money(STUDY.faceToFace)}</span></div></div></details>
+        ${meter("Knowing the date", `<span data-count="${Math.round(cert)}" data-pre="$">${money(cert)}</span>`, cert, P.pct.certainty, STUDY.certainty, 160, "$0", "$160", `A set date, instead of a wait that could be 3 weeks earlier or later, is worth about <b>${money(cert)} a session</b> to you.`, "More", "Less")}
+        ${meter("Waiting to save money", `<span data-count="${wk.toFixed(1)}" data-dec="1" data-suf=" weeks">${wk.toFixed(1)} weeks</span>`, wk, P.pct.weeksFor50, STUDY.weeksFor50, 10, "0 weeks", "10 weeks", `To save $50 a session, you would wait about <b>${wk.toFixed(1)} weeks</b> longer.`, "Longer", "Shorter")}
+        ${meter("Face to face", f2f >= 0 ? `<span data-count="${Math.round(f2f)}" data-pre="$">${money(f2f)}</span>` : "Prefers video", Math.max(0, f2f), P.pct.faceToFace, STUDY.faceToFace, 80, "$0", "$80", f2f >= 0 ? `Seeing someone face to face instead of by video is worth about <b>${money(f2f)} a session</b> to you.` : "You would rather have video sessions.", "More", "Less")}
       </section>
+      ${eyeSection(P)}
       <div class="btnrow"><span class="small muted">Show waiting times as</span><div class="seg" role="group" aria-label="Format"><button type="button" data-fmt="picture" aria-pressed="${J.format === "picture"}">Picture</button><button type="button" data-fmt="words" aria-pressed="${J.format === "words"}">Words</button></div><button type="button" class="helpbtn" data-help="picture">Why a picture?</button></div>
       <h2>All your options, best match first</h2>
       ${order.map((i, r) => { const o = J.options[i], k = Math.round(E.chanceBy(E.distribution(o), g) * 10);
         return `<article class="res-card${r === 0 ? " first" : ""}${J.chosen === i ? " chosen" : ""}" aria-labelledby="r-${i}">
           <div class="res-head"><h3 id="r-${i}">${esc(o.name)}</h3><span class="matchpct">${r === 0 ? "Best match, " : ""}${Math.round(sh[i] * 100)}% match</span></div>
-          <div class="chance"><span class="n num">${k} in 10</span><span>chance of being seen within ${g} weeks <button type="button" class="helpbtn" data-help="chance">What is this?</button></span><span class="dots" aria-hidden="true">${Array.from({ length: 10 }, (_, j) => `<i class="${j < k ? "on" : ""}"></i>`).join("")}</span></div>
+          <div class="chance"><span class="n num">${k} in 10</span><span>chance of being seen within ${g} weeks <button type="button" class="helpbtn" data-help="chance">What is this?</button></span>${dots(k)}</div>
           ${J.format === "picture" ? weekStrip(o, g) + `<div class="legend"><span><i style="background:var(--ok)"></i>Seen in time</span><span><i style="background:var(--late)"></i>Later than your goal</span><span>Dashed line: your goal</span></div>` : `<p>${esc(inWords(o, g))}</p>`}
           <div class="opt-facts"><span>You pay: <b>${costText(o)}</b> a session</span><span>6 sessions: <b>${money(o.cost * 6)}</b></span><span>How: <b>${modeText(o)}</b></span></div>
-          <div class="btnrow"><button type="button" class="btn small${J.chosen === i ? "" : " secondary"}" data-choose="${i}" aria-pressed="${J.chosen === i}">${J.chosen === i ? "This is my choice" : "Choose this one"}</button></div>
-        </article>`; }).join("")}
+          <div class="btnrow"><button type="button" class="btn small${J.chosen === i ? "" : " secondary"}" data-choose="${i}" aria-pressed="${J.chosen === i}">${J.chosen === i ? "This is my choice" : "Choose this one"}</button></div></article>`; }).join("")}
       <section class="quiz" aria-labelledby="quiz-h"><h2 id="quiz-h">Quick check</h2>
         <p>With <b>${esc(best.name)}</b>, out of 10 people, how many would be seen within ${g} weeks?</p>
         <div class="tiles">${quiz.options.map(x => `<button type="button" data-quiz="${x}" class="${J.quiz === null ? "" : x === quiz.correct ? "right" : x === J.quiz ? "wrong" : ""}">${x} in 10</button>`).join("")}</div>
-        <p aria-live="polite">${J.quiz === null ? "" : J.quiz === quiz.correct ? "<b>Correct.</b> You read the waiting time well." : `<b>Not quite.</b> It is ${quiz.correct} in 10. Count the green weeks up to the dashed line, out of all the coloured weeks.`}</p>
-        <p class="small muted">Our study uses this question to test which way of showing waiting times is easiest to understand.</p></section>
+        <p aria-live="polite">${J.quiz === null ? "" : J.quiz === quiz.correct ? "<b>Correct.</b> You read the waiting time well." : `<b>Not quite.</b> It is ${quiz.correct} in 10. Count the green weeks up to the dashed line, out of all the coloured weeks.`}</p></section>
       ${nav(5, "Next: make my plan")}`;
   };
-  function todayFor() {
-    const prof = { age: J.age, area: J.area, student: J.student, hardship: J.hardship, mode: "any" };
+  function todayFor(prof) {
+    prof = prof || { age: J.age, area: J.area, student: J.student, hardship: J.hardship, mode: "any" };
     return TODAY.map(s => ({ s, m: E.matchService(s, prof) })).filter(x => x.m.ok).sort((a, b) => (a.s.areas ? 0 : 1) - (b.s.areas ? 0 : 1)).slice(0, 3).map(x => x.s);
   }
-  function callTips(P) {
-    const tips = [];
-    if (P.v.certainty > STUDY.certainty) tips.push("Knowing the date matters to you. Ask: \"Can you give me a set date?\"");
-    if (P.v.weeksFor50 > STUDY.weeksFor50) tips.push("Cost matters to you. Ask: \"Do you bulk bill, or have a lower fee?\"");
-    tips.push("Ask: \"Can I go on your cancellation list?\"", "Ask: \"Do you offer video sessions? Are they sooner?\"");
-    return tips;
+  function tipKeys(P) {
+    const t = [];
+    if (P.v.certainty > STUDY.certainty) t.push("date");
+    if (P.v.weeksFor50 > STUDY.weeksFor50) t.push("bulk");
+    t.push("cancel", "video");
+    return t;
   }
-  VIEWS_J[7] = () => {
-    const P = personal(), o = J.options[J.chosen] || J.options[0], today = todayFor();
-    const needGP = o.needsPlan && J.gpplan !== "yes";
+  V[7] = () => {
+    const P = personal(), o = chosenOpt() || J.options[0], today = todayFor(), needGP = o.needsPlan && J.gpplan !== "yes";
     const step = (n, t, body) => `<div class="plan-step"><span class="no">${n}</span><div class="stack" style="gap:8px"><h3>${t}</h3>${body}</div></div>`;
     let n = 1;
     return `${head("Your plan", `Your choice: ${esc(o.name)}.`)}
-      ${step(n++, "Today: start free support while you wait", `<p>You do not need a referral for these. Support that a person guides works best.</p><ul class="plain">${today.map(s => `<li><b>${esc(s.name)}</b>. ${esc(s.what)} <span class="small">${esc(s.how)}.</span></li>`).join("")}</ul>`)}
+      ${step(n++, "Today: start free support while you wait", `<p>No referral needed. Support that a person guides works best.</p><ul class="plain">${today.map(s => `<li><b>${esc(s.name)}</b>. ${esc(s.what)} <span class="small">${esc(s.how)}.</span></li>`).join("")}</ul>`)}
       ${needGP ? step(n++, "This week: see your GP", `<p>Book a longer appointment. Ask for a <b>Mental Health Treatment Plan</b> and a referral. <button type="button" class="helpbtn" data-help="plan">What is this?</button></p>`) : ""}
-      ${step(n++, `Call ${esc(o.name)}`, `<p class="small muted">These questions are based on what matters to you.</p><ul class="checklist">${callTips(P).map((t, i) => `<li><label class="opt"><input type="checkbox" id="tip${i}"> ${esc(t)}</label></li>`).join("")}</ul>`)}
-      ${step(n++, "When you are on the list, track it", `<p>We will show how long you have waited, the chance of being seen soon, and what to do at each stage.</p><div><button type="button" class="btn" id="to-tracker">Add ${esc(o.name)} to my waiting lists</button></div>`)}
+      ${step(n++, `Call ${esc(o.name)}`, `<p class="small muted">Based on what matters to you.</p><ul class="checklist">${tipKeys(P).map((k, i) => `<li><label class="opt"><input type="checkbox" id="tip${i}"> ${esc(TIPS[k])}</label></li>`).join("")}</ul>`)}
+      ${step(n++, "When you are on their list, track it", `<p>Each time you come back, we show how long you have waited and the chance of being seen soon.</p>`)}
       ${step(n++, "If things get worse", `<p>Do not wait. Call <b>000</b> in an emergency, the NSW Mental Health Line on <b>1800 011 511</b> (24 hours) or Lifeline on <b>13 11 14</b>.</p>`)}
-      <div class="btnrow" style="margin-top:6px"><button type="button" class="btn secondary" id="copy-plan">Copy my plan</button><button type="button" class="btn tertiary" data-go="6">Back to results</button><button type="button" class="btn tertiary" id="restart">Start again</button></div>
-      <pre class="sr" id="plan-text"></pre>`;
+      ${nav(6, "Next: save and share my plan")}`;
   };
-  function planText() {
-    const o = J.options[J.chosen] || J.options[0], P = personal();
-    return [`My plan for seeing a psychologist`, ``, `My choice: ${o.name} (${whenText(o)}, ${costText(o)} a session, ${modeText(o)})`, ``,
-      `Start today:`, ...todayFor().map(s => `- ${s.name}: ${s.how}`), ``,
-      ...(o.needsPlan && J.gpplan !== "yes" ? [`This week: see my GP for a Mental Health Treatment Plan and referral.`, ``] : []),
-      `When I call:`, ...callTips(P).map(t => `- ${t}`), ``,
-      `What matters to me: a set date is worth about ${money(Math.max(0, P.v.certainty))} a session to me.`, ``,
-      `If things get worse: 000, NSW Mental Health Line 1800 011 511 (24 hours), Lifeline 13 11 14.`].join("\n");
+  function planPayload() {
+    const P = personal(), o = chosenOpt() || J.options[0];
+    return { v: 1, n: o.name, k: o.kind === "confirmed" ? "c" : "r", w: o.week, f: o.from, t: o.to, c: o.cost, m: o.mode === "video" ? "v" : "p", g: Number(J.goal), s: todayFor().map(s => s.id), q: tipKeys(P), x: Math.round(Math.max(0, P.v.certainty)), gp: o.needsPlan && J.gpplan !== "yes" ? 1 : 0 };
   }
-  function renderJourney(anim) { stepbar(); $("#journey").innerHTML = `<div class="step${anim ? " step-anim" : ""}">${VIEWS_J[J.step]()}</div>`; }
-  RENDER.start = () => renderJourney(true);
+  const planURL = () => BASE + "#plan-" + E.b64urlEncode(planPayload());
+  function planMessage(aud) {
+    const p = planPayload(), today = p.s.map(id => TODAY.find(s => s.id === id)).filter(Boolean);
+    const when = p.k === "c" ? `set date in week ${p.w}` : `week ${p.f} to ${p.t}`;
+    const lines = aud === "support"
+      ? [`I'm waiting to see a psychologist and made a plan with Know Your Wait. I'd like your support.`, ``, `My choice: ${p.n} (${when}, $${p.c} a session).`, `While I wait I'll use: ${today.map(s => s.name).join(", ")}.`, `You could help by checking in with me each week.`, ``, `If I'm not OK: 000, or NSW Mental Health Line 1800 011 511 (24/7).`]
+      : [`My plan to see a psychologist`, ``, `1. Start today: ${today.map(s => `${s.name} (${s.how})`).join("; ")}.`, ...(p.gp ? [`2. See my GP for a Mental Health Treatment Plan.`] : []), `${p.gp ? 3 : 2}. Call ${p.n} (${when}, $${p.c} a session). ${p.q.map(k => TIPS[k].replace(/^Ask: /, "")).slice(0, 2).join(" ")}`, ``, `If things get worse: 000, NSW Mental Health Line 1800 011 511 (24/7), Lifeline 13 11 14.`];
+    return lines.join("\n");
+  }
+  V[8] = () => {
+    J.planDone = true; saveJ(); renderRibbon();
+    const url = planURL(), msg = planMessage(J.audience), full = msg + "\n\nOpen my plan: " + url;
+    const o = chosenOpt() || J.options[0];
+    return `${head("Save and share your plan", "Keep your plan with you, or send it to someone who supports you.")}
+      <div class="alert ok"><span class="ic">&#10003;</span><div><b>Your plan is saved on this device.</b><p>Come back any time. The menu at the top shows where you are up to.</p></div></div>
+      <div class="q"><span class="ql">Who are you sending it to?</span>${tiles("audience", [["me", "Me, on my phone"], ["support", "Someone who supports me", "A friend, partner or family member"]], "two")}</div>
+      <div class="share">
+        <div class="stack" style="gap:8px;justify-items:start"><div class="qr" aria-label="QR code that opens your plan">${qrSVG(url)}</div><span class="small muted">Scan with your phone camera to open your plan.</span></div>
+        <div class="stack">
+          <div class="btnrow">
+            <a class="btn wa" href="https://wa.me/?text=${encodeURIComponent(full)}" target="_blank" rel="noopener" data-shared="1">${ICON.wa} WhatsApp</a>
+            <a class="btn secondary" href="sms:?&body=${encodeURIComponent(full)}" data-shared="1">${ICON.sms} Text message</a>
+            <a class="btn secondary" href="mailto:?subject=${encodeURIComponent("My plan to see a psychologist")}&body=${encodeURIComponent(full)}" data-shared="1">${ICON.mail} Email</a>
+            ${navigator.share ? `<button type="button" class="btn secondary" id="native-share">${ICON.share.replace('class="ic-svg"', "")} More</button>` : ""}
+            <button type="button" class="btn secondary" id="copy-link">${ICON.link} Copy</button>
+          </div>
+          <div><span class="small muted">The message</span><div class="msg" id="share-msg">${esc(full)}</div></div>
+          <p class="small muted">Only the people you send it to can open it. Your plan is inside the link, not stored online.</p>
+        </div>
+      </div>
+      <div class="callout"><h3>Next: track your wait</h3><p>When ${esc(o.name)} puts you on their list, we will count the weeks for you and tell you what to do at each stage.</p><div class="btnrow"><button type="button" class="btn big" id="to-tracker">${J.tracked ? "Open my waiting lists" : "Start tracking " + esc(o.name)}</button><button type="button" class="btn tertiary" id="restart">Start again</button></div></div>
+      <div class="btnrow"><button type="button" class="btn secondary" data-go="7">Back to my plan</button></div>`;
+  };
+  function renderJourney(anim) { stepbar(); $("#journey").innerHTML = `<div class="step${anim ? " step-anim" : ""}">${V[J.step]()}</div>`; countUp($("#journey")); }
 
   $("#journey").addEventListener("click", e => {
+    const sh = e.target.closest("[data-shared]"); if (sh) { J.shared = true; saveJ(); renderRibbon(); toast("Opening your messaging app."); return; }
     const t = e.target.closest("button"); if (!t || t.disabled) return;
     if (t.dataset.go) return go(Number(t.dataset.go));
     if (t.dataset.next) {
       if (J.step === 4 && !J.options.length) return popup("Add an option", "<p>Add at least one option to compare.</p>");
-      if (J.step === 4) { J.q = 0; editing = null; }
-      const msg = { 2: "Saved. Now your goal.", 3: "Here are your options.", 4: "Now 6 quick choices.", 6: "Here is your plan." }[J.step];
+      if (J.step === 4) editing = null;
+      const msg = { 2: "Saved. Now your goal.", 3: "Here are your options.", 4: "Now 6 quick choices.", 6: "Here is your plan.", 7: "Your plan is saved." }[J.step];
       go(J.step + 1); if (msg) toast(msg); return;
     }
     if (t.dataset.safe) { J.safe = t.dataset.safe; saveJ(); if (J.safe === "yes") { go(2); toast("Thank you. Let's start."); } else renderJourney(); return; }
@@ -1267,46 +1459,193 @@ const Engine = (() => {
     if (t.dataset.edit !== undefined) { editing = Number(t.dataset.edit); renderJourney(); return; }
     if (t.dataset.done !== undefined) { editing = null; renderJourney(); toast("Option updated."); return; }
     if (t.dataset.remove !== undefined) { const i = Number(t.dataset.remove), nm = J.options[i].name; J.options.splice(i, 1); editing = null; saveJ(); renderJourney(); toast(`Removed: ${nm}`); return; }
-    if (t.id === "add-offer") { J.options.push({ id: "own" + Date.now(), name: "My offer " + (J.options.length + 1), note: "Your offer", kind: "range", from: 3, to: 6, cost: 0, mode: "inperson" }); editing = J.options.length - 1; saveJ(); renderJourney(); return; }
+    if (t.id === "add-offer") { J.options.push({ id: "own" + Date.now(), name: "My offer " + (J.options.length + 1), note: "Your offer", kind: "range", from: 3, to: 6, cost: 0, mode: "inperson", needsPlan: true }); editing = J.options.length - 1; saveJ(); renderJourney(); return; }
     if (t.id === "reset-offers") { J.options = []; J.optKey = ""; editing = null; buildOptions(); renderJourney(); toast("Options reset."); return; }
     if (t.dataset.set) { const [k, i] = t.dataset.set.split(":"), o = J.options[Number(i)];
       if (k === "kind" && t.dataset.v !== o.kind) { if (t.dataset.v === "confirmed") o.week = Math.round((o.from + o.to) / 2); else { o.from = Math.max(1, (o.week || 4) - 2); o.to = (o.week || 4) + 2; } }
       o[k] = t.dataset.v; o.note = "Changed by you"; o.gpShift = false; saveJ(); renderJourney(); return; }
     if (t.dataset.step) { const [k, i] = t.dataset.step.split(":"), o = J.options[Number(i)], d = Number(t.dataset.d);
-      if (k === "cost") o.cost = Math.max(0, Math.min(300, Number(o.cost) + 10 * d));
+      if (k === "cost") { o.cost = Math.max(0, Math.min(300, Number(o.cost) + 10 * d)); o.fee = o.cost > 0 ? Math.round(o.cost + REBATE) : 0; o.bulk = o.cost === 0; }
       if (k === "week") o.week = Math.max(1, Math.min(30, o.week + d));
       if (k === "from") { o.from = Math.max(0, Math.min(30, o.from + d)); if (o.from > o.to) o.to = o.from; }
       if (k === "to") { o.to = Math.max(0, Math.min(30, o.to + d)); if (o.to < o.from) o.from = o.to; }
       o.note = "Changed by you"; o.gpShift = false; saveJ(); renderJourney(); const again = document.querySelector(`[data-step="${t.dataset.step}"][data-d="${t.dataset.d}"]`); if (again) again.focus(); return; }
-    if (t.dataset.pick !== undefined) {
-      const idx = Number(t.dataset.pick); J.answers[J.q] = idx; saveJ();
-      $$(".pick").forEach(p => { p.setAttribute("aria-pressed", String(Number(p.dataset.pick) === idx)); p.disabled = true; });
-      $("#feedback").textContent = J.q < TASKS.length - 1 ? `You chose appointment ${idx === 0 ? "A" : "B"}. Next one...` : "Working out what matters to you...";
-      setTimeout(() => { if (J.q < TASKS.length - 1) { J.q++; saveJ(); renderJourney(); } else finishGame(); }, reduced ? 50 : 600);
-      return;
-    }
-    if (t.id === "q-skip") { J.answers[J.q] = null; if (J.q < TASKS.length - 1) { J.q++; saveJ(); renderJourney(); } else finishGame(); return; }
-    if (t.id === "q-back") { if (J.q > 0) { J.q--; saveJ(); renderJourney(); } else go(4); return; }
+    if (t.id === "cam-try") { camConsent(); return; }
+    if (t.id === "cam-no") { J.camAsked = true; saveJ(); renderJourney(); return; }
+    if (t.dataset.pick !== undefined) { choose(Number(t.dataset.pick)); return; }
+    if (t.id === "q-skip") { J.answers[J.q] = null; nextQ(); return; }
+    if (t.id === "q-back") { if (J.q > 0) { J.q--; saveJ(); renderJourney(true); } else go(4); return; }
     if (t.dataset.fmt) { J.format = t.dataset.fmt; saveJ(); renderJourney(); return; }
     if (t.dataset.choose !== undefined) { J.chosen = Number(t.dataset.choose); saveJ(); renderJourney(); toast(`Your choice: ${J.options[J.chosen].name}`); return; }
     if (t.dataset.quiz !== undefined) { J.quiz = Number(t.dataset.quiz); saveJ(); renderJourney(); const q = $("#quiz-h"); if (q) q.scrollIntoView({ block: "center" }); return; }
-    if (t.id === "to-tracker") { const o = J.options[J.chosen] || J.options[0]; addList(o); toast(`Added to My waiting lists: ${o.name}`); t.textContent = "Added. Open My waiting lists"; t.onclick = () => { location.hash = "#waiting"; }; return; }
-    if (t.id === "copy-plan") { const txt = planText(); $("#plan-text").textContent = txt; copyText(txt, $("#plan-text"), "Plan copied. Paste it into a note or message."); return; }
-    if (t.id === "restart") { popup("Start again?", "<p>This clears your answers and choices.</p>", [{ label: "Yes, start again", primary: true, onClick: () => { Object.assign(J, NEW_JOURNEY()); saveJ(); renderJourney(); toast("Starting again."); } }, { label: "Cancel" }]); return; }
+    if (t.id === "copy-link") { J.shared = true; saveJ(); renderRibbon(); copyText($("#share-msg").textContent, $("#share-msg"), "Copied. Paste it into any app."); return; }
+    if (t.id === "native-share") { navigator.share({ title: "My plan", text: planMessage(J.audience), url: planURL() }).then(() => { J.shared = true; saveJ(); renderRibbon(); toast("Shared."); }).catch(() => {}); return; }
+    if (t.id === "to-tracker") { const o = chosenOpt() || J.options[0]; if (!J.tracked) { addList(o, "plan"); J.tracked = true; saveJ(); toast(`Now tracking: ${o.name}`); } location.hash = "#waiting"; return; }
+    if (t.id === "restart") { popup("Start again?", "<p>This clears your answers and choices. Your waiting lists stay.</p>", [{ label: "Yes, start again", primary: true, onClick: () => { Object.assign(J, NEW_J()); saveJ(); renderJourney(true); renderRibbon(); toast("Starting again."); } }, { label: "Cancel" }]); return; }
   });
   $("#journey").addEventListener("change", e => { if (e.target.id === "j-area") { J.area = e.target.value; saveJ(); } });
-  function finishGame() { J.quiz = null; J.chosen = null; go(6); toast("Your results are ready."); }
+  function choose(idx) {
+    const q = J.q, task = TASKS[q], opt = task[idx];
+    if (opt.kind === "range" && J.checks < 2 && E.missedWait(J.attn[q], idx, 1.5)) {
+      const st = E.stats(E.distribution(opt));
+      J.checks++; saveJ();
+      popup("Before you choose", `<p>Appointment ${idx === 0 ? "A" : "B"} could be as late as <b>week ${st.latest}</b>. Is that OK for you?</p><p class="small muted">We asked because you did not look at the waiting time for long. Many people miss the latest week.</p>`,
+        [{ label: `Yes, choose ${idx === 0 ? "A" : "B"}`, primary: true, onClick: () => commit(idx) }, { label: "Let me look again" }]);
+      return;
+    }
+    commit(idx);
+  }
+  function commit(idx) {
+    J.answers[J.q] = idx; saveJ();
+    $$(".pick").forEach(p => { p.setAttribute("aria-pressed", String(Number(p.dataset.pick) === idx)); p.disabled = true; });
+    const fb = $("#feedback"); if (fb) fb.textContent = J.q < TASKS.length - 1 ? `You chose ${idx === 0 ? "A" : "B"}. Next one...` : "Working out what matters to you...";
+    setTimeout(nextQ, reduced ? 50 : 600);
+  }
+  function nextQ() { if (J.q < TASKS.length - 1) { J.q++; saveJ(); renderJourney(true); } else { J.quiz = null; J.chosen = null; go(6); toast("Your results are ready."); } }
   function copyText(text, el, okMsg) {
-    const fallback = () => { if (el) { el.classList.remove("sr"); el.style.whiteSpace = "pre-wrap"; const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } toast("Text selected. Use copy on your keyboard."); };
+    const fallback = () => { if (el) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } toast("Text selected. Use copy on your keyboard."); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(okMsg), fallback); else fallback();
   }
 
-  /* ============ Waiting lists ============ */
-  const isoToday = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  /* ---------- Attention: pointer and camera ---------- */
+  function addAttention(x, y, dt) {
+    if ($("#v-start").hidden || J.step !== 5) return;
+    const el = document.elementFromPoint(x, y); if (!el) return;
+    const a = el.closest("[data-aoi]"), c = el.closest("[data-pick]"); if (!a || !c) return;
+    const q = J.q, side = c.dataset.pick === "0" ? "A" : "B";
+    J.attn[q] = J.attn[q] || { A: {}, B: {} };
+    J.attn[q][side][a.dataset.aoi] = (J.attn[q][side][a.dataset.aoi] || 0) + dt;
+  }
+  let pointer = null;
+  document.addEventListener("mousemove", e => { pointer = { x: e.clientX, y: e.clientY, t: performance.now() }; }, { passive: true });
+  setInterval(() => {
+    if (Cam.on || !finePointer || !pointer || performance.now() - pointer.t > 3000) return;
+    if (J.step === 5 && !$("#v-start").hidden) { addAttention(pointer.x, pointer.y, 0.1); if (!J.attnSrc) J.attnSrc = "pointer"; }
+  }, 100);
+  setInterval(() => { if (J.step === 5) saveJ(); }, 2000);
+
+  const Cam = { on: false, lm: null, stream: null, wx: null, wy: null, collect: null, sm: null, lastSeen: 0, lastT: 0, showDot: false };
+  function camConsent() {
+    J.camAsked = true; saveJ();
+    popup("Use your camera to see what you look at?", `<ul>
+      <li><b>The video stays on your device.</b> It is never recorded, saved or sent anywhere.</li>
+      <li><b>Nobody sees it</b>, including us. Only you see the small preview.</li>
+      <li>The tool only counts how many seconds you look at each part of the screen. It forgets this when you start again.</li>
+      <li>The camera turns off by itself after the 6 choices. You can turn it off at any time.</li></ul>
+      <p class="small muted">First, you will look at 9 dots so the tool learns your eyes (about 20 seconds). The first time, your browser downloads a free face-reading program (about 4 MB). Works best on a laptop, in good light, with your face in view.</p>`,
+      [{ label: "Turn on my camera", primary: true, onClick: () => camStart() }, { label: "No thanks", onClick: () => renderJourney() }]);
+  }
+  async function camStart() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return camFail("Your browser does not let this page use the camera.");
+    toast("Starting your camera...");
+    try {
+      Cam.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+    } catch (e) { return camFail("The camera was not turned on. You may have said no, or this page cannot use the camera."); }
+    const v = $("#cam-video"); v.srcObject = Cam.stream;
+    try { await v.play(); } catch (e) { /* autoplay muted should work */ }
+    $("#cam-pill").hidden = false; $("#cam-status").textContent = "Loading...";
+    try {
+      if (!Cam.lm) {
+        const mod = await import(MP.url);
+        const files = await mod.FilesetResolver.forVisionTasks(MP.wasm);
+        const opts = d => ({ baseOptions: { modelAssetPath: MP.model, delegate: d }, runningMode: "VIDEO", numFaces: 1 });
+        try { Cam.lm = await mod.FaceLandmarker.createFromOptions(files, opts("GPU")); } catch (e) { Cam.lm = await mod.FaceLandmarker.createFromOptions(files, opts("CPU")); }
+      }
+    } catch (e) { camStop(); return camFail("We could not load the face-reading program. Check your internet connection, or use the full website at mesfingenie.com/know-your-wait."); }
+    Cam.on = true; Cam.wx = Cam.wy = null; requestAnimationFrame(camLoop);
+    calibrate();
+  }
+  function camFail(msg) { popup("Camera not available", `<p>${esc(msg)}</p><p>That is fine. You can still make your choices as normal.</p>`); renderJourney(); }
+  function camStop() {
+    Cam.on = false; Cam.collect = null;
+    if (Cam.stream) Cam.stream.getTracks().forEach(t => t.stop());
+    Cam.stream = null; $("#cam-pill").hidden = true; $("#gaze-dot").hidden = true; $("#cam-video").srcObject = null;
+  }
+  $("#cam-stop").addEventListener("click", () => { camStop(); toast("Camera turned off. Nothing was saved."); if (J.step === 5) renderJourney(); });
+  $("#cam-dot").addEventListener("click", e => { Cam.showDot = !Cam.showDot; e.target.textContent = Cam.showDot ? "Hide my gaze" : "Show my gaze"; $("#gaze-dot").hidden = !Cam.showDot || !Cam.wx; });
+  function feat(lm) {
+    const P = i => lm[i];
+    const ratio = (v, a, b) => (v - a) / ((b - a) || 1e-6);
+    return [1,
+      ratio(P(468).x, P(33).x, P(133).x), ratio(P(473).x, P(362).x, P(263).x),
+      ratio(P(468).y, P(159).y, P(145).y), ratio(P(473).y, P(386).y, P(374).y),
+      P(1).x, P(1).y];
+  }
+  function camLoop() {
+    if (!Cam.on) return;
+    const v = $("#cam-video"), now = performance.now();
+    if (v.readyState >= 2 && now - Cam.lastT > 33) {
+      Cam.lastT = now;
+      let r = null; try { r = Cam.lm.detectForVideo(v, now); } catch (e) { r = null; }
+      const lm = r && r.faceLandmarks && r.faceLandmarks[0];
+      if (lm && lm.length > 473) {
+        const f = feat(lm); Cam.lastSeen = now;
+        if (Cam.collect) Cam.collect.push(f);
+        if (Cam.wx) {
+          const x = Math.max(0, Math.min(1, E.dot(Cam.wx, f))) * innerWidth, y = Math.max(0, Math.min(1, E.dot(Cam.wy, f))) * innerHeight;
+          Cam.sm = Cam.sm ? { x: Cam.sm.x * 0.7 + x * 0.3, y: Cam.sm.y * 0.7 + y * 0.3 } : { x, y };
+          if (Cam.showDot) { const d = $("#gaze-dot"); d.hidden = false; d.style.transform = `translate(${Cam.sm.x}px, ${Cam.sm.y}px)`; }
+          addAttention(Cam.sm.x, Cam.sm.y, 1 / 30); J.attnSrc = "camera";
+        }
+      }
+      $("#cam-status").textContent = now - Cam.lastSeen > 1000 ? "Cannot see your face" : (Cam.wx ? "Camera on" : "Learning your eyes");
+    }
+    requestAnimationFrame(camLoop);
+  }
+  function calibrate() {
+    const box = $("#calib"), pts = [[0.1, 0.12], [0.5, 0.12], [0.9, 0.12], [0.1, 0.5], [0.5, 0.5], [0.9, 0.5], [0.1, 0.88], [0.5, 0.88], [0.9, 0.88]];
+    const X = [], YX = [], YY = []; let i = 0;
+    box.hidden = false;
+    box.innerHTML = `<div class="msg-c"><h2>Look at each dot, then tap it</h2><p>Keep your head still and look right at the centre of the dot. There are 9 dots.</p><div class="btnrow" style="justify-content:center"><button type="button" class="btn" id="calib-go">Start</button><button type="button" class="btn tertiary" id="calib-cancel">Cancel</button></div></div>`;
+    $("#calib-cancel").onclick = () => { box.hidden = true; camStop(); renderJourney(); };
+    $("#calib-go").onclick = () => show();
+    function show() {
+      box.innerHTML = `<button type="button" class="target" style="left:${pts[i][0] * 100}%;top:${pts[i][1] * 100}%" aria-label="Dot ${i + 1} of 9"></button><div class="msg-c" style="top:${pts[i][1] < 0.4 ? 70 : 30}%"><p class="small muted">Dot ${i + 1} of 9</p></div>`;
+      const t = box.querySelector(".target"); t.focus();
+      t.onclick = () => {
+        Cam.collect = []; t.disabled = true;
+        setTimeout(() => {
+          const got = Cam.collect || []; Cam.collect = null;
+          if (got.length < 3) { box.querySelector(".msg-c").innerHTML = `<p><b>We cannot see your eyes.</b> Face the screen in good light, then tap the dot again.</p>`; t.disabled = false; return; }
+          got.forEach(f => { X.push(f); YX.push(pts[i][0]); YY.push(pts[i][1]); });
+          i++;
+          if (i < pts.length) show(); else finish();
+        }, 600);
+      };
+    }
+    function finish() {
+      Cam.wx = E.ridgeFit(X, YX, 0.001); Cam.wy = E.ridgeFit(X, YY, 0.001);
+      box.innerHTML = `<div class="msg-c"><h2>All set</h2><p>The camera now follows roughly where you look. Press "Show my gaze" in the corner to see it.</p><div class="btnrow" style="justify-content:center"><button type="button" class="btn" id="calib-done">Back to my choices</button></div></div>`;
+      $("#calib-done").onclick = () => { box.hidden = true; renderJourney(); toast("Camera ready."); };
+    }
+  }
+
+  /* ---------- Shared plan view ---------- */
+  function renderShared(data) {
+    const body = $("#shared-body");
+    if (!data || data.v !== 1) { body.innerHTML = `<div class="page-head"><h1 id="h-shared">This link has not worked</h1><p class="lead">It may have been cut short. Ask the person to send it again.</p></div><a class="btn" href="#home">Go to Know Your Wait</a>`; return; }
+    const o = { name: data.n, kind: data.k === "c" ? "confirmed" : "range", week: data.w, from: data.f, to: data.t, cost: data.c, mode: data.m === "v" ? "video" : "inperson" };
+    const g = data.g >= 99 ? 12 : data.g, k = Math.round(E.chanceBy(E.distribution(o), g) * 10);
+    const today = (data.s || []).map(id => TODAY.find(s => s.id === id)).filter(Boolean);
+    body.innerHTML = `<div class="page-head"><span class="tag">SHARED PLAN</span><h1 id="h-shared">A plan to see a psychologist</h1><p class="lead">Someone made this plan with Know Your Wait and shared it with you.</p></div>
+      <div class="stack-lg">
+        <div class="top-match"><span class="small"><b>Their choice</b></span><span class="name">${esc(o.name)}</span><p>${whenText(o)}. ${costText(o)} a session. ${modeText(o)}.</p><p><b>${k} in 10</b> chance of being seen within ${g} weeks.</p></div>
+        ${weekStrip(o, g)}
+        <div class="stack"><h2>Start today</h2><ul class="plain">${today.map(s => `<li><b>${esc(s.name)}</b>. ${esc(s.what)} <span class="small">${esc(s.how)}.</span></li>`).join("")}</ul></div>
+        ${data.gp ? `<div class="stack"><h2>See a GP</h2><p>Book a longer appointment and ask for a Mental Health Treatment Plan and a referral.</p></div>` : ""}
+        <div class="stack"><h2>Questions to ask when calling</h2><ul class="plain">${(data.q || []).map(q => `<li>${esc(TIPS[q] || "")}</li>`).join("")}</ul></div>
+        <div class="crisis-panel"><h2>If things get worse</h2><div class="line"><span>Emergency</span><b>000</b></div><div class="line"><span>NSW Mental Health Line, 24 hours</span><b>1800 011 511</b></div><div class="line"><span>Lifeline, 24 hours</span><b>13 11 14</b></div></div>
+        <div class="btnrow"><button type="button" class="btn" id="shared-track">Track this waiting list on my device</button><a class="btn secondary" href="#home">Make my own plan</a></div>
+      </div>`;
+    $("#shared-track").onclick = () => { addList(o, "shared"); toast(`Now tracking: ${o.name}`); location.hash = "#waiting"; };
+  }
+
+  /* ---------- Waiting lists ---------- */
+  function isoToday() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
   const addDays = (iso, n) => { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
   const niceDate = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
-  function addList(o) {
-    const e = { id: Date.now().toString(36), name: o.name, joined: isoToday(), seen: false, kind: o.kind, from: o.from, to: o.to, week: o.week };
+  function addList(o, source) {
+    const e = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: o.name, joined: isoToday(), seen: false, kind: o.kind, from: o.from, to: o.to, week: o.week, source: source || "me" };
     if (o.kind === "confirmed") e.date = addDays(isoToday(), o.week * 7);
     S.lists.push(e); save("lists"); counts();
   }
@@ -1317,36 +1656,34 @@ const Engine = (() => {
     f.innerHTML = `<h2>Add a waiting list</h2>
       <div class="field"><label for="wl-name">Service or practitioner</label><input type="text" id="wl-name" value="${esc(prefill || "")}" placeholder="For example, Smith Street Psychology"></div>
       <div class="field"><label for="wl-joined">When did you join the list?</label><input type="date" id="wl-joined" value="${isoToday()}" max="${isoToday()}"></div>
-      <fieldset><legend>What did they tell you about the wait?</legend><div class="opts" id="wl-kind"></div></fieldset>
-      <div id="wl-kind-detail"></div>
+      <fieldset><legend>What did they tell you about the wait?</legend><div class="opts" id="wl-kind"></div></fieldset><div id="wl-kind-detail"></div>
       <div class="btnrow"><button type="button" class="btn" id="wl-save">Save</button><button type="button" class="btn tertiary" id="wl-cancel">Cancel</button></div>`;
     let kind = "range";
-    const kindBox = $("#wl-kind");
-    kindBox.innerHTML = [["range", "A range of weeks, for example \"3 to 9 weeks\""], ["date", "A set date"], ["unknown", "They did not say"]].map(([v, l]) => `<label class="opt"><input type="radio" name="wlk" value="${v}"${v === kind ? " checked" : ""}> ${esc(l)}</label>`).join("");
-    kindBox.addEventListener("change", e => { kind = e.target.value; detail(); });
+    $("#wl-kind").innerHTML = [["range", "A range of weeks, for example \"3 to 9 weeks\""], ["date", "A set date"], ["unknown", "They did not say"]].map(([v, l]) => `<label class="opt"><input type="radio" name="wlk" value="${v}"${v === kind ? " checked" : ""}> ${esc(l)}</label>`).join("");
+    $("#wl-kind").addEventListener("change", e => { kind = e.target.value; detail(); });
     function detail() {
       const d = $("#wl-kind-detail");
       if (kind === "range") d.innerHTML = `<div class="btnrow"><div class="field"><label for="wl-from">From week</label><input type="number" id="wl-from" min="0" max="52" value="3"></div><div class="field"><label for="wl-to">To week</label><input type="number" id="wl-to" min="0" max="52" value="9"></div></div>`;
       else if (kind === "date") d.innerHTML = `<div class="field"><label for="wl-date">Appointment date</label><input type="date" id="wl-date" value="${addDays(isoToday(), 28)}"></div>`;
-      else d.innerHTML = `<div class="alert info"><span class="ic">i</span><div><p>We will use a typical wait of ${TYPICAL.from} to ${TYPICAL.to} weeks. Most psychologists report waiting lists of 1 to 4 months (APS 2024). Call them and ask for a better estimate.</p></div></div>`;
+      else d.innerHTML = `<div class="alert info"><span class="ic">i</span><div><p>We will use a typical wait of ${TYPICAL.from} to ${TYPICAL.to} weeks. Most psychologists report waiting lists of 1 to 4 months. Call them and ask for a better estimate.</p></div></div>`;
     }
     detail();
-    $("#wl-cancel").addEventListener("click", () => { f.hidden = true; });
-    $("#wl-save").addEventListener("click", () => {
+    $("#wl-cancel").onclick = () => { f.hidden = true; };
+    $("#wl-save").onclick = () => {
       const name = $("#wl-name").value.trim(), joined = $("#wl-joined").value || isoToday();
       if (!name) { popup("Add a name", "<p>Type the name of the service so you can tell your lists apart.</p>"); return; }
-      const entry = { id: Date.now().toString(36), name, joined, seen: false, kind: "range", from: TYPICAL.from, to: TYPICAL.to, assumed: kind === "unknown" };
+      const entry = { id: Date.now().toString(36), name, joined, seen: false, kind: "range", from: TYPICAL.from, to: TYPICAL.to, assumed: kind === "unknown", source: "me" };
       if (kind === "range") { entry.from = Math.max(0, Number($("#wl-from").value) || 0); entry.to = Math.max(entry.from, Number($("#wl-to").value) || entry.from); }
       if (kind === "date") { const dt = $("#wl-date").value; if (!dt) { popup("Add the date", "<p>Choose the appointment date.</p>"); return; } entry.kind = "confirmed"; entry.date = dt; entry.week = Math.ceil(E.elapsed(joined, dt).days / 7); }
       S.lists.push(entry); save("lists"); counts(); f.hidden = true; renderWaiting(); toast(`Added: ${name}`);
-    });
+    };
     $("#wl-name").focus();
   }
   $("#wl-add-btn").addEventListener("click", () => openAddForm(""));
   $("#wl-example").addEventListener("click", () => {
     const t = isoToday();
-    S.lists.push({ id: "ex1" + Date.now().toString(36), name: "Example: private psychologist", joined: addDays(t, -38), kind: "range", from: 3, to: 9, seen: false });
-    S.lists.push({ id: "ex2" + Date.now().toString(36), name: "Example: free PHN psychology", joined: addDays(t, -10), kind: "range", from: 6, to: 14, seen: false });
+    S.lists.push({ id: "ex1" + Date.now().toString(36), name: "Example: private psychologist", joined: addDays(t, -38), kind: "range", from: 3, to: 9, seen: false, source: "example" });
+    S.lists.push({ id: "ex2" + Date.now().toString(36), name: "Example: free PHN psychology", joined: addDays(t, -10), kind: "range", from: 6, to: 14, seen: false, source: "example" });
     save("lists"); counts(); renderWaiting(); toast("Two examples added. Remove them when you are done.");
   });
   $("#look").addEventListener("input", e => { lookDays = Number(e.target.value); renderWaiting(); });
@@ -1357,52 +1694,56 @@ const Engine = (() => {
     overdue: ["You have waited longer than they said. Call them and ask for an update.", "Ask your GP about other options, or call 1800 595 212.", "Use the free services that can start today."]
   };
   const STAGE_LABEL = { early: "Just started", middle: "Waiting", window: "Could be any day now", overdue: "Longer than they said" };
+  const SRC_LABEL = { plan: "From your plan", clinic: "Added from a clinic QR code", shared: "From a shared plan", example: "Example" };
+  function listUpdate(l, st) {
+    const when = l.kind === "confirmed" ? `My appointment is on ${niceDate(l.date)}.` : `They said ${l.from} to ${l.to} weeks.`;
+    return `Update: I have been waiting ${st.weeks} week${st.weeks === 1 ? "" : "s"} for ${l.name}. ${when}${st.next2 !== null && l.kind !== "confirmed" ? ` There is about a ${Math.round(st.next2 * 10)} in 10 chance I am seen in the next 2 weeks.` : ""}`;
+  }
   function renderWaiting() {
     const today = addDays(isoToday(), lookDays);
     $("#look-out").textContent = lookDays === 0 ? "Showing today" : `Showing ${niceDate(today)} (${Math.round(lookDays / 7 * 10) / 10} weeks from now)`;
     $("#lookahead").hidden = S.lists.filter(l => !l.seen).length === 0;
-    if (!S.lists.length) { $("#wl-list").innerHTML = `<div class="callout"><h3>No waiting lists yet</h3><p>Press "Add a waiting list" when a service puts you on their list, or finish <a href="#start">Compare my options</a> and add your choice from your plan. Press "Show an example" to see how it works.</p></div>`; return; }
+    if (!S.lists.length) { $("#wl-list").innerHTML = `<div class="callout"><h3>No waiting lists yet</h3><p>Finish <a href="#start">Compare my options</a> and press "Start tracking" at the end, or press "Add a waiting list". Press "Show an example" to see how it works.</p></div>`; return; }
     $("#wl-list").innerHTML = S.lists.map(l => {
-      if (l.seen) return `<article class="wl"><div class="wl-head"><h3>${esc(l.name)}</h3><span class="status seen">Seen</span></div><p class="muted">You marked this as seen.</p><div class="btnrow"><button type="button" class="btn tertiary small" data-wl-remove="${l.id}">Remove</button></div></article>`;
+      if (l.seen) return `<article class="wl"><div class="wl-head"><h3>${esc(l.name)}</h3><span class="status seen">Seen</span></div><p>You marked this as seen. We hope it went well.</p><div class="btnrow"><a class="btn small secondary" href="#costs">Work out costs for more sessions</a><button type="button" class="btn tertiary small" data-wl-remove="${l.id}">Remove</button></div></article>`;
       const st = E.waitStage(l, today), span = Math.max(st.latest + 2, st.weeks + 2, 8);
       const pct = x => (100 * Math.min(x, span) / span).toFixed(1);
-      const next = st.next2, k = next === null ? null : Math.round(next * 10);
+      const k = st.next2 === null ? null : Math.round(st.next2 * 10);
       const past = l.kind === "confirmed" && new Date(l.date + "T00:00:00") < new Date(today + "T00:00:00");
       const when = l.kind === "confirmed" ? `Your appointment is on <b>${niceDate(l.date)}</b>.` : `${l.assumed ? `We used a typical wait of <b>${l.from} to ${l.to} weeks</b>, because the service did not say` : `They said <b>${l.from} to ${l.to} weeks</b>`}. That is between ${niceDate(addDays(l.joined, l.from * 7))} and ${niceDate(addDays(l.joined, l.to * 7))}.`;
       let big;
       if (l.kind === "confirmed") { const left = E.elapsed(today, l.date).days; big = past ? `<div class="wl-big"><span class="n">Date passed</span><span>Did you go? Mark it as seen, or call them.</span></div>` : `<div class="wl-big"><span class="n num">${left} day${left === 1 ? "" : "s"}</span><span>until your appointment</span></div>`; }
       else if (k === null) big = `<div class="wl-big"><span class="n">Overdue</span><span>You have waited longer than the latest week they gave you.</span></div>`;
-      else big = `<div class="wl-big"><span class="n num">${k} in 10</span><span>chance you will be seen in the next 2 weeks</span><span class="dots" aria-hidden="true">${Array.from({ length: 10 }, (_, j) => `<i class="${j < k ? "on" : ""}"></i>`).join("")}</span></div>${st.weeks + 2 < st.earliest ? `<p class="small">That is expected. The earliest is week ${st.earliest}, from ${niceDate(addDays(l.joined, st.earliest * 7))}.</p>` : ""}`;
-      const stage = l.kind === "confirmed" ? (past ? "overdue" : "window") : st.stage;
-      const label = l.kind === "confirmed" ? (past ? "Date passed" : "Date booked") : STAGE_LABEL[stage];
-      const adv = l.kind === "confirmed" ? ["Put the date in your calendar and set a reminder.", "Ask to be called if an earlier time comes up.", "If you cannot go, tell them early so someone else can have the time."] : ADVICE[stage];
+      else big = `<div class="wl-big"><span class="n num">${k} in 10</span><span>chance you will be seen in the next 2 weeks</span>${dots(k)}</div>${st.weeks + 2 < st.earliest ? `<p class="small">That is expected. The earliest is week ${st.earliest}, from ${niceDate(addDays(l.joined, st.earliest * 7))}.</p>` : ""}`;
+      const stg = l.kind === "confirmed" ? (past ? "overdue" : "window") : st.stage;
+      const label = l.kind === "confirmed" ? (past ? "Date passed" : "Date booked") : STAGE_LABEL[stg];
+      const adv = l.kind === "confirmed" ? ["Put the date in your calendar and set a reminder.", "Ask to be called if an earlier time comes up.", "If you cannot go, tell them early so someone else can have the time."] : ADVICE[stg];
+      const upd = listUpdate(l, st);
       return `<article class="wl" aria-labelledby="wl-${l.id}">
-        <div class="wl-head"><h3 id="wl-${l.id}">${esc(l.name)}</h3><span class="status ${stage}">${label}</span></div>
+        <div class="wl-head"><div><h3 id="wl-${l.id}">${esc(l.name)}</h3>${SRC_LABEL[l.source] ? `<span class="src-tag">${SRC_LABEL[l.source]}</span>` : ""}</div><span class="status ${stg}">${label}</span></div>
         <p>You joined on ${niceDate(l.joined)}. You have waited <b>${st.weeks} week${st.weeks === 1 ? "" : "s"} and ${st.days % 7} day${st.days % 7 === 1 ? "" : "s"}</b>. ${when}</p>
         ${big}
         <div class="timeline" aria-hidden="true"><span class="base"></span>
           ${l.kind === "confirmed" ? "" : `<span class="window" style="left:${pct(st.earliest)}%;width:${(pct(st.latest + 1) - pct(st.earliest)).toFixed(1)}%"></span>`}
-          <span class="done" style="width:${pct(st.days / 7)}%"></span>
-          <span class="today" style="left:${pct(st.days / 7)}%"><span>${lookDays ? "Then" : "Today"}</span></span>
-          ${l.kind === "confirmed" ? `<span class="today" style="left:${pct(l.week)}%;background:var(--ok)"><span style="color:var(--ok)">Appointment</span></span>` : ""}
-        </div>
+          <span class="done" style="width:${pct(st.days / 7)}%"></span><span class="today" style="left:${pct(st.days / 7)}%"><span>${lookDays ? "Then" : "Today"}</span></span>
+          ${l.kind === "confirmed" ? `<span class="today" style="left:${pct(l.week)}%;background:var(--ok)"><span style="color:var(--ok)">Appointment</span></span>` : ""}</div>
         <div class="tl-labels"><span>Joined</span>${l.kind === "confirmed" ? "" : `<span>Green: weeks ${st.earliest} to ${st.latest}</span>`}<span>Week ${span}</span></div>
         <div class="stack" style="gap:6px"><h4>What to do now</h4><ul class="plain">${adv.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div>
-        <div class="btnrow"><button type="button" class="btn small secondary" data-wl-date="${l.id}">I have a date now</button><button type="button" class="btn small secondary" data-wl-seen="${l.id}">I have been seen</button><button type="button" class="btn tertiary small" data-wl-remove="${l.id}">Remove</button></div>
+        <div class="btnrow"><button type="button" class="btn small secondary" data-wl-date="${l.id}">I have a date now</button><button type="button" class="btn small secondary" data-wl-seen="${l.id}">I have been seen</button>
+          <a class="btn small wa" href="https://wa.me/?text=${encodeURIComponent(upd)}" target="_blank" rel="noopener">${ICON.wa} Send an update</a><button type="button" class="btn tertiary small" data-wl-remove="${l.id}">Remove</button></div>
       </article>`;
     }).join("");
   }
-  RENDER.waiting = renderWaiting;
   $("#wl-list").addEventListener("click", e => {
     const t = e.target.closest("button"); if (!t) return;
     const find = id => S.lists.find(l => l.id === id);
     if (t.dataset.wlRemove) { const l = find(t.dataset.wlRemove); popup("Remove this waiting list?", `<p>Remove <b>${esc(l.name)}</b>?</p>`, [{ label: "Yes, remove", primary: true, onClick: () => { S.lists = S.lists.filter(x => x.id !== l.id); save("lists"); counts(); renderWaiting(); toast("Removed."); } }, { label: "Cancel" }]); }
-    if (t.dataset.wlSeen) { find(t.dataset.wlSeen).seen = true; save("lists"); counts(); renderWaiting(); toast("Marked as seen. We hope it goes well."); }
+    if (t.dataset.wlSeen) { const l = find(t.dataset.wlSeen); popup("You have been seen", `<p>Great. We will mark <b>${esc(l.name)}</b> as seen.</p><p>Was knowing how long you would wait useful?</p><label class="opt" for="m-useful"><input type="checkbox" id="m-useful"> Yes, it helped me plan</label>`, [{ label: "Mark as seen", primary: true, onClick: vals => { l.seen = true; l.useful = !!vals["m-useful"]; save("lists"); counts(); renderWaiting(); toast("Marked as seen. All the best."); } }, { label: "Cancel" }]); }
     if (t.dataset.wlDate) { const l = find(t.dataset.wlDate);
       popup("Add your appointment date", `<div class="field"><label for="m-date">Appointment date</label><input type="date" id="m-date" value="${addDays(isoToday(), 7)}"></div>`, [{ label: "Save date", primary: true, onClick: vals => { const dt = vals["m-date"]; if (dt) { l.kind = "confirmed"; l.date = dt; l.week = Math.ceil(E.elapsed(l.joined, dt).days / 7); l.assumed = false; save("lists"); renderWaiting(); toast("Date saved."); } } }, { label: "Cancel" }]); }
   });
 
-  /* ============ Cost calculator ============ */
+  /* ---------- Costs ---------- */
   function radios(container, name, options, value, onChange) {
     container.innerHTML = options.map(([v, l]) => `<label class="opt"><input type="radio" name="${name}" value="${esc(v)}"${String(value) === String(v) ? " checked" : ""}> ${esc(l)}</label>`).join("");
     container.addEventListener("change", e => { if (e.target.name === name) onChange(e.target.value); });
@@ -1410,7 +1751,11 @@ const Engine = (() => {
   radios(document.querySelector('[data-c="type"]'), "c-type", [["psychologist", "Psychologist"], ["clinical", "Clinical psychologist"], ["socialworker", "Mental health social worker or occupational therapist"]], S.cost.type, v => { S.cost.type = v; renderCosts(); });
   radios(document.querySelector('[data-c="hasPlan"]'), "c-plan", [["yes", "Yes"], ["no", "No"]], S.cost.hasPlan, v => { S.cost.hasPlan = v; renderCosts(); });
   radios(document.querySelector('[data-c="extrasOn"]'), "c-ex", [["yes", "Yes"], ["no", "No"]], S.cost.extrasOn, v => { S.cost.extrasOn = v; renderCosts(); });
-  $("#c-fee").value = S.cost.fee; $("#c-fee-range").value = S.cost.fee; $("#c-bulk").checked = S.cost.bulk; $("#c-exper").value = S.cost.exPer; $("#c-exlimit").value = S.cost.exLimit;
+  function syncCostInputs() {
+    $("#c-fee").value = S.cost.fee; $("#c-fee-range").value = S.cost.fee; $("#c-bulk").checked = S.cost.bulk; $("#c-exper").value = S.cost.exPer; $("#c-exlimit").value = S.cost.exLimit;
+    $$('input[name="c-plan"]').forEach(i => { i.checked = i.value === S.cost.hasPlan; });
+  }
+  syncCostInputs();
   $("#c-fee").addEventListener("input", e => { S.cost.fee = Math.max(0, Number(e.target.value) || 0); $("#c-fee-range").value = S.cost.fee; renderCosts(); });
   $("#c-fee-range").addEventListener("input", e => { S.cost.fee = Number(e.target.value); $("#c-fee").value = S.cost.fee; renderCosts(); });
   $("#c-bulk").addEventListener("change", e => { S.cost.bulk = e.target.checked; renderCosts(); });
@@ -1420,6 +1765,9 @@ const Engine = (() => {
     if (b.dataset.cs === "sessions") S.cost.sessions = Math.max(1, Math.min(30, S.cost.sessions + d)); else S.cost.used = Math.max(0, Math.min(10, S.cost.used + d)); renderCosts(); });
   function renderCosts() {
     const c = S.cost; save("cost");
+    const o = chosenOpt();
+    $("#cost-from-plan").innerHTML = o && o.fee !== undefined ? `<div class="alert info"><span class="ic">i</span><div><p><b>Your choice: ${esc(o.name)}</b>${o.bulk ? " (bulk billed or free)" : `, fee about ${money(o.fee)}`}.</p><div><button type="button" class="btn small secondary" id="use-choice">Use my choice</button></div></div></div>` : "";
+    const uc = $("#use-choice"); if (uc) uc.onclick = () => { S.cost.fee = o.fee || 0; S.cost.bulk = !!o.bulk; S.cost.hasPlan = o.needsPlan ? (J.gpplan === "yes" ? "yes" : "yes") : "yes"; syncCostInputs(); renderCosts(); toast("Using your choice."); };
     $("#c-sessions").textContent = c.sessions; $("#c-used").textContent = c.used; $("#extras-box").hidden = c.extrasOn !== "yes";
     const r = E.costPlan({ fee: c.fee, type: c.type, bulkBilled: c.bulk, sessions: c.sessions, usedThisYear: c.used, hasPlan: c.hasPlan === "yes", extras: { on: c.extrasOn === "yes", perSession: c.exPer, annualLimit: c.exLimit } });
     const rows = [];
@@ -1437,11 +1785,10 @@ const Engine = (() => {
       ${warn}
       ${rows.length ? `<div class="tablewrap"><table><thead><tr><th>Sessions</th><th>You pay</th><th class="r">Total</th></tr></thead><tbody>${rows.map(x => `<tr><td>${x[0]}</td><td>${x[1]}</td><td class="r">${money(x[2])}</td></tr>`).join("")}</tbody></table></div>` : ""}
       <div class="bars">${options.map(([l, v], i) => `<div class="hbar${i === options.length - 1 ? " best" : ""}"><span>${l}</span><span class="track"><span class="fill" style="width:${(100 * v / maxV).toFixed(1)}%"></span></span><span class="num"><b>${money(v)}</b></span></div>`).join("")}</div>
-      <p class="small muted">Your health fund cannot top up a Medicare session. <button type="button" class="helpbtn" data-help="extras">Why?</button> Medicare benefits from 1 July 2026.</p>`;
+      <p class="small muted">Your health fund cannot top up a Medicare session. <button type="button" class="helpbtn" data-help="extras">Why?</button> Medicare amounts from 1 July 2026.</p>`;
   }
-  RENDER.costs = renderCosts;
 
-  /* ============ For services ============ */
+  /* ---------- For clinics ---------- */
   const S_EXAMPLE = "12, 15, 18, 20, 21, 21, 23, 25, 26, 27, 28, 28, 30, 31, 33, 34, 35, 35, 36, 38, 40, 41, 42, 44, 45, 47, 49, 50, 52, 55, 56, 60, 63, 66, 70, 74, 80, 88, 95, 110";
   radios(document.querySelector('[data-s="unit"]'), "s-unit", [["days", "Days"], ["weeks", "Weeks"]], S.unit, v => { S.unit = v; save("unit"); renderServices(); });
   $("#s-data").value = store.get("sdata", S_EXAMPLE);
@@ -1452,46 +1799,62 @@ const Engine = (() => {
   function renderServices() {
     const waits = E.parseNumbers($("#s-data").value).map(x => S.unit === "days" ? x / 7 : x);
     if (waits.length < 5) { $("#s-out").innerHTML = `<div class="alert info"><span class="ic">i</span><div><b>Enter at least 5 waiting times</b><p>You have entered ${waits.length}. Or press "Use example numbers".</p></div></div>`; return; }
-    const st = E.clinicStatements(waits, $("#s-name").value);
-    const free = TODAY.filter(s => !s.areas && !s.ages);
-    const nm = ($("#s-name").value || "our service").trim();
+    const st = E.clinicStatements(waits, $("#s-name").value), nm = ($("#s-name").value || "our service").trim();
     const lo = Math.max(1, Math.floor(E.quantile(waits, 0.1)));
-    const letter = `Thank you for contacting ${nm}. You are now on our waiting list.\n\nHow long you may wait: half of our new clients are seen within ${st.q50} weeks, and 9 in 10 within ${st.q90} weeks. We will contact you with a date.\n\nWhile you wait, you can use these free services:\n${free.map(s => `- ${s.name}: ${s.how}`).join("\n")}\n\nIf you need help sooner, call the Medicare Mental Health phone service on 1800 595 212. In an emergency call 000, or the NSW Mental Health Line on 1800 011 511 (24 hours).`;
+    const addURL = BASE + "#add-" + E.b64urlEncode({ v: 1, n: nm.slice(0, 60), f: lo, t: st.q90 });
+    const free = TODAY.filter(s => !s.areas && !s.ages);
+    const letter = `Thank you for contacting ${nm}. You are now on our waiting list.\n\nHow long you may wait: half of our new clients are seen within ${st.q50} weeks, and 9 in 10 within ${st.q90} weeks. We will contact you with a date.\n\nScan the QR code on this letter to track your wait with Know Your Wait.\n\nWhile you wait, you can use these free services:\n${free.map(s => `- ${s.name}: ${s.how}`).join("\n")}\n\nIf you need help sooner, call 1800 595 212. In an emergency call 000, or the NSW Mental Health Line on 1800 011 511 (24 hours).`;
     const maxW = Math.ceil(Math.max(...waits)), cnt = new Array(maxW + 1).fill(0); waits.forEach(x => cnt[Math.min(maxW, Math.ceil(x))]++);
     const W = 560, H = 180, L = 30, B = 34, T = 12, Rr = 10, bw = (W - L - Rr) / (maxW + 1), ymax = Math.max(...cnt), y = v => T + (H - T - B) * (1 - v / ymax);
     let g = "";
-    cnt.forEach((c, w) => { if (c) g += `<rect x="${(L + w * bw + 1).toFixed(1)}" y="${y(c).toFixed(1)}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${(H - B - y(c)).toFixed(1)}" fill="${w <= st.q50 ? "var(--ok)" : w <= st.q90 ? "var(--brand-alt)" : "var(--field)"}"></rect>`; });
+    cnt.forEach((c, w) => { if (c) g += `<rect x="${(L + w * bw + 1).toFixed(1)}" y="${y(c).toFixed(1)}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${(H - B - y(c)).toFixed(1)}" fill="${w <= st.q50 ? "var(--ok)" : w <= st.q90 ? "var(--action)" : "var(--field)"}"></rect>`; });
     for (let w = 0; w <= maxW; w += maxW > 20 ? 4 : 2) g += `<text x="${(L + (w + 0.5) * bw).toFixed(1)}" y="${H - 16}" font-size="12" text-anchor="middle" fill="var(--muted)">${w}</text>`;
     g += `<text x="${W - Rr}" y="${H - 2}" font-size="12" text-anchor="end" fill="var(--muted)">weeks to first appointment</text><text x="${L - 6}" y="${y(ymax) + 4}" font-size="12" text-anchor="end" fill="var(--muted)">${ymax}</text><text x="${L - 6}" y="${H - B}" font-size="12" text-anchor="end" fill="var(--muted)">0</text><line x1="${L}" x2="${W - Rr}" y1="${H - B}" y2="${H - B}" stroke="var(--rule)"></line>`;
     $("#s-out").innerHTML = `
+      <div class="out-box"><h3>QR code for your letters and waiting room</h3><div class="share" style="border:0;padding:0;grid-template-columns:160px 1fr"><div class="qr" style="max-width:160px">${qrSVG(addURL)}</div><div class="stack" style="gap:6px"><p>When people scan this, Know Your Wait adds <b>${esc(nm)}</b> to their waiting lists with your waits: <b>1 in 10</b> people seen by week ${lo}, <b>9 in 10</b> by week ${st.q90}.</p><p class="small muted">Update it every 3 months.</p></div></div></div>
       <div class="out-box"><h3>For your website</h3><p class="text" id="o-web">${esc(st.web)}</p><div><button type="button" class="btn small" data-copy="o-web">Copy</button></div></div>
-      <div class="out-box"><h3>For an SMS</h3><p class="text" id="o-sms">${esc(st.sms)}</p><span class="small muted">${st.sms.length} characters (fits in 1 SMS)</span><div><button type="button" class="btn small" data-copy="o-sms">Copy</button></div></div>
+      <div class="out-box"><h3>For an SMS</h3><p class="text" id="o-sms">${esc(st.sms)}</p><span class="small muted">${st.sms.length} characters, fits in 1 SMS</span><div><button type="button" class="btn small" data-copy="o-sms">Copy</button></div></div>
       <div class="out-box"><h3>For a letter or email</h3><p class="text" id="o-letter" style="white-space:pre-line">${esc(letter)}</p><div><button type="button" class="btn small" data-copy="o-letter">Copy</button></div></div>
-      <figure class="out-box chart" style="margin:0"><h3>Your waiting times</h3><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Number of clients by weeks waited">${g}</svg>
-        <figcaption class="small muted">Based on ${st.n} clients. Green: seen within ${st.q50} weeks (half). Blue: within ${st.q90} weeks (9 in 10). Grey: waited longer. People using Know Your Wait would see your wait as week ${lo} to week ${st.q90}.</figcaption></figure>`;
+      <figure class="out-box chart" style="margin:0"><h3>Your waiting times</h3><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Number of clients by weeks waited">${g}</svg><figcaption class="small muted">Based on ${st.n} clients. Green: seen within ${st.q50} weeks (half). Blue: within ${st.q90} weeks (9 in 10). Grey: waited longer.</figcaption></figure>`;
   }
-  RENDER.services = renderServices;
   $("#s-out").addEventListener("click", e => { const b = e.target.closest("[data-copy]"); if (!b) return; const el = document.getElementById(b.dataset.copy); copyText(el.textContent, el, "Copied."); });
 
-  /* ============ How it works ============ */
+  /* ---------- How it works ---------- */
   (function how() {
-    const v = R.values, c = R.comprehension, et = R.eye_tracking, a = et.attention_choice_model.coefs.slice(-1)[0];
-    $("#how-dce").textContent = `Simulated result: people would pay about ${money(v.dollars_per_session_confirmed_vs_pm3.est)} more a session for a set date.`;
-    $("#how-et").textContent = `Simulated result: ${Math.round(c.proportion_correct.graphic * 100)}% understood the picture and ${Math.round(c.proportion_correct.text * 100)}% the words. People who looked longer at the waiting range gave it more weight.`;
-    $("#sim-kpis").innerHTML = `<div><span class="n">${money(v.dollars_per_session_confirmed_vs_pm3.est)}</span><span>extra a session people would pay for a set date</span></div>
-      <div><span class="n">${v.weeks_confirmed_vs_pm3.est.toFixed(1)} weeks</span><span>longer people would wait for a set date</span></div>
-      <div><span class="n">${Math.round(c.proportion_correct.text * 100)}% vs ${Math.round(c.proportion_correct.graphic * 100)}%</span><span>understood the wait: words vs picture</span></div>`;
+    const v = R.values, c = R.comprehension, et = R.eye_tracking;
     const ci = (x, d) => `${x[0].toFixed(d)} to ${x[1].toFixed(d)}`;
+    $("#attn-coef").textContent = ATTN.coef.toFixed(3);
+    $("#sim-kpis").innerHTML = `<div><span class="n">${money(v.dollars_per_session_confirmed_vs_pm3.est)}</span><span>extra a session for a set date (simulated)</span></div><div><span class="n">${v.weeks_confirmed_vs_pm3.est.toFixed(1)} weeks</span><span>longer wait accepted for a set date (simulated)</span></div><div><span class="n">${Math.round(c.proportion_correct.text * 100)}% vs ${Math.round(c.proportion_correct.graphic * 100)}%</span><span>understood: words vs picture (simulated)</span></div>`;
     const lab = { wait: "Expected wait (per week)", spread: "Weeks earlier or later (per week)", cost: "Cost (per $1 a session)", video: "Video instead of face to face" };
     $("#tbl-main").innerHTML = `<table><thead><tr><th>Attribute</th><th class="r">Estimate</th><th class="r">95% CI</th><th class="r">Value used to simulate</th></tr></thead><tbody>${R.main_model.coefs.map(k => `<tr><td>${lab[k.name]}</td><td class="r">${k.est.toFixed(4)}</td><td class="r">${ci(k.ci, 4)}</td><td class="r">${R.true_parameters[k.name]}</td></tr>`).join("")}</tbody></table>`;
     const rows = [["Time on waiting information (log seconds)", "log_dwell_wait_seconds", 2], ["Time per % of screen (seconds)", "dwell_wait_per_pct_area", 3], ["Looks back at waiting information", "revisits_wait", 2], ["Comparisons between options", "transitions_between_options_wait", 2]];
     $("#tbl-eye").innerHTML = `<table><thead><tr><th>Per task</th><th class="r">Words</th><th class="r">Picture</th><th class="r">Difference (95% CI)</th></tr></thead><tbody>${rows.map(([l, k, d]) => `<tr><td>${l}</td><td class="r">${et[k].mean.text.toFixed(d)}</td><td class="r">${et[k].mean.graphic.toFixed(d)}</td><td class="r">${et[k].graphic_minus_text.est.toFixed(d)} (${ci(et[k].graphic_minus_text.ci, d)})</td></tr>`).join("")}</tbody></table>`;
-    $("#tech-note").textContent = `Conditional logit, ${R.main_model.respondents} people, ${R.main_model.choices} choices, standard errors clustered by person. Attention to waiting information and the weight on uncertainty: ${a.est.toFixed(3)} per SD (95% CI ${ci(a.ci, 3)}). All values simulated.`;
+    $("#tech-note").textContent = `Conditional logit, ${R.main_model.respondents} people, ${R.main_model.choices} choices, standard errors clustered by person. All study values simulated.`;
     $("#refs").innerHTML = REFS.map(([t, u]) => `<li>${esc(t)} <a href="${u}" target="_blank" rel="noopener">Link</a></li>`).join("");
   })();
   $("#crisis-table tbody").innerHTML = CRISIS.map(r => `<tr><td><b>${esc(r[0])}</b></td><td class="num"><b>${esc(r[1])}</b></td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join("");
   $("#wipe").addEventListener("click", () => popup("Delete everything?", "<p>This deletes your answers, plan, costs and waiting lists from this device.</p>", [{ label: "Yes, delete", primary: true, onClick: () => { store.wipe(); location.hash = "#home"; location.reload(); } }, { label: "Cancel" }]));
 
+  /* ---------- Routing ---------- */
+  const VIEWS = ["home", "start", "shared", "waiting", "costs", "services", "how", "urgent"];
+  function route() {
+    let h = (location.hash || "#home").slice(1), v = h;
+    if (h.startsWith("plan-")) { v = "shared"; renderShared(E.b64urlDecode(h.slice(5))); }
+    else if (h.startsWith("add-")) {
+      const d = E.b64urlDecode(h.slice(4)); v = "waiting";
+      if (d && d.v === 1) setTimeout(() => popup("Add this waiting list?", `<p><b>${esc(d.n)}</b> says most new clients are seen between <b>week ${d.f} and week ${d.t}</b>.</p><p>We will count the weeks from today and tell you what to do at each stage. It stays on this device.</p>`, [{ label: "Add to my waiting lists", primary: true, onClick: () => { addList({ name: d.n, kind: "range", from: d.f, to: d.t }, "clinic"); renderWaiting(); toast(`Now tracking: ${d.n}`); history.replaceState(null, "", "#waiting"); } }, { label: "Not now" }]), 0);
+    }
+    if (!VIEWS.includes(v)) v = "home";
+    VIEWS.forEach(x => { $("#v-" + x).hidden = x !== v; });
+    $$("[data-nav]").forEach(a => { if (a.dataset.nav === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    $("#mainnav").classList.remove("open"); $("#menu-btn").setAttribute("aria-expanded", "false");
+    if (v !== "start" && Cam.on) { camStop(); toast("Camera turned off. Nothing was saved."); }
+    ({ home: renderHome, start: () => renderJourney(true), waiting: renderWaiting, costs: renderCosts, services: renderServices })[v]?.();
+    renderRibbon();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", route);
+  $("#menu-btn").addEventListener("click", e => { const o = $("#mainnav").classList.toggle("open"); e.target.setAttribute("aria-expanded", String(o)); });
   counts();
   route();
 })();

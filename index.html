@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Know Your Wait</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Find mental health support in the Hunter, work out what it will cost after Medicare, and keep track of waiting lists. A University of Newcastle research prototype.">
+<meta name="description" content="Waiting to see a psychologist? Compare your options in 3 minutes, find out what matters most to you, and get a plan for while you wait. A University of Newcastle prototype.">
 <style>
-/* Layout: public-service site. Navy masthead, crisis strip, breadcrumb, single 1100px content column; finder uses a filter column beside a live results column. */
+/* Layout: public-service site. Navy masthead, crisis strip, guided journey in a 780px column with a step bar; tools pages use the 1100px column. */
 :root {
   --bg: #ffffff;
   --bg-alt: #f2f4f6;
@@ -30,6 +30,7 @@
   --bad-bg: #fbe9e8;
   --crisis-bg: #fff1c2;
   --crisis-text: #4a3500;
+  --late: #c26a12;
   --font: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color-scheme: light;
 }
@@ -38,20 +39,21 @@
     --bg: #11161c; --bg-alt: #1a2129; --text: #e9edf1; --muted: #a8b1bb; --rule: #313b46; --field: #7d8893;
     --brand: #07182e; --brand-text: #ffffff; --brand-alt: #0f2a4d; --action: #6cb4f0; --action-hover: #a0cff6; --action-bg: #16304a;
     --focus: #b89af0; --ok: #6fd39a; --ok-bg: #14321f; --warn: #f4ad66; --warn-bg: #3a2711; --bad: #f19b94; --bad-bg: #3d1a18;
-    --crisis-bg: #3b3011; --crisis-text: #ffe39a; color-scheme: dark;
+    --crisis-bg: #3b3011; --crisis-text: #ffe39a; --late: #f0a04e; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #11161c; --bg-alt: #1a2129; --text: #e9edf1; --muted: #a8b1bb; --rule: #313b46; --field: #7d8893;
   --brand: #07182e; --brand-text: #ffffff; --brand-alt: #0f2a4d; --action: #6cb4f0; --action-hover: #a0cff6; --action-bg: #16304a;
   --focus: #b89af0; --ok: #6fd39a; --ok-bg: #14321f; --warn: #f4ad66; --warn-bg: #3a2711; --bad: #f19b94; --bad-bg: #3d1a18;
-  --crisis-bg: #3b3011; --crisis-text: #ffe39a; color-scheme: dark;
+  --crisis-bg: #3b3011; --crisis-text: #ffe39a; --late: #f0a04e; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.55 var(--font); }
 .wrap { max-width: 1100px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.narrow { max-width: 780px; margin: 0 auto; }
 h1, h2, h3, h4 { margin: 0; line-height: 1.2; text-wrap: balance; font-weight: 700; }
 h1 { font-size: clamp(1.85rem, 4.2vw, 2.6rem); letter-spacing: -0.01em; }
 h2 { font-size: 1.55rem; }
@@ -68,8 +70,8 @@ a:hover { color: var(--action-hover); text-decoration-thickness: 2px; }
 .stack { display: grid; gap: 16px; }
 .stack-lg { display: grid; gap: 32px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 
-/* skip link and masthead */
 .skip { position: absolute; left: 8px; top: -60px; background: var(--bg); color: var(--action); padding: 8px 12px; z-index: 100; }
 .skip:focus { top: 8px; }
 .masthead { background: var(--brand); color: var(--brand-text); }
@@ -87,22 +89,18 @@ a:hover { color: var(--action-hover); text-decoration-thickness: 2px; }
 .mainnav a[aria-current="page"] { border-bottom-color: var(--brand-text); }
 .mainnav .count { display: inline-block; min-width: 1.5em; text-align: center; background: var(--brand-text); color: var(--brand); border-radius: 999px; font-size: 0.75rem; padding: 0 6px; margin-left: 4px; }
 .menu-btn { display: none; font: inherit; font-weight: 600; background: transparent; color: var(--brand-text); border: 2px solid rgba(255,255,255,0.7); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
-
 .crisis { background: var(--crisis-bg); color: var(--crisis-text); font-size: 0.95rem; }
 .crisis .wrap { display: flex; flex-wrap: wrap; gap: 4px 20px; padding-block: 9px; align-items: baseline; }
 .crisis b { white-space: nowrap; }
 .crisis a { color: var(--crisis-text); }
-
-.proto { border-bottom: 1px solid var(--rule); font-size: 0.9rem; }
+.proto { border-bottom: 1px solid var(--rule); font-size: 0.88rem; }
 .proto .wrap { padding-block: 8px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
 .tag { display: inline-block; background: var(--warn-bg); color: var(--warn); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; border-radius: 3px; padding: 1px 7px; }
-
 main { padding-block: 24px 64px; }
 .crumbs { font-size: 0.9rem; color: var(--muted); margin-bottom: 18px; }
 .crumbs ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .crumbs li + li::before { content: "/"; margin-right: 6px; color: var(--rule); }
 .page-head { display: grid; gap: 12px; margin-bottom: 28px; }
-.updated { font-size: 0.85rem; color: var(--muted); }
 
 /* buttons */
 .btn { font: inherit; font-weight: 700; font-size: 1rem; line-height: 1.2; min-height: 44px; padding: 10px 18px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; border: 2px solid var(--action); background: var(--action); color: var(--bg); }
@@ -112,10 +110,13 @@ main { padding-block: 24px 64px; }
 .btn.tertiary { background: transparent; border-color: transparent; color: var(--action); text-decoration: underline; padding-inline: 4px; }
 .btn.tertiary:hover { color: var(--action-hover); background: transparent; }
 .btn.small { min-height: 36px; padding: 6px 12px; font-size: 0.92rem; }
-.btn[aria-pressed="true"] { background: var(--ok); border-color: var(--ok); color: var(--bg); }
+.btn.big { font-size: 1.15rem; min-height: 54px; padding: 12px 26px; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .btnrow { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.btnrow.spread { justify-content: space-between; }
+.helpbtn { font: inherit; font-size: 0.88rem; font-weight: 700; color: var(--action); background: transparent; border: 0; text-decoration: underline; cursor: pointer; padding: 0 2px; }
 
-/* callouts and alerts */
+/* alerts and callouts */
 .callout { background: var(--bg-alt); border-left: 6px solid var(--brand-alt); padding: 16px 18px; display: grid; gap: 8px; }
 .alert { border: 2px solid; border-radius: 4px; padding: 14px 16px; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: start; }
 .alert .ic { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 0.85rem; color: var(--bg); margin-top: 2px; }
@@ -125,24 +126,122 @@ main { padding-block: 24px 64px; }
 .alert.warn { border-color: var(--warn); background: var(--warn-bg); } .alert.warn .ic { background: var(--warn); }
 .alert.bad { border-color: var(--bad); background: var(--bad-bg); } .alert.bad .ic { background: var(--bad); }
 
-/* home tiles */
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-.tile { border: 1px solid var(--rule); border-top: 6px solid var(--action); padding: 18px; display: grid; gap: 8px; align-content: start; text-decoration: none; color: var(--text); background: var(--bg); }
-.tile:hover { border-color: var(--action); color: var(--text); }
-.tile:hover h3 { text-decoration: underline; }
-.tile h3 { color: var(--action); }
-.facts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-.facts-row > div { padding: 18px 16px 18px 0; display: grid; gap: 4px; }
-.facts-row .n { font-size: 2rem; font-weight: 700; color: var(--brand-alt); }
-:root[data-theme="dark"] .facts-row .n { color: var(--action); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .facts-row .n { color: var(--action); } }
+/* home */
+.hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: center; padding-bottom: 32px; border-bottom: 1px solid var(--rule); }
+.hero-card { border: 1px solid var(--rule); border-top: 6px solid var(--ok); padding: 18px; display: grid; gap: 10px; background: var(--bg); }
+.hero-card .big { font-size: 2rem; font-weight: 700; }
+.how3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--rule); }
+.how3 > div { padding: 18px; display: grid; gap: 6px; align-content: start; }
+.how3 > div + div { border-left: 1px solid var(--rule); }
+.how3 .k { font-size: 0.8rem; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+.facts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.facts-row > div { padding: 16px 16px 16px 0; display: grid; gap: 4px; }
+.facts-row .n { font-size: 1.9rem; font-weight: 700; color: var(--brand-alt); }
 
-/* forms */
-fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
-legend { font-weight: 700; padding: 0; margin-bottom: 4px; }
-.hint { font-size: 0.88rem; color: var(--muted); }
-.opts { display: grid; gap: 6px; }
-.opts.inline { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+/* journey */
+.stepbar { list-style: none; margin: 0 0 26px; padding: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.stepbar li { border-top: 5px solid var(--rule); padding-top: 6px; font-size: 0.75rem; font-weight: 700; color: var(--muted); line-height: 1.2; }
+.stepbar li.done { border-color: var(--ok); color: var(--ok); }
+.stepbar li.now { border-color: var(--action); color: var(--text); }
+.stepcount { font-size: 0.9rem; color: var(--muted); font-weight: 600; }
+.step { display: grid; gap: 22px; }
+.q { display: grid; gap: 10px; }
+.q > .ql { font-weight: 700; font-size: 1.08rem; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.tiles.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tiles button { font: inherit; font-weight: 600; min-height: 56px; border: 2px solid var(--field); background: var(--bg); color: var(--text); border-radius: 4px; cursor: pointer; padding: 8px 12px; text-align: left; line-height: 1.25; }
+.tiles button:hover { border-color: var(--action); background: var(--action-bg); }
+.tiles button[aria-pressed="true"] { border-color: var(--action); background: var(--action-bg); box-shadow: inset 0 0 0 2px var(--action); }
+.tiles button small { display: block; font-weight: 400; color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+select { font: inherit; color: var(--text); background: var(--bg); border: 2px solid var(--field); border-radius: 4px; padding: 8px 10px; min-height: 48px; width: 100%; max-width: 420px; }
+.safe { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.safe button { font: inherit; text-align: left; border: 2px solid var(--field); background: var(--bg); color: var(--text); padding: 18px; border-radius: 4px; cursor: pointer; display: grid; gap: 4px; }
+.safe button b { font-size: 1.15rem; }
+.safe button:hover { border-color: var(--action); background: var(--action-bg); }
+.safe button.danger:hover { border-color: var(--bad); background: var(--bad-bg); }
+.crisis-panel { border: 3px solid var(--bad); padding: 18px; display: grid; gap: 12px; background: var(--bad-bg); }
+.crisis-panel .line { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; font-size: 1.1rem; }
+.crisis-panel .line b { font-size: 1.4rem; }
+
+/* option cards */
+.opt-card { border: 1px solid var(--rule); border-left: 6px solid var(--brand-alt); padding: 16px 18px; display: grid; gap: 10px; }
+.opt-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px 16px; flex-wrap: wrap; }
+.opt-facts { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 0.95rem; }
+.edit-box { border-top: 1px dashed var(--rule); padding-top: 12px; display: grid; gap: 14px; }
+.seg { display: inline-flex; border: 2px solid var(--field); border-radius: 4px; overflow: hidden; }
+.seg button { font: inherit; font-weight: 600; border: 0; background: var(--bg); color: var(--text); padding: 8px 14px; cursor: pointer; min-height: 42px; }
+.seg button + button { border-left: 2px solid var(--field); }
+.seg button[aria-pressed="true"] { background: var(--action); color: var(--bg); }
+.stepper { display: inline-flex; align-items: stretch; border: 2px solid var(--field); border-radius: 4px; overflow: hidden; }
+.stepper button { font: inherit; font-size: 1.25rem; font-weight: 700; width: 44px; min-height: 42px; border: 0; background: var(--bg-alt); color: var(--action); cursor: pointer; }
+.stepper button:hover { background: var(--action-bg); }
+.stepper output { min-width: 4.6em; display: grid; place-items: center; font-weight: 700; padding: 0 8px; font-variant-numeric: tabular-nums; }
+.edit-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.edit-row > span:first-child { min-width: 7.5em; font-weight: 600; }
+
+/* week strip */
+.strip { display: grid; gap: 4px; }
+.strip svg { width: 100%; height: auto; display: block; max-width: 560px; }
+.strip .cap { font-size: 0.9rem; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.82rem; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; vertical-align: -1px; margin-right: 5px; }
+
+/* choice game */
+.game-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pips { display: flex; gap: 6px; }
+.pips i { width: 26px; height: 8px; background: var(--rule); display: block; }
+.pips i.done { background: var(--ok); }
+.pips i.now { background: var(--action); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.pick { font: inherit; text-align: left; color: var(--text); background: var(--bg); border: 2px solid var(--field); border-radius: 4px; padding: 16px; cursor: pointer; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.pick:hover { border-color: var(--action); background: var(--action-bg); }
+.pick[aria-pressed="true"] { border-color: var(--ok); box-shadow: inset 0 0 0 2px var(--ok); background: var(--ok-bg); }
+.pick .lab { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; color: var(--muted); }
+.pick dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 0.98rem; }
+.pick dt { color: var(--muted); }
+.pick dd { margin: 0; font-weight: 700; }
+.pick .go { font-weight: 700; color: var(--action); }
+.feedback { min-height: 1.6em; font-weight: 600; color: var(--ok); }
+@media (prefers-reduced-motion: no-preference) {
+  .step-anim { animation: stepIn 0.28s ease-out; }
+  @keyframes stepIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+}
+
+/* results */
+.top-match { border: 3px solid var(--ok); background: var(--ok-bg); padding: 18px; display: grid; gap: 10px; }
+.top-match .name { font-size: 1.5rem; font-weight: 700; }
+.you { border: 1px solid var(--rule); padding: 18px; display: grid; gap: 22px; }
+.meter { display: grid; gap: 6px; }
+.meter .row { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+.meter .val { font-size: 1.5rem; font-weight: 700; }
+.meter .bar { position: relative; height: 14px; background: var(--bg-alt); border: 1px solid var(--rule); }
+.meter .mark { position: absolute; top: -6px; width: 6px; height: 24px; background: var(--action); transform: translateX(-3px); }
+.meter .avg { position: absolute; top: -3px; width: 2px; height: 18px; background: var(--muted); }
+.meter .ends { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); gap: 8px; }
+.res-card { border: 1px solid var(--rule); border-left: 6px solid var(--brand-alt); padding: 16px 18px; display: grid; gap: 12px; }
+.res-card.first { border-left-color: var(--ok); }
+.res-card.chosen { box-shadow: inset 0 0 0 2px var(--ok); }
+.res-head { display: flex; justify-content: space-between; gap: 8px 16px; align-items: baseline; flex-wrap: wrap; }
+.matchpct { font-weight: 700; font-size: 0.95rem; padding: 3px 10px; background: var(--bg-alt); border-radius: 3px; }
+.res-card.first .matchpct { background: var(--ok-bg); color: var(--ok); }
+.chance { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; }
+.chance .n { font-size: 2rem; font-weight: 700; line-height: 1; }
+.dots { display: inline-flex; gap: 4px; flex-wrap: wrap; vertical-align: middle; }
+.dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--late); display: inline-block; }
+.dots i.on { background: var(--ok); border-color: var(--ok); }
+.latest { font-weight: 700; color: var(--late); }
+.quiz { border: 2px solid var(--action); padding: 18px; display: grid; gap: 12px; }
+.quiz .tiles button.right { border-color: var(--ok); background: var(--ok-bg); box-shadow: inset 0 0 0 2px var(--ok); }
+.quiz .tiles button.wrong { border-color: var(--bad); background: var(--bad-bg); }
+details.why { border-top: 1px solid var(--rule); padding-top: 10px; }
+details.why summary { cursor: pointer; font-weight: 700; color: var(--action); }
+.compare { display: grid; gap: 8px; margin-top: 10px; }
+.compare .r { display: grid; grid-template-columns: minmax(140px, 220px) 1fr 1fr; gap: 10px; font-size: 0.92rem; border-bottom: 1px solid var(--rule); padding-bottom: 6px; }
+
+/* plan */
+.plan-step { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 16px 0; border-top: 1px solid var(--rule); }
+.plan-step .no { width: 40px; height: 40px; border-radius: 50%; background: var(--brand-alt); color: var(--brand-text); display: grid; place-items: center; font-weight: 700; }
+.checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
 .opt { display: flex; align-items: center; gap: 10px; cursor: pointer; min-height: 36px; }
 .opt input { appearance: none; -webkit-appearance: none; flex: none; width: 24px; height: 24px; border: 2px solid var(--field); border-radius: 50%; background: var(--bg); margin: 0; cursor: pointer; display: grid; place-items: center; }
 .opt input[type="checkbox"] { border-radius: 3px; }
@@ -150,9 +249,16 @@ legend { font-weight: 700; padding: 0; margin-bottom: 4px; }
 .opt input[type="radio"]:checked::after { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--action); }
 .opt input[type="checkbox"]:checked { background: var(--action); }
 .opt input[type="checkbox"]:checked::after { content: ""; width: 6px; height: 11px; border: solid var(--bg); border-width: 0 3px 3px 0; transform: rotate(45deg) translate(-1px, -1px); }
+
+/* forms on tool pages */
+fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
+legend { font-weight: 700; padding: 0; margin-bottom: 4px; }
+.hint { font-size: 0.88rem; color: var(--muted); }
+.opts { display: grid; gap: 6px; }
+.opts.inline { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .field { display: grid; gap: 4px; min-width: 0; }
 .field label { font-weight: 700; }
-input[type="text"], input[type="number"], input[type="date"], select, textarea {
+input[type="text"], input[type="number"], input[type="date"], textarea {
   font: inherit; color: var(--text); background: var(--bg); border: 2px solid var(--field); border-radius: 4px; padding: 8px 10px; min-height: 44px; max-width: 100%; }
 input[type="number"] { width: 8em; }
 textarea { width: 100%; min-height: 110px; font-size: 0.95rem; }
@@ -160,46 +266,6 @@ input[type="range"] { width: 100%; max-width: 360px; accent-color: var(--action)
 .money { display: inline-flex; align-items: center; border: 2px solid var(--field); border-radius: 4px; background: var(--bg); }
 .money span { padding: 0 6px 0 10px; color: var(--muted); font-weight: 700; }
 .money input { border: 0; min-height: 40px; padding-left: 2px; width: 6em; }
-.stepper { display: inline-flex; align-items: stretch; border: 2px solid var(--field); border-radius: 4px; overflow: hidden; }
-.stepper button { font: inherit; font-size: 1.25rem; font-weight: 700; width: 44px; border: 0; background: var(--bg-alt); color: var(--action); cursor: pointer; }
-.stepper button:hover { background: var(--action-bg); }
-.stepper output { min-width: 3.5em; display: grid; place-items: center; font-weight: 700; padding: 0 8px; font-variant-numeric: tabular-nums; }
-.helpbtn { font: inherit; font-size: 0.85rem; font-weight: 700; color: var(--action); background: transparent; border: 0; text-decoration: underline; cursor: pointer; padding: 0 2px; }
-
-/* finder */
-.finder { display: grid; grid-template-columns: minmax(260px, 320px) 1fr; gap: 32px; align-items: start; }
-.filters select { width: 100%; }
-.filters { border: 1px solid var(--rule); padding: 18px; display: grid; gap: 22px; position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); max-height: calc(100vh - 24px); overflow: auto; background: var(--bg); }
-.results { display: grid; gap: 22px; min-width: 0; }
-.summary-bar { border-bottom: 3px solid var(--brand-alt); padding-bottom: 12px; display: grid; gap: 10px; }
-.summary-bar .big { font-size: 1.35rem; font-weight: 700; }
-.sortrow { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 0.95rem; }
-.group-h { display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--rule); padding-bottom: 6px; }
-.group-h .count { color: var(--muted); font-weight: 600; font-size: 0.95rem; }
-.svc { border: 1px solid var(--rule); border-left: 6px solid var(--action); padding: 16px 18px; display: grid; gap: 10px; background: var(--bg); }
-.svc.g-today { border-left-color: var(--ok); }
-.svc.g-referral { border-left-color: var(--brand-alt); }
-.svc-head { display: flex; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; align-items: baseline; }
-.svc-head .by { font-size: 0.88rem; color: var(--muted); }
-.kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px 18px; font-size: 0.95rem; }
-.kv dt { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-.kv dd { margin: 0; }
-.fits { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { display: inline-block; font-size: 0.8rem; font-weight: 600; padding: 2px 8px; border-radius: 3px; background: var(--ok-bg); color: var(--ok); }
-.chip.neutral { background: var(--bg-alt); color: var(--muted); }
-.chip.warn { background: var(--warn-bg); color: var(--warn); }
-.src { font-size: 0.82rem; color: var(--muted); }
-details.notfit { border-top: 1px solid var(--rule); padding-top: 10px; }
-details.notfit summary { cursor: pointer; font-weight: 700; color: var(--action); }
-details.notfit ul { margin: 10px 0 0; padding-left: 1.2em; display: grid; gap: 6px; }
-
-/* plan */
-.plan-step { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 16px 0; border-top: 1px solid var(--rule); }
-.plan-step .no { width: 40px; height: 40px; border-radius: 50%; background: var(--brand-alt); color: var(--brand-text); display: grid; place-items: center; font-weight: 700; }
-.plan-step ul { margin: 6px 0 0; padding-left: 1.2em; display: grid; gap: 6px; }
-.checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
-
-/* cost */
 .two-col { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr); gap: 32px; align-items: start; }
 .panel { border: 1px solid var(--rule); padding: 18px; display: grid; gap: 20px; min-width: 0; }
 .answer { background: var(--bg-alt); border-top: 6px solid var(--ok); padding: 18px; display: grid; gap: 12px; position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); }
@@ -210,14 +276,11 @@ th { font-size: 0.82rem; color: var(--muted); }
 td.r, th.r { text-align: right; padding-right: 0; }
 .tablewrap { overflow-x: auto; }
 .bars { display: grid; gap: 10px; }
-.bar { display: grid; grid-template-columns: minmax(120px, 190px) 1fr auto; gap: 10px; align-items: center; font-size: 0.92rem; }
-.bar .track { height: 18px; background: var(--bg); border: 1px solid var(--rule); }
-.bar .fill { height: 100%; background: var(--brand-alt); }
-.bar.best .fill { background: var(--ok); }
-:root[data-theme="dark"] .bar .fill { background: var(--action); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bar .fill { background: var(--action); } }
-.bar.best .fill { background: var(--ok) !important; }
-@media (prefers-reduced-motion: no-preference) { .bar .fill, .timeline .done { transition: width 0.3s ease; } }
+.hbar { display: grid; grid-template-columns: minmax(120px, 190px) 1fr auto; gap: 10px; align-items: center; font-size: 0.92rem; }
+.hbar .track { height: 18px; background: var(--bg); border: 1px solid var(--rule); display: block; }
+.hbar .fill { height: 100%; background: var(--brand-alt); display: block; }
+.hbar.best .fill { background: var(--ok); }
+@media (prefers-reduced-motion: no-preference) { .hbar .fill, .timeline .done { transition: all 0.35s ease; } }
 
 /* waiting lists */
 .wl { border: 1px solid var(--rule); padding: 18px; display: grid; gap: 14px; }
@@ -231,33 +294,27 @@ td.r, th.r { text-align: right; padding-right: 0; }
 .timeline .base { position: absolute; left: 0; right: 0; top: 12px; height: 10px; background: var(--bg-alt); border: 1px solid var(--rule); }
 .timeline .window { position: absolute; top: 12px; height: 10px; background: var(--ok-bg); border: 1px solid var(--ok); }
 .timeline .done { position: absolute; left: 0; top: 12px; height: 10px; background: var(--brand-alt); }
-:root[data-theme="dark"] .timeline .done { background: var(--action); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .timeline .done { background: var(--action); } }
 .timeline .today { position: absolute; top: 0; width: 2px; height: 34px; background: var(--text); }
 .timeline .today span { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
 .tl-labels { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); }
 .wl-big { display: flex; gap: 10px 24px; flex-wrap: wrap; align-items: baseline; }
 .wl-big .n { font-size: 2rem; font-weight: 700; }
-.dots { display: inline-flex; gap: 4px; flex-wrap: wrap; vertical-align: middle; }
-.dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--field); display: inline-block; }
-.dots i.on { background: var(--ok); border-color: var(--ok); }
 .lookahead { border: 1px dashed var(--field); padding: 12px 14px; display: grid; gap: 6px; }
 .addform { border: 2px solid var(--action); padding: 18px; display: grid; gap: 18px; }
-
-/* services tool */
 .out-box { border: 1px solid var(--rule); padding: 16px; display: grid; gap: 10px; }
 .out-box .text { font-size: 1.05rem; background: var(--bg-alt); padding: 12px 14px; }
-.chars { font-size: 0.85rem; color: var(--muted); }
 .chart svg { width: 100%; height: auto; display: block; }
 
-/* evidence */
-.evi { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
-.evi figure { margin: 0; border: 1px solid var(--rule); padding: 16px; display: grid; gap: 10px; }
-.evi figcaption { font-size: 0.85rem; color: var(--muted); }
-.refs { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; font-size: 0.92rem; }
+/* how it works */
+.flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.flow > div { border: 1px solid var(--rule); border-top: 6px solid var(--brand-alt); padding: 16px; display: grid; gap: 8px; align-content: start; }
+.flow .k { font-size: 0.8rem; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+.flow .to { font-weight: 700; color: var(--ok); }
+.into { text-align: center; font-weight: 700; color: var(--muted); padding: 6px 0; }
+.youbox { border: 3px solid var(--ok); padding: 16px; display: grid; gap: 6px; text-align: center; justify-items: center; }
 .sim { background: var(--warn-bg); color: var(--warn); font-weight: 700; padding: 10px 14px; }
+.refs { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; font-size: 0.92rem; }
 
-/* footer */
 footer { background: var(--brand); color: var(--brand-text); font-size: 0.9rem; }
 footer .wrap { padding-block: 28px; display: grid; gap: 14px; }
 footer a { color: var(--brand-text); }
@@ -265,25 +322,27 @@ footer .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220
 footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
 
-/* modal and toast */
 .modal-back { position: fixed; inset: 0; background: rgba(5, 15, 28, 0.6); z-index: 50; display: grid; place-items: center;
   padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .modal { background: var(--bg); color: var(--text); border-top: 6px solid var(--action); max-width: 560px; width: 100%; max-height: 85vh; overflow: auto; padding: 24px; display: grid; gap: 14px; }
-.modal ol, .modal ul { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; background: var(--brand); color: var(--brand-text); padding: 12px 18px; font-weight: 600; max-width: calc(100% - 32px); border-left: 6px solid var(--ok); }
-@media (prefers-reduced-motion: no-preference) {
-  .toast { animation: rise 0.2s ease-out; }
-  @keyframes rise { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
-}
 
 @media (max-width: 860px) {
-  .finder, .two-col { grid-template-columns: 1fr; }
-  .filters, .answer { position: static; max-height: none; }
+  .hero, .two-col, .flow { grid-template-columns: 1fr; }
+  .how3 { grid-template-columns: 1fr; }
+  .how3 > div + div { border-left: 0; border-top: 1px solid var(--rule); }
+  .answer { position: static; }
   .menu-btn { display: inline-block; }
   .mainnav ul { display: none; flex-direction: column; }
   .mainnav.open ul { display: flex; }
   .mainnav a { border-bottom: 0; border-left: 4px solid transparent; }
   .mainnav a[aria-current="page"] { border-left-color: var(--brand-text); }
+}
+@media (max-width: 560px) {
+  .pair, .safe { grid-template-columns: 1fr; }
+  .stepbar li span { display: none; }
+  .compare .r { grid-template-columns: 1fr 1fr; }
+  .compare .r > :first-child { grid-column: 1 / -1; font-weight: 700; }
 }
 </style>
 </head>
@@ -293,7 +352,7 @@ footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
   <div class="wrap">
     <a class="site" href="#home">
       <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="3" y="7" width="34" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M3 15h34" stroke="currentColor" stroke-width="2.5"/><path d="M12 3v8M28 3v8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="20" cy="26" r="6.5" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M20 22.5v3.8l2.6 1.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-      <span><span class="name">Know Your Wait <span class="phase">PROTOTYPE</span></span><span class="desc">Mental health support in the Hunter</span></span>
+      <span><span class="name">Know Your Wait <span class="phase">PROTOTYPE</span></span><span class="desc">Getting to see a psychologist in the Hunter</span></span>
     </a>
     <button type="button" class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="mainnav">Menu</button>
   </div>
@@ -302,12 +361,11 @@ footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
   <div class="wrap">
     <ul>
       <li><a href="#home" data-nav="home">Home</a></li>
-      <li><a href="#find" data-nav="find">Find support</a></li>
-      <li><a href="#costs" data-nav="costs">Work out costs</a></li>
+      <li><a href="#start" data-nav="start">Compare my options</a></li>
       <li><a href="#waiting" data-nav="waiting">My waiting lists <span class="count" id="wl-count" hidden>0</span></a></li>
-      <li><a href="#plan" data-nav="plan">My plan <span class="count" id="plan-count" hidden>0</span></a></li>
+      <li><a href="#costs" data-nav="costs">Cost calculator</a></li>
       <li><a href="#services" data-nav="services">For services</a></li>
-      <li><a href="#evidence" data-nav="evidence">Evidence</a></li>
+      <li><a href="#how" data-nav="how">How it works</a></li>
     </ul>
   </div>
 </nav>
@@ -321,94 +379,94 @@ footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
   </div>
 </div>
 <div class="proto">
-  <div class="wrap"><span class="tag">PROTOTYPE</span><span>This is a research prototype from the University of Newcastle. Service details were checked on 28 October 2026. Always confirm with the service. This is not medical advice.</span></div>
+  <div class="wrap"><span class="tag">PROTOTYPE</span><span>A University of Newcastle research prototype. Waiting times and study results are simulated for testing. Service and Medicare details were checked on 28 October 2026. Not medical advice.</span></div>
 </div>
 
 <main id="main" class="wrap" tabindex="-1">
 
-<!-- ============ HOME ============ -->
+<!-- ================= HOME ================= -->
 <section id="v-home" class="stack-lg" aria-labelledby="h-home">
-  <div class="page-head">
-    <h1 id="h-home">Find mental health support and know your wait</h1>
-    <p class="lead">Many people wait weeks to see a psychologist, and many do not know what it will cost. This tool helps you find support you can start now, work out your costs, and keep track of waiting lists.</p>
-    <div class="btnrow"><a class="btn" href="#find">Find support</a><a class="btn secondary" href="#waiting">Track a waiting list</a></div>
+  <div class="hero">
+    <div class="stack">
+      <h1 id="h-home">Waiting to see a psychologist? Make a plan that suits you.</h1>
+      <p class="lead">Compare the options you have, find out what matters most to you, and know what to do while you wait. It takes about 3 minutes.</p>
+      <div class="btnrow"><a class="btn big" href="#start" id="start-btn">Start</a><a class="btn secondary" href="#waiting">I am already on a waiting list</a></div>
+      <p class="small muted">Free. Private: nothing you enter leaves your device.</p>
+    </div>
+    <div class="hero-card" aria-label="Example result">
+      <span class="small muted">Example result</span>
+      <span class="big">7 in 10</span>
+      <span>chance of being seen within 6 weeks with your best match</span>
+      <span class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span>
+      <span class="small">"Knowing the date is worth about $70 a session to you. That is more than most people."</span>
+    </div>
   </div>
-  <div class="tiles">
-    <a class="tile" href="#find"><h3>Find support</h3><p>Answer a few questions. See free and low-cost options in the Hunter, and which ones you can start today.</p></a>
-    <a class="tile" href="#costs"><h3>Work out costs</h3><p>See what you will pay after Medicare, and whether to use Medicare or your health fund.</p></a>
-    <a class="tile" href="#waiting"><h3>Track a waiting list</h3><p>Add a waiting list you are on. See how long you have waited and the chance of being seen soon.</p></a>
-    <a class="tile" href="#services"><h3>For services</h3><p>Turn your recent waiting times into a clear message for people on your list.</p></a>
+  <div class="stack">
+    <h2>How it works</h2>
+    <div class="how3">
+      <div><span class="k">1. Your options</span><h3>See what you can get</h3><p>We show typical waits and costs for psychologists in your area. Change them to match any offers you have.</p></div>
+      <div><span class="k">2. Six quick choices</span><h3>Find what matters to you</h3><p>Pick between pairs of appointments. Your answers show how you trade off waiting, cost and knowing the date.</p></div>
+      <div><span class="k">3. Your plan</span><h3>Know what to do next</h3><p>See your best match, the chance of being seen in time, free support to start today, and what to ask when you call.</p></div>
+    </div>
   </div>
   <div class="stack">
     <h2>Why this matters</h2>
-    <div class="facts-row" id="home-facts"></div>
-    <p class="small muted">Sources: ABS Patient Experiences 2024-25; Australian Psychological Society member poll, July 2024; ABS National Study of Mental Health and Wellbeing 2020-22. <a href="#evidence">See the evidence</a>.</p>
-  </div>
-  <div class="callout">
-    <h3>Not sure where to start?</h3>
-    <p>Call the Medicare Mental Health phone service on <b>1800 595 212</b> (Monday to Friday, 8:30am to 5pm). It is free. A mental health worker can help you find the right support near you.</p>
+    <div class="facts-row">
+      <div><span class="n">1 in 4</span><span>people who needed a psychologist delayed or did not go because of cost (2024-25)</span></div>
+      <div><span class="n">31%</span><span>of psychologists could not take new clients (2024)</span></div>
+      <div><span class="n">2 to 4 months</span><span>is the most common waiting-list length psychologists report (2024)</span></div>
+    </div>
+    <p class="small muted">Sources: ABS Patient Experiences 2024-25; Australian Psychological Society member poll, July 2024. <a href="#how">How the research shapes this tool</a>.</p>
   </div>
 </section>
 
-<!-- ============ FIND ============ -->
-<section id="v-find" hidden aria-labelledby="h-find">
-  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>Find support</li></ol></nav>
-  <div class="page-head">
-    <h1 id="h-find">Find support</h1>
-    <p class="lead">Answer as many questions as you like. The list changes as you go.</p>
+<!-- ================= JOURNEY ================= -->
+<section id="v-start" hidden aria-label="Compare my options">
+  <div class="narrow">
+    <ol class="stepbar" id="stepbar"></ol>
+    <div id="journey"></div>
   </div>
-  <div class="finder">
-    <form class="filters" id="filters" aria-label="Your situation" onsubmit="return false">
-      <fieldset><legend>How old are you?</legend><div class="opts" data-q="age"></div></fieldset>
-      <fieldset><legend>Where do you live?</legend><select id="f-area" aria-label="Where do you live?"></select></fieldset>
-      <fieldset><legend>Are you a University of Newcastle student?</legend><div class="opts inline" data-q="student"></div></fieldset>
-      <fieldset><legend>Is cost a big problem for you?</legend><p class="hint">For example, you have a Health Care Card or a low income.</p><div class="opts inline" data-q="hardship"></div></fieldset>
-      <fieldset><legend>How would you like support?</legend><div class="opts" data-q="mode"></div></fieldset>
-      <fieldset><legend>Do you have a GP mental health plan?</legend><p class="hint">Your GP makes this plan. You need it for Medicare to help pay for a psychologist. <button type="button" class="helpbtn" data-help="plan">What is this?</button></p><div class="opts" data-q="gpplan"></div></fieldset>
-      <button type="button" class="btn tertiary" id="reset-filters">Clear my answers</button>
-    </form>
-    <div class="results" aria-live="polite">
-      <div class="summary-bar">
-        <p class="big" id="find-summary"></p>
-        <div class="sortrow"><span>Show first:</span>
-          <span class="opts inline" id="sort-opts"></span>
-        </div>
-      </div>
-      <div id="find-results" class="stack-lg"></div>
+</section>
+
+<!-- ================= WAITING ================= -->
+<section id="v-waiting" hidden aria-labelledby="h-waiting">
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>My waiting lists</li></ol></nav>
+  <div class="page-head">
+    <h1 id="h-waiting">My waiting lists</h1>
+    <p class="lead">Each time you come back, this page works out how long you have waited and the chance you will be seen in the next 2 weeks. It tells you what to do at each stage.</p>
+  </div>
+  <div class="stack-lg">
+    <div class="btnrow"><button type="button" class="btn" id="wl-add-btn">Add a waiting list</button><button type="button" class="btn secondary" id="wl-example">Show an example</button></div>
+    <form class="addform" id="wl-form" hidden aria-label="Add a waiting list" onsubmit="return false"></form>
+    <div id="wl-list" class="stack-lg"></div>
+    <div class="lookahead" id="lookahead" hidden>
+      <label for="look" class="small"><b>Look ahead:</b> drag to see how your waiting lists will look in the coming weeks.</label>
+      <input type="range" id="look" min="0" max="84" step="1" value="0">
+      <span class="small" id="look-out" aria-live="polite">Showing today</span>
     </div>
   </div>
 </section>
 
-<!-- ============ PLAN ============ -->
-<section id="v-plan" hidden aria-labelledby="h-plan">
-  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>My plan</li></ol></nav>
-  <div class="page-head">
-    <h1 id="h-plan">My plan</h1>
-    <p class="lead">Your plan is built from the options you add on the Find support page. It stays on this device only.</p>
-  </div>
-  <div id="plan-body" class="stack"></div>
-</section>
-
-<!-- ============ COSTS ============ -->
+<!-- ================= COSTS ================= -->
 <section id="v-costs" hidden aria-labelledby="h-costs">
-  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>Work out costs</li></ol></nav>
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>Cost calculator</li></ol></nav>
   <div class="page-head">
-    <h1 id="h-costs">Work out what you will pay</h1>
+    <h1 id="h-costs">What will I pay?</h1>
     <p class="lead">For seeing a psychologist with a GP mental health plan. Change any answer and the cost updates.</p>
   </div>
   <div class="two-col">
     <form class="panel" id="cost-form" aria-label="Cost details" onsubmit="return false">
       <fieldset><legend>Who will you see?</legend><div class="opts" data-c="type"></div></fieldset>
       <fieldset><legend>Do you have a GP mental health plan?</legend><div class="opts inline" data-c="hasPlan"></div></fieldset>
-      <fieldset><legend>What do they charge for each session?</legend><p class="hint">Ask the practice. Check the box if they bulk bill, which means you pay nothing.</p>
+      <fieldset><legend>What do they charge for each session?</legend><p class="hint">Ask the practice. Tick the box if they bulk bill, which means you pay nothing.</p>
         <div class="btnrow"><label class="money" for="c-fee"><span>$</span><input type="number" id="c-fee" min="0" max="500" step="5"></label><label class="opt" for="c-bulk"><input type="checkbox" id="c-bulk"> They bulk bill</label></div>
         <input type="range" id="c-fee-range" min="0" max="400" step="5" aria-label="Fee per session">
       </fieldset>
-      <fieldset><legend>How many sessions do you plan to have this year?</legend><div class="stepper"><button type="button" data-cs="sessions" data-d="-1" aria-label="Fewer">&minus;</button><output id="c-sessions"></output><button type="button" data-cs="sessions" data-d="1" aria-label="More">+</button></div></fieldset>
-      <fieldset><legend>How many Medicare sessions have you already used this calendar year?</legend><div class="stepper"><button type="button" data-cs="used" data-d="-1" aria-label="Fewer">&minus;</button><output id="c-used"></output><button type="button" data-cs="used" data-d="1" aria-label="More">+</button></div></fieldset>
+      <fieldset><legend>How many sessions this year?</legend><div class="stepper"><button type="button" data-cs="sessions" data-d="-1" aria-label="Fewer">&minus;</button><output id="c-sessions"></output><button type="button" data-cs="sessions" data-d="1" aria-label="More">+</button></div></fieldset>
+      <fieldset><legend>Medicare sessions already used this calendar year</legend><div class="stepper"><button type="button" data-cs="used" data-d="-1" aria-label="Fewer">&minus;</button><output id="c-used"></output><button type="button" data-cs="used" data-d="1" aria-label="More">+</button></div></fieldset>
       <fieldset><legend>Do you have private health extras that cover psychology?</legend><div class="opts inline" data-c="extrasOn"></div>
         <div id="extras-box" class="btnrow" hidden>
-          <div class="field"><label for="c-exper">Your fund pays per session</label><span class="money"><span>$</span><input type="number" id="c-exper" min="0" max="400" step="5"></span></div>
+          <div class="field"><label for="c-exper">Fund pays per session</label><span class="money"><span>$</span><input type="number" id="c-exper" min="0" max="400" step="5"></span></div>
           <div class="field"><label for="c-exlimit">Yearly limit</label><span class="money"><span>$</span><input type="number" id="c-exlimit" min="0" max="5000" step="50"></span></div>
         </div>
       </fieldset>
@@ -417,31 +475,12 @@ footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
   </div>
 </section>
 
-<!-- ============ WAITING ============ -->
-<section id="v-waiting" hidden aria-labelledby="h-waiting">
-  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>My waiting lists</li></ol></nav>
-  <div class="page-head">
-    <h1 id="h-waiting">My waiting lists</h1>
-    <p class="lead">Add each waiting list you are on. Each time you come back, the page works out how long you have waited and the chance you will be seen in the next 2 weeks.</p>
-  </div>
-  <div class="stack-lg">
-    <div class="btnrow"><button type="button" class="btn" id="wl-add-btn">Add a waiting list</button><button type="button" class="btn secondary" id="wl-example">Show an example</button></div>
-    <form class="addform" id="wl-form" hidden aria-label="Add a waiting list" onsubmit="return false"></form>
-    <div id="wl-list" class="stack-lg"></div>
-    <div class="lookahead" id="lookahead" hidden>
-      <label for="look" class="small"><b>Look ahead:</b> see how your waiting lists will look in the future.</label>
-      <input type="range" id="look" min="0" max="84" step="1" value="0">
-      <span class="small" id="look-out" aria-live="polite">Showing today</span>
-    </div>
-  </div>
-</section>
-
-<!-- ============ SERVICES ============ -->
+<!-- ================= SERVICES ================= -->
 <section id="v-services" hidden aria-labelledby="h-services">
   <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>For services</li></ol></nav>
   <div class="page-head">
     <h1 id="h-services">Tell people how long they will wait</h1>
-    <p class="lead">For practices, clinics and the Primary Health Network. Paste the waiting times of your recent new clients. You will get a clear message for your website, an SMS and a letter. Nothing you paste leaves this page.</p>
+    <p class="lead">For practices, clinics and the Primary Health Network. Paste the waiting times of your recent new clients. You get a clear message for your website, an SMS and a letter. In a full version, these waiting times would also update the options people see in this tool.</p>
   </div>
   <div class="two-col">
     <form class="panel" aria-label="Your waiting times" onsubmit="return false">
@@ -449,81 +488,66 @@ footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
       <div class="field"><label for="s-data">Waiting times of recent new clients</label><p class="hint">From first contact to first session. One number per line, or use commas.</p><textarea id="s-data" spellcheck="false"></textarea></div>
       <fieldset><legend>These numbers are in</legend><div class="opts inline" data-s="unit"></div></fieldset>
       <div class="btnrow"><button type="button" class="btn secondary small" id="s-example">Use example numbers</button><button type="button" class="btn tertiary small" id="s-clear">Clear</button></div>
-      <div class="callout small"><h4>Good practice</h4><ul style="margin:0;padding-left:1.2em;display:grid;gap:4px"><li>Give a range, not one number.</li><li>Use waits from the last 3 months and update often.</li><li>Tell people about free support they can use while they wait.</li><li>Always include urgent help numbers.</li></ul></div>
+      <div class="callout small"><h4>Good practice</h4><ul class="plain"><li>Give a range, not one number.</li><li>Use waits from the last 3 months and update often.</li><li>Tell people about free support they can use while they wait.</li><li>Always include urgent help numbers.</li></ul></div>
     </form>
     <div class="stack" id="s-out" aria-live="polite"></div>
   </div>
 </section>
 
-<!-- ============ EVIDENCE ============ -->
-<section id="v-evidence" hidden aria-labelledby="h-evidence">
-  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>Evidence</li></ol></nav>
+<!-- ================= HOW IT WORKS ================= -->
+<section id="v-how" hidden aria-labelledby="h-how">
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>How it works</li></ol></nav>
   <div class="page-head">
-    <h1 id="h-evidence">The evidence behind this tool</h1>
-    <p class="lead">Why waiting times and costs matter, and the research study this tool comes from.</p>
+    <h1 id="h-how">How the research shapes this tool</h1>
+    <p class="lead">Know Your Wait is built on a University of Newcastle study. Each part of the study changes something you see.</p>
+    <p class="sim">The study has not started. All study numbers on this site are simulated to show how the tool will work.</p>
   </div>
   <div class="stack-lg">
-    <div class="evi" id="evi-charts"></div>
-    <div class="stack">
-      <h2>What the research says</h2>
-      <ul class="refs" style="list-style:disc">
-        <li>Cost stops many people. In 2024-25, 1 in 4 people who needed a psychologist said cost was a reason they delayed or did not go (ABS 2025).</li>
-        <li>Waits are long and uneven. Under Better Access, the median wait from a GP plan to a first session was 22 days in 2021. People on the lowest incomes waited 22 days and those on the highest incomes 17 days (Pirkis et al. 2022).</li>
-        <li>Long waits mean missed appointments. People who wait longer are less likely to attend their first appointment (Loumidis and Shropshire 1997).</li>
-        <li>Support while waiting helps some people. Digital programs used while waiting were seen as useful, but many people stopped using them. Programs with a person guiding them kept people engaged better (Huang et al. 2024).</li>
-        <li>How numbers are shown matters. Showing chances as "X in 10" with simple pictures helps people with low numeracy understand them (Galesic et al. 2009).</li>
-      </ul>
+    <div class="flow">
+      <div><span class="k">Online choice study</span><h3>200 adults choose between appointments</h3><p>Each person makes 8 choices between appointments with different waits, costs and certainty.</p><p class="to">Gives the starting point for your trade-offs</p><p class="small" id="how-dce"></p></div>
+      <div><span class="k">Eye-tracking study</span><h3>40 people in our lab</h3><p>A camera records what people look at when they read waiting times as words or as a picture.</p><p class="to">Decides how waiting times are shown to you</p><p class="small" id="how-et"></p></div>
+      <div><span class="k">Services</span><h3>Clinics share their waiting times</h3><p>Services turn their recent waits into a range, using the For services page.</p><p class="to">Gives the waits and costs for your options</p><p class="small">In this prototype, Hunter waiting times are simulated.</p></div>
     </div>
+    <div class="into" aria-hidden="true">These come together with your answers</div>
+    <div class="youbox"><h3>Your 6 choices</h3><p>Your answers update the study's starting point to fit you. We then rank your options, show the chance of being seen in time, and build your plan.</p></div>
     <div class="stack">
-      <h2>The research study</h2>
-      <p>This tool is part of the University of Newcastle pilot study <i>Waiting, cost and certainty: preferences for access to psychological care</i>. In it, 200 adults will choose between appointments with different waits and costs. Another 40 people will do the same tasks in an eye-tracking lab. The study will measure how much people value knowing their appointment date, and whether a picture or words is the better way to show waiting times. The results will be used to improve the waiting-list pages of this tool.</p>
-      <p class="sim">The study has not started. The numbers below are simulated to show what it will report.</p>
+      <h2>What the study found (simulated)</h2>
       <div class="facts-row" id="sim-kpis"></div>
       <details><summary class="btn tertiary" style="display:inline-flex">Show technical details</summary>
         <div class="stack" style="margin-top:12px">
           <h3>Choice model (simulated online sample)</h3><div class="tablewrap" id="tbl-main"></div>
           <h3>Eye tracking (simulated laboratory sample)</h3><div class="tablewrap" id="tbl-eye"></div>
+          <h3>How your answers are used</h3>
+          <p class="small">We start from the study's average weights for waiting time, uncertainty, cost and video, and allow each weight to vary by 50% between people. We draw 4,000 possible sets of weights, score how well each set explains your 6 choices with a logit model, and take the weighted average. Your comparison with others uses the spread between people in the study (30%).</p>
           <p class="small muted" id="tech-note"></p>
         </div>
       </details>
     </div>
     <div class="stack">
-      <h2>Sources</h2>
-      <ol class="refs" id="refs"></ol>
+      <h2>Real evidence behind the tool</h2>
+      <ul class="plain">
+        <li>1 in 4 people who needed a psychologist delayed or did not go because of cost (ABS 2025).</li>
+        <li>Under Better Access, people on the lowest incomes waited longer for a first session than people on the highest incomes (Pirkis et al. 2022).</li>
+        <li>People who wait longer are less likely to attend their first appointment (Loumidis and Shropshire 1997).</li>
+        <li>Support while waiting is seen as useful, but people stay with it better when a person guides them (Huang et al. 2024).</li>
+        <li>Showing chances as "X in 10" with simple pictures helps people with low numeracy (Galesic et al. 2009).</li>
+      </ul>
+    </div>
+    <div class="stack"><h2>Sources</h2><ol class="refs" id="refs"></ol></div>
+    <div class="stack">
+      <h2>About and privacy</h2>
+      <p>Everything runs in your browser. What you enter is saved on this device only. Nothing is sent to anyone. <button type="button" class="helpbtn" id="wipe">Delete everything saved on this device</button></p>
+      <p>Made by Dr Mesfin Genie (lead), Professor Francesco Paolucci, Professor Brendan Boyle, Dr Elaine Xu and Dr Ryan Gallagher, University of Newcastle. Contact: mesfin.genie@newcastle.edu.au</p>
+      <p class="small muted">Version <span id="version">0.4.0</span>. Information checked 28 October 2026.</p>
     </div>
   </div>
 </section>
 
-<!-- ============ URGENT ============ -->
+<!-- ================= URGENT ================= -->
 <section id="v-urgent" hidden aria-labelledby="h-urgent">
   <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>Urgent help</li></ol></nav>
-  <div class="page-head">
-    <h1 id="h-urgent">Urgent help</h1>
-    <p class="lead">If you or someone else is in danger, call <b>000</b> or go to your nearest emergency department.</p>
-  </div>
+  <div class="page-head"><h1 id="h-urgent">Urgent help</h1><p class="lead">If you or someone else is in danger, call <b>000</b> or go to your nearest emergency department.</p></div>
   <div class="tablewrap"><table id="crisis-table"><thead><tr><th>Service</th><th>Phone</th><th>When</th><th>Who it is for</th></tr></thead><tbody></tbody></table></div>
-</section>
-
-<!-- ============ ABOUT ============ -->
-<section id="v-about" hidden aria-labelledby="h-about">
-  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="#home">Home</a></li><li>About</li></ol></nav>
-  <div class="page-head"><h1 id="h-about">About this tool</h1></div>
-  <div class="stack">
-    <h2>What it does</h2>
-    <p>Know Your Wait brings together free and low-cost mental health services in the Hunter, Medicare rules, and waiting-time information in one place. It does not book appointments or give medical advice.</p>
-    <h2>How it works</h2>
-    <ul class="refs" style="list-style:disc">
-      <li><b>Find support</b> checks each service against your answers. It never hides a service because you skipped a question. Services that do not fit are listed at the bottom with the reason.</li>
-      <li><b>Work out costs</b> uses the Medicare benefit for a session of 50 minutes or more from 1 July 2026: $101.55 for a psychologist (MBS item 80110), $149.05 for a clinical psychologist and $89.50 for a mental health social worker or occupational therapist. Medicare covers up to 10 sessions a calendar year with a GP plan. Your health fund cannot top up a Medicare session, but it can pay for sessions Medicare does not cover.</li>
-      <li><b>My waiting lists</b> treats a range such as "3 to 9 weeks" as an equal chance of being seen in each of those weeks. As time passes, it removes the weeks that have gone and works out the chance for the next 2 weeks.</li>
-      <li><b>For services</b> uses the middle (median), 80th and 90th percentile of the waits you enter, rounded up to whole weeks.</li>
-    </ul>
-    <h2>Privacy</h2>
-    <p>Everything runs in your web browser. What you enter is saved on this device only, so it is there when you come back. Nothing is sent to anyone. <button type="button" class="helpbtn" id="wipe">Delete everything saved on this device</button></p>
-    <h2>Who made it</h2>
-    <p>Dr Mesfin Genie (lead), Professor Francesco Paolucci, Professor Brendan Boyle, Dr Elaine Xu and Dr Ryan Gallagher, University of Newcastle. Contact: mesfin.genie@newcastle.edu.au</p>
-    <p class="updated">Version <span id="version">0.3.0</span>. Information checked 28 October 2026.</p>
-  </div>
 </section>
 
 </main>
@@ -532,8 +556,8 @@ footer .ack { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 14px; }
   <div class="wrap">
     <div class="cols">
       <div><b>Know Your Wait</b><p class="small" style="margin-top:6px">A research prototype by the University of Newcastle. Not a government service. Not medical advice.</p></div>
-      <div><ul><li><a href="#find">Find support</a></li><li><a href="#costs">Work out costs</a></li><li><a href="#waiting">My waiting lists</a></li><li><a href="#services">For services</a></li></ul></div>
-      <div><ul><li><a href="#urgent">Urgent help</a></li><li><a href="#evidence">Evidence</a></li><li><a href="#about">About and privacy</a></li></ul></div>
+      <div><ul><li><a href="#start">Compare my options</a></li><li><a href="#waiting">My waiting lists</a></li><li><a href="#costs">Cost calculator</a></li></ul></div>
+      <div><ul><li><a href="#services">For services</a></li><li><a href="#how">How it works and privacy</a></li><li><a href="#urgent">Urgent help</a></li></ul></div>
     </div>
     <p class="ack small">We acknowledge the Traditional Custodians of the lands across the Hunter and pay our respects to Elders past and present.</p>
   </div>
@@ -775,12 +799,95 @@ const Engine = (() => {
     return e.map(x => x / s);
   }
 
+  /* ---------- Personal trade-offs (choice game) ----------
+   * Attributes follow the study's choice tasks:
+   *   mean  = expected wait in weeks
+   *   half  = how many weeks earlier or later it could be (0 for a set date)
+   *   cost  = out-of-pocket cost per session in dollars
+   *   video = 1 for a video session, 0 for face to face
+   */
+  function attrs(o) {
+    const cost = Math.max(0, Number(o.cost) || 0), video = o.mode === "video" ? 1 : 0;
+    if (o.kind === "confirmed") return { mean: Number(o.week), half: 0, cost, video };
+    const a = Math.min(Number(o.from), Number(o.to)), b = Math.max(Number(o.from), Number(o.to));
+    return { mean: (a + b) / 2, half: (b - a) / 2, cost, video };
+  }
+  const KEYS = ["wait", "spread", "cost", "video"];
+  function util(b, x) { return b.wait * x.mean + b.spread * x.half + b.cost * x.cost + b.video * x.video; }
+
+  /** Small seeded random number generator (mulberry32), so results are repeatable. */
+  function rng(seed) {
+    let a = seed >>> 0;
+    return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  function normals(r) {
+    const u = Math.max(r(), 1e-12), v = r();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  /** Draws from independent normal distributions; wait and cost are kept negative. */
+  function draws(prior, n, seed) {
+    const r = rng(seed || 2027), out = [];
+    for (let i = 0; i < n; i++) {
+      const d = {};
+      KEYS.forEach(k => { d[k] = prior[k].mu + prior[k].sd * normals(r); });
+      d.cost = Math.min(d.cost, -0.002);
+      d.wait = Math.min(d.wait, -0.005);
+      out.push(d);
+    }
+    return out;
+  }
+  /**
+   * Update the starting point with a person's answers.
+   * answers: [{ a: attrs, b: attrs, pick: 0 | 1 }] (pick 0 = option A).
+   * Importance weights = probability of the answers under each draw (logit).
+   */
+  function posterior(ds, answers) {
+    const logw = ds.map(d => answers.reduce((s, q) => {
+      const ua = util(d, q.a), ub = util(d, q.b), m = Math.max(ua, ub);
+      const lse = m + Math.log(Math.exp(ua - m) + Math.exp(ub - m));
+      return s + (q.pick === 0 ? ua : ub) - lse;
+    }, 0));
+    const mx = Math.max(...logw);
+    const w = logw.map(l => Math.exp(l - mx));
+    const sw = w.reduce((a, b) => a + b, 0);
+    const mean = {};
+    KEYS.forEach(k => { mean[k] = ds.reduce((s, d, i) => s + w[i] * d[k], 0) / sw; });
+    const ess = sw * sw / w.reduce((a, b) => a + b * b, 0);
+    return { mean, ess };
+  }
+  /** Plain-language values from a set of weights. */
+  function values(b) {
+    return {
+      certainty: 3 * b.spread / b.cost,   // dollars per session for a set date instead of "3 weeks either way"
+      weeksFor50: 50 * b.cost / b.wait,   // extra weeks you would wait to save $50 a session
+      faceToFace: b.video / b.cost        // dollars per session to see someone face to face instead of by video
+    };
+  }
+  /** Share of people (draws) whose value is below x. */
+  function percentile(ds, key, x) {
+    const v = ds.map(d => values(d)[key]).filter(Number.isFinite);
+    return v.filter(y => y < x).length / v.length;
+  }
+  /** Match shares for a list of options under weights b. */
+  function rank(b, opts) {
+    const u = opts.map(o => util(b, attrs(o)));
+    return shares(u);
+  }
+  /** Three answer choices for the quick check, one correct, as whole "in 10" values. */
+  function quizChoices(correctProb) {
+    const c = Math.round(correctProb * 10);
+    const pool = [c, c >= 5 ? c - 3 : c + 3, c >= 8 ? c - 6 : c + 5, 10 - c, 0, 10].map(x => Math.max(0, Math.min(10, x)));
+    const uniq = [...new Set(pool)].slice(0, 3);
+    return { correct: c, options: uniq.sort((a, b) => a - b) };
+  }
+
   return {
     MAX_WEEK, REBATE, MEDICARE_SESSIONS_PER_YEAR, AGE_BANDS,
     distribution, stats, chanceBy, chanceNext, remaining, elapsed, waitStage,
     costPlan, matchService, rankScore,
     parseNumbers, quantile, shareWithin, inTen, clinicStatements, fmt1,
-    utility, shares
+    utility, shares,
+    attrs, util, rng, draws, posterior, values, percentile, rank, quizChoices
   };
 })();
 /* ===== ENGINE END ===== */
@@ -796,63 +903,53 @@ const Engine = (() => {
   const $$ = s => Array.from(document.querySelectorAll(s));
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const money = (x, cents) => "$" + (cents ? Number(x).toFixed(2) : Math.round(x).toLocaleString("en-AU"));
-  const CHECKED = "28 October 2026";
+  const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ---------------- data: services (checked 28 October 2026) ---------------- */
-  const AREAS = [
-    ["", "Choose an area"], ["newcastle", "Newcastle"], ["lakemac", "Lake Macquarie"], ["maitland", "Maitland"],
-    ["cessnock", "Cessnock"], ["portstephens", "Port Stephens"], ["upperhunter", "Singleton, Muswellbrook or Upper Hunter"],
-    ["dungog", "Dungog"], ["other", "Somewhere else"]
+  /* ============ Study results used by the tool (simulated) ============ */
+  const COEF = Object.fromEntries(R.main_model.coefs.map(c => [c.name, c.est]));
+  const PRIOR = Object.fromEntries(Object.entries(COEF).map(([k, v]) => [k, { mu: v, sd: 0.5 * Math.abs(v) }]));
+  const POP = Object.fromEntries(Object.entries(COEF).map(([k, v]) => [k, { mu: v, sd: 0.3 * Math.abs(v) }]));
+  const PRIOR_DRAWS = E.draws(PRIOR, 4000, 2027);
+  const POP_DRAWS = E.draws(POP, 4000, 99);
+  const STUDY = E.values(COEF);
+  const COMP = R.comprehension.proportion_correct;
+
+  /* ============ Data ============ */
+  const AREAS = [["", "Choose an area"], ["newcastle", "Newcastle"], ["lakemac", "Lake Macquarie"], ["maitland", "Maitland"], ["cessnock", "Cessnock"], ["portstephens", "Port Stephens"], ["upperhunter", "Singleton, Muswellbrook or Upper Hunter"], ["dungog", "Dungog"], ["other", "Somewhere else"]];
+  const REBATE = E.REBATE.psychologist;
+  // Typical options in the Hunter. Waiting times and fees are SIMULATED for this prototype.
+  const OPTION_TEMPLATES = [
+    { id: "bulk", name: "Bulk-billing psychologist", note: "Medicare pays the full fee", kind: "range", from: 6, to: 14, cost: 0, mode: "inperson", needsPlan: true },
+    { id: "private", name: "Private psychologist", note: "Fee $220, Medicare pays $101.55", kind: "confirmed", week: 3, cost: Math.round(220 - REBATE), mode: "inperson", needsPlan: true },
+    { id: "tele", name: "Telehealth psychologist", note: "Fee $180, Medicare pays $101.55", kind: "range", from: 1, to: 4, cost: Math.round(180 - REBATE), mode: "video", needsPlan: true },
+    { id: "phn", name: "Free PHN psychology", note: "For people who find it hard to pay", kind: "range", from: 4, to: 10, cost: 0, mode: "inperson", needsPlan: false, when: p => p.hardship === "yes" },
+    { id: "headspace", name: "headspace centre", note: "For ages 12 to 25", kind: "range", from: 2, to: 8, cost: 0, mode: "inperson", needsPlan: false, when: p => ["12to15", "16to17", "18to25"].includes(p.age) },
+    { id: "uon", name: "UON Counselling", note: "Free for UON students", kind: "confirmed", week: 1, cost: 0, mode: "inperson", needsPlan: false, when: p => p.student === "yes" }
   ];
-  const HUNTER = ["newcastle", "lakemac", "maitland", "cessnock", "portstephens", "upperhunter", "dungog"];
   const SRC = {
-    mmh: { label: "Medicare Mental Health", url: "https://www.medicarementalhealth.gov.au/" },
-    checkin: { label: "Department of Health, Disability and Ageing", url: "https://www.health.gov.au/news/medicare-mental-health-check-in-online-now" },
-    centres: { label: "Medicare Mental Health Centres fact sheet", url: "https://www.medicarementalhealth.gov.au/sites/default/files/h2h/2026-04/medicare_mental_health_centres_-_fact_sheet_0.pdf" },
-    cessnock: { label: "Assistant Minister for Mental Health media release", url: "https://www.health.gov.au/ministers/the-hon-emma-mcbride-mp/media/delivering-mental-health-care-support-in-cessnock" },
-    muswellbrook: { label: "Newcastle Weekly, July 2024", url: "https://newcastleweekly.com.au/muswellbrook-medicare-mental-health-centre-opens/" },
-    mindspot: { label: "MindSpot", url: "https://mindspot.org.au/what-we-do" },
-    twu: { label: "THIS WAY UP", url: "https://thiswayup.org.au/" },
-    eheadspace: { label: "headspace", url: "https://headspace.org.au/contact-us/" },
-    headspace: { label: "Hunter New England and Central Coast PHN", url: "https://thephn.com.au/what-we-do/mental-health/youth-mental-health" },
-    uon: { label: "University of Newcastle", url: "https://www.newcastle.edu.au/current-students/support/personal/counselling" },
-    phn: { label: "Hunter New England and Central Coast PHN", url: "https://thephn.com.au/what-we-do/mental-health/psychological-services" },
-    better: { label: "Better Access fact sheet for patients", url: "https://www.health.gov.au/sites/default/files/2025-10/better-access-fact-sheet-patients_0.pdf" }
+    mmh: "https://www.medicarementalhealth.gov.au/", checkin: "https://www.health.gov.au/news/medicare-mental-health-check-in-online-now",
+    cessnock: "https://www.health.gov.au/ministers/the-hon-emma-mcbride-mp/media/delivering-mental-health-care-support-in-cessnock",
+    muswellbrook: "https://newcastleweekly.com.au/muswellbrook-medicare-mental-health-centre-opens/", mindspot: "https://mindspot.org.au/what-we-do",
+    twu: "https://thiswayup.org.au/", eheadspace: "https://headspace.org.au/contact-us/"
   };
-  const SERVICES = [
-    { id: "mmh-phone", name: "Medicare Mental Health phone service", by: "Australian Government", group: "today", cost: "free", referral: "none", startToday: true, modes: ["phone"],
-      what: "Talk to a mental health worker. They help work out what support you need and connect you to local services, including free ones.",
-      when: "You can talk today (Mon to Fri, 8:30am to 5pm)", how: "Call 1800 595 212", phone: "1800 595 212", src: SRC.mmh },
-    { id: "checkin", name: "Medicare Mental Health Check In", by: "St Vincent's Health Australia for the Australian Government", group: "today", cost: "free", referral: "none", startToday: true, modes: ["phone", "online"], ages: [16, 120],
-      what: "Free support for everyday stress, worry, low mood or poor sleep. Guided sessions by phone or video, and online tools you use on your own.",
-      when: "Start online today. Guided sessions by phone or video.", how: "Search \"Medicare Mental Health Check In\" or call 1800 595 212", phone: "1800 595 212", src: SRC.checkin },
-    { id: "mmhc-cessnock", name: "Medicare Mental Health Centre, Cessnock", by: "Hunter New England and Central Coast PHN", group: "today", cost: "free", referral: "none", startToday: true, modes: ["inperson"], areas: ["cessnock", "maitland"],
-      what: "Walk in and talk to someone. No appointment or referral needed.",
-      when: "Walk in. Call first to check opening hours.", how: "Unit 4, 36 Vincent Street, Cessnock. Or call 1800 595 212", phone: "1800 595 212", src: SRC.cessnock },
-    { id: "mmhc-muswellbrook", name: "Medicare Mental Health Centre, Muswellbrook", by: "Hunter New England and Central Coast PHN", group: "today", cost: "free", referral: "none", startToday: true, modes: ["inperson"], areas: ["upperhunter"],
-      what: "Walk in and talk to someone. Serves people from Singleton to Scone.",
-      when: "Walk in. Call first to check opening hours.", how: "Bridge Street, Muswellbrook. Or call 1800 595 212", phone: "1800 595 212", src: SRC.muswellbrook },
-    { id: "mindspot", name: "MindSpot", by: "Macquarie University", group: "today", cost: "free", referral: "none", startToday: true, modes: ["online", "phone"], ages: [18, 120],
-      what: "Free online assessment, online courses for anxiety and low mood, and up to 4 sessions with a therapist by phone or video.",
-      when: "Start the online assessment today", how: "Go to mindspot.org.au", src: SRC.mindspot },
-    { id: "twu", name: "THIS WAY UP online courses", by: "St Vincent's Hospital and UNSW", group: "today", cost: "low", costText: "$59 per course, or free if a doctor or psychologist prescribes it", referral: "none", startToday: true, modes: ["online"],
-      what: "Online courses that teach skills for anxiety, worry, low mood and sleep. Includes courses for teenagers and students.",
-      when: "Start today", how: "Go to thiswayup.org.au", src: SRC.twu },
-    { id: "eheadspace", name: "eheadspace (headspace online and phone)", by: "headspace", group: "today", cost: "free", referral: "none", startToday: true, modes: ["phone", "online"], ages: [12, 25], youth: true,
-      what: "Free chat, phone and email support for young people aged 12 to 25 and their families.",
-      when: "Every day, 3pm to 10pm", how: "Call 1800 650 890 or chat at headspace.org.au", phone: "1800 650 890", src: SRC.eheadspace },
-    { id: "headspace", name: "headspace centres (Newcastle, Maitland, Cessnock)", by: "headspace", group: "book", cost: "free", costText: "Free or low cost", referral: "none", startToday: false, modes: ["inperson", "phone"], ages: [12, 25], youth: true, areas: HUNTER,
-      what: "Mental health, physical health, alcohol and drug, and work and study support for young people aged 12 to 25. You do not need a referral.",
-      when: "Waits vary. Call to ask.", how: "Contact your nearest centre through headspace.org.au", src: SRC.headspace },
-    { id: "uon", name: "University of Newcastle Counselling", by: "University of Newcastle", group: "book", cost: "free", referral: "none", startToday: false, modes: ["inperson", "phone"], students: true,
-      what: "Free counselling for UON students, face to face or online. Wellbeing Advisers can usually see you within a day or two.",
-      when: "Usually within a day or two (Wellbeing Advisers)", how: "Book through the UON Counselling web page", src: SRC.uon },
-    { id: "phn", name: "Free psychology for people who find it hard to pay", by: "Hunter Primary Care (Greater Newcastle and Hunter) and Beam Health (Upper Hunter), funded by the PHN", group: "referral", cost: "free", costText: "No cost if you are eligible", referral: "gp", startToday: false, modes: ["inperson", "phone"], hardship: true, areas: HUNTER,
-      what: "Free sessions with a psychologist or mental health worker for people on low incomes or who find it hard to get care.",
-      when: "Waits vary. Ask when you are referred.", how: "Ask your GP for a referral, or call 1800 595 212 to check if you can use it", phone: "1800 595 212", src: SRC.phn },
-    { id: "better", name: "Psychologist with Medicare (Better Access)", by: "Private practices and some bulk-billing clinics", group: "referral", cost: "medicare", referral: "gp", startToday: false, modes: ["inperson", "phone"],
-      what: "Up to 10 sessions a year with Medicare paying part of the cost. You need a GP mental health plan. Some psychologists bulk bill, so you pay nothing.",
-      when: "Often 1 to 4 months. Some psychologists are not taking new clients.", how: "Ask your GP for a plan and referral, then call practices to ask about waits and fees", src: SRC.better }
+  // Free support you can start today (real services, checked 28 October 2026).
+  const TODAY = [
+    { id: "mmh", name: "Medicare Mental Health phone service", how: "Call 1800 595 212 (Mon to Fri, 8:30am to 5pm)", what: "Talk to a mental health worker who can find local support, including free options.", cost: "free", referral: "none", startToday: true, modes: ["phone"] },
+    { id: "checkin", name: "Medicare Mental Health Check In", how: "Search \"Medicare Mental Health Check In\" or call 1800 595 212", what: "Free guided sessions by phone or video for stress, worry, low mood and sleep. Age 16 and over.", cost: "free", referral: "none", startToday: true, modes: ["phone", "online"], ages: [16, 120] },
+    { id: "mindspot", name: "MindSpot", how: "Go to mindspot.org.au", what: "Free online assessment and courses, plus up to 4 sessions with a therapist. Adults.", cost: "free", referral: "none", startToday: true, modes: ["online", "phone"], ages: [18, 120] },
+    { id: "eheadspace", name: "eheadspace", how: "Call 1800 650 890 or chat online (3pm to 10pm daily)", what: "Free chat and phone support for ages 12 to 25.", cost: "free", referral: "none", startToday: true, modes: ["phone", "online"], ages: [12, 25] },
+    { id: "cessnock", name: "Medicare Mental Health Centre, Cessnock", how: "Walk in: Unit 4, 36 Vincent Street, Cessnock", what: "Free walk-in support. No appointment or referral.", cost: "free", referral: "none", startToday: true, modes: ["inperson"], areas: ["cessnock", "maitland"] },
+    { id: "muswellbrook", name: "Medicare Mental Health Centre, Muswellbrook", how: "Walk in: Bridge Street, Muswellbrook", what: "Free walk-in support for people from Singleton to Scone.", cost: "free", referral: "none", startToday: true, modes: ["inperson"], areas: ["upperhunter"] },
+    { id: "twu", name: "THIS WAY UP", how: "Go to thiswayup.org.au", what: "Online courses for anxiety, worry and low mood. $59, or free if a clinician prescribes it.", cost: "low", referral: "none", startToday: true, modes: ["online"] }
+  ];
+  // The six choice tasks, in the same format as the study.
+  const TASKS = [
+    [{ kind: "confirmed", week: 6, cost: 0, mode: "inperson" }, { kind: "range", from: 2, to: 10, cost: 0, mode: "inperson" }],
+    [{ kind: "confirmed", week: 8, cost: 0, mode: "inperson" }, { kind: "range", from: 3, to: 7, cost: 0, mode: "inperson" }],
+    [{ kind: "range", from: 2, to: 6, cost: 80, mode: "inperson" }, { kind: "range", from: 6, to: 10, cost: 0, mode: "inperson" }],
+    [{ kind: "confirmed", week: 4, cost: 120, mode: "inperson" }, { kind: "range", from: 2, to: 8, cost: 40, mode: "inperson" }],
+    [{ kind: "range", from: 3, to: 5, cost: 0, mode: "video" }, { kind: "range", from: 5, to: 9, cost: 0, mode: "inperson" }],
+    [{ kind: "confirmed", week: 5, cost: 40, mode: "video" }, { kind: "range", from: 2, to: 10, cost: 40, mode: "inperson" }]
   ];
   const CRISIS = [
     ["Emergency (police, ambulance, fire)", "000", "24 hours", "Anyone in danger"],
@@ -865,43 +962,40 @@ const Engine = (() => {
   ];
   const REFS = [
     ["Australian Bureau of Statistics (2025). Patient Experiences, 2024-25. Released 18 November 2025.", "https://www.abs.gov.au/statistics/health/health-services/patient-experiences/latest-release"],
-    ["Australian Bureau of Statistics (2023). National Study of Mental Health and Wellbeing, 2020-2022.", "https://www.abs.gov.au/media-centre/media-releases/two-five-australians-have-experienced-mental-disorder"],
     ["Australian Psychological Society (2024). APS member poll shows cost remains the biggest barrier to care. 15 August 2024.", "https://psychology.org.au/insights/aps-member-poll-shows-cost-remains-the-biggest-bar"],
     ["Pirkis J, Currier D, Harris M, Mihalopoulos C, et al. (2022). Evaluation of Better Access. University of Melbourne for the Department of Health and Aged Care.", "https://www.health.gov.au/sites/default/files/2022-12/executive-summary-evaluation-of-the-better-access-initiative.pdf"],
-    ["Department of Health, Disability and Ageing (2025). Better Access: fact sheet for patients.", SRC.better.url],
+    ["Department of Health, Disability and Ageing (2025). Better Access: fact sheet for patients.", "https://www.health.gov.au/sites/default/files/2025-10/better-access-fact-sheet-patients_0.pdf"],
     ["Medicare Benefits Schedule, item 80110. Schedule fee updated 1 July 2026.", "https://www9.health.gov.au/mbs/search.cfm?q=80110"],
     ["Loumidis KS, Shropshire JM (1997). Effects of waiting time on appointment attendance with clinical psychologists and length of treatment. Irish Journal of Psychological Medicine 14(2):49-54.", "https://doi.org/10.1017/S0790966700002986"],
     ["Huang S, Wang Y, Li G, Hall BJ, Nyman TJ (2024). Digital mental health interventions for alleviating depression and anxiety during psychotherapy waiting lists: systematic review. JMIR Mental Health 11:e56650.", "https://doi.org/10.2196/56650"],
     ["Galesic M, Garcia-Retamero R, Gigerenzer G (2009). Using icon arrays to communicate medical risks: overcoming low numeracy. Health Psychology 28(2):210-216.", "https://doi.org/10.1037/a0014474"],
-    ["Department of Health, Disability and Ageing (2026). Medicare Mental Health Check In: online now.", SRC.checkin.url],
-    ["Hunter New England and Central Coast PHN. Psychological services; Youth mental health.", SRC.phn.url]
+    ["Department of Health, Disability and Ageing (2026). Medicare Mental Health Check In: online now.", SRC.checkin],
+    ["Medicare Mental Health Centres fact sheet (2026); Cessnock centre media release; Muswellbrook centre, Newcastle Weekly (2024).", SRC.cessnock],
+    ["MindSpot; THIS WAY UP; headspace (eheadspace), service pages checked 28 October 2026.", SRC.mindspot],
+    ["Hunter New England and Central Coast PHN. Psychological services.", "https://thephn.com.au/what-we-do/mental-health/psychological-services"]
   ];
 
-  /* ---------------- storage ---------------- */
+  /* ============ Storage ============ */
   const store = {
-    get(k, d) { try { const v = localStorage.getItem("kyw3:" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem("kyw3:" + k, JSON.stringify(v)); } catch (e) { /* storage not available */ } },
-    wipe() { try { Object.keys(localStorage).filter(k => k.startsWith("kyw3:")).forEach(k => localStorage.removeItem(k)); } catch (e) { /* ignore */ } }
+    get(k, d) { try { const v = localStorage.getItem("kyw4:" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("kyw4:" + k, JSON.stringify(v)); } catch (e) { /* not available */ } },
+    wipe() { try { Object.keys(localStorage).filter(k => k.startsWith("kyw4:")).forEach(k => localStorage.removeItem(k)); } catch (e) { /* ignore */ } }
   };
-  const DEFAULT_PROFILE = { age: "", area: "", student: "", hardship: "", mode: "any", gpplan: "" };
-  const DEFAULT_COST = { type: "psychologist", hasPlan: "yes", fee: 200, bulk: false, sessions: 6, used: 0, extrasOn: "no", exPer: 60, exLimit: 500 };
+  const NEW_JOURNEY = () => ({ step: 1, safe: null, age: "", area: "", student: "", hardship: "", goal: 6, gpplan: "", options: [], optKey: "", answers: [], q: 0, format: "picture", chosen: null, quiz: null });
+  const J = Object.assign(NEW_JOURNEY(), store.get("journey", {}));
   const S = {
-    profile: Object.assign({}, DEFAULT_PROFILE, store.get("profile", {})),
-    sort: store.get("sort", "fit"),
-    plan: store.get("plan", []),
-    cost: Object.assign({}, DEFAULT_COST, store.get("cost", {})),
+    cost: Object.assign({ type: "psychologist", hasPlan: "yes", fee: 220, bulk: false, sessions: 6, used: 0, extrasOn: "no", exPer: 60, exLimit: 500 }, store.get("cost", {})),
     lists: store.get("lists", []),
-    unit: store.get("unit", "days"),
-    welcomed: store.get("welcomed", false)
+    unit: store.get("unit", "days")
   };
-  const save = (...keys) => keys.forEach(k => store.set(k, S[k]));
+  const saveJ = () => store.set("journey", J);
+  const save = k => store.set(k, S[k]);
 
-  /* ---------------- popups and toasts ---------------- */
+  /* ============ Popups, toasts, routing ============ */
   let lastFocus = null;
   function popup(title, html, buttons) {
     lastFocus = document.activeElement;
-    const root = $("#modal-root");
-    const list = buttons || [{ label: "Close", primary: true }];
+    const root = $("#modal-root"), list = buttons || [{ label: "Close", primary: true }];
     root.innerHTML = `<div class="modal-back" data-close="1"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title"><h2 id="m-title">${esc(title)}</h2>${html}<div class="btnrow">${list.map((b, i) => `<button type="button" class="btn${b.primary ? "" : " secondary"}" data-b="${i}">${esc(b.label)}</button>`).join("")}</div></div></div>`;
     const onKey = e => { if (e.key === "Escape") close(); };
     function close() { root.innerHTML = ""; document.removeEventListener("keydown", onKey); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
@@ -911,17 +1005,17 @@ const Engine = (() => {
     (root.querySelector(".btn") || root).focus();
   }
   let toastT = null;
-  function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2800); }
+  function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2600); }
   const HELP = {
-    plan: ["GP mental health plan", "<p>Your GP talks with you about how you are feeling and writes a plan. This is called a Mental Health Treatment Plan.</p><p>With a plan and a referral, Medicare helps pay for up to 10 sessions a year with a psychologist, social worker or occupational therapist.</p><p>Book a longer GP appointment and say it is for a mental health plan.</p>"],
-    bulk: ["What is bulk billing?", "<p>Bulk billing means the service charges Medicare directly and you pay nothing.</p><p>Ask the practice: \"Do you bulk bill for mental health sessions?\"</p>"],
-    chance: ["What does the chance mean?", "<p>Think of 10 people on this waiting list who have waited as long as you. The green dots show how many would be seen in the next 2 weeks.</p><p>It is based on what the service told you, so it is only a guide.</p>"],
-    extras: ["Medicare or my health fund?", "<p>You cannot use both for the same session. Your fund cannot top up what Medicare pays.</p><p>Once you have used your Medicare sessions for the year, you can use your health fund for more sessions, if your cover includes psychology.</p>"]
+    plan: ["GP mental health plan", "<p>Your GP talks with you about how you are feeling and writes a Mental Health Treatment Plan.</p><p>With the plan and a referral, Medicare helps pay for up to 10 sessions a year with a psychologist.</p><p>Book a longer GP appointment and say it is for a mental health plan.</p>"],
+    range: ["Why do waits come as a range?", "<p>Most services cannot promise a date. They know roughly how long people wait, so they give a range, such as \"3 to 9 weeks\".</p><p>In our eye-tracking study, people often skip past the latest week in a range. So we colour the late weeks orange and say the latest week in words.</p>"],
+    chance: ["What does \"7 in 10\" mean?", "<p>Think of 10 people who choose this option. The green dots show how many would be seen by your goal.</p><p>It is a guide, based on the range of weeks.</p>"],
+    howcalc: ["How we worked this out", "<p>We started with what 200 people in our study chose (simulated for now). Then we adjusted it to fit your 6 choices.</p><p>Each option gets a score from its wait, how sure the date is, the cost per session and whether it is face to face. The match is the share of the total score each option gets.</p>"],
+    picture: ["Why a picture?", "<p>In our study (simulated), " + Math.round(COMP.graphic * 100) + " in 100 people understood waiting times shown as a picture, compared with " + Math.round(COMP.text * 100) + " in 100 shown as words. So we show the picture first. You can switch to words.</p>"],
+    extras: ["Medicare or my health fund?", "<p>You cannot use both for the same session. Once you have used your Medicare sessions for the year, your health fund can pay for more, if your cover includes psychology.</p>"]
   };
   document.addEventListener("click", e => { const h = e.target.closest("[data-help]"); if (h && HELP[h.dataset.help]) popup(HELP[h.dataset.help][0], HELP[h.dataset.help][1]); });
-
-  /* ---------------- routing ---------------- */
-  const VIEWS = ["home", "find", "plan", "costs", "waiting", "services", "evidence", "urgent", "about"];
+  const VIEWS = ["home", "start", "waiting", "costs", "services", "how", "urgent"];
   const RENDER = {};
   function route() {
     let v = (location.hash || "#home").slice(1);
@@ -934,171 +1028,399 @@ const Engine = (() => {
   }
   window.addEventListener("hashchange", route);
   $("#menu-btn").addEventListener("click", e => { const o = $("#mainnav").classList.toggle("open"); e.target.setAttribute("aria-expanded", String(o)); });
-  function counts() {
-    const p = S.plan.length, w = S.lists.filter(l => !l.seen).length;
-    $("#plan-count").textContent = p; $("#plan-count").hidden = p === 0;
-    $("#wl-count").textContent = w; $("#wl-count").hidden = w === 0;
+  function counts() { const w = S.lists.filter(l => !l.seen).length; $("#wl-count").textContent = w; $("#wl-count").hidden = w === 0; }
+
+  /* ============ Shared display: the week strip ============
+   * Format chosen from the eye-tracking study: a picture of weeks with the goal line,
+   * and the latest week said in words because people tend to miss it. */
+  function weekStrip(o, goal, compact) {
+    const p = E.distribution(o), st = E.stats(p);
+    const maxW = Math.max(12, st.latest + 1, goal < 99 ? goal + 1 : 0);
+    const W = 560, H = compact ? 52 : 66, L = 4, Rr = 4, T = 4, B = 22, bw = (W - L - Rr) / maxW;
+    let g = "";
+    for (let w = 1; w <= maxW; w++) {
+      const on = (p[w] || 0) > 0, xx = L + (w - 1) * bw;
+      const fill = on ? (goal >= 99 ? "var(--action)" : w <= goal ? "var(--ok)" : "var(--late)") : "var(--bg-alt)";
+      g += `<rect x="${(xx + 1.5).toFixed(1)}" y="${T}" width="${(bw - 3).toFixed(1)}" height="${H - T - B}" fill="${fill}" stroke="${on ? "none" : "var(--rule)"}"></rect>`;
+      if (maxW <= 14 || w % 2 === 0) g += `<text x="${(xx + bw / 2).toFixed(1)}" y="${H - 6}" font-size="12" text-anchor="middle" fill="var(--muted)">${w}</text>`;
+    }
+    if (goal < 99) { const gx = L + goal * bw; g += `<line x1="${gx.toFixed(1)}" x2="${gx.toFixed(1)}" y1="0" y2="${H - B + 3}" stroke="var(--text)" stroke-width="2.5" stroke-dasharray="5 3"></line>`; }
+    const cap = o.kind === "confirmed" ? `Set date: week ${st.earliest}.` : `Week ${st.earliest} to week ${st.latest}. <span class="latest">Could be as late as week ${st.latest}.</span>`;
+    return `<div class="strip"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Weeks when you could be seen: ${o.kind === "confirmed" ? "week " + st.earliest : "week " + st.earliest + " to week " + st.latest}">${g}</svg><span class="cap">${cap}</span></div>`;
+  }
+  function inWords(o, goal) {
+    const p = E.distribution(o), st = E.stats(p), k = Math.round(E.chanceBy(p, goal) * 10);
+    if (o.kind === "confirmed") return `You have a set date in week ${st.earliest}. ${st.earliest <= goal ? "That is within your goal." : "That is after your goal."}`;
+    return `You could be seen in any week from week ${st.earliest} to week ${st.latest}. Each week is just as likely. The latest is week ${st.latest}. ${k} in 10 people would be seen within ${goal} weeks.`;
+  }
+  const whenText = o => o.kind === "confirmed" ? `Set date, week ${o.week}` : `Week ${Math.min(o.from, o.to)} to ${Math.max(o.from, o.to)}`;
+  const costText = o => Number(o.cost) === 0 ? "$0" : money(o.cost);
+  const modeText = o => o.mode === "video" ? "Video" : "Face to face";
+
+  /* ============ Journey ============ */
+  const STEPS = ["Safety", "About you", "Your goal", "Your options", "6 choices", "Results", "Your plan"];
+  function stepbar() {
+    $("#stepbar").innerHTML = STEPS.map((s, i) => `<li class="${i + 1 < J.step ? "done" : i + 1 === J.step ? "now" : ""}"><span>${s}</span></li>`).join("");
+    $("#stepbar").setAttribute("aria-label", `Step ${J.step} of ${STEPS.length}: ${STEPS[J.step - 1]}`);
+  }
+  function go(step) { J.step = step; saveJ(); renderJourney(true); window.scrollTo(0, 0); const h = $("#journey h1"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); } }
+  const head = (title, sub) => `<div class="stack" style="gap:8px"><span class="stepcount">Step ${J.step} of ${STEPS.length}</span><h1 style="font-size:clamp(1.6rem,4vw,2.2rem)">${title}</h1>${sub ? `<p class="lead">${sub}</p>` : ""}</div>`;
+  const nav = (backTo, nextLabel, nextEnabled) => `<div class="btnrow spread">${backTo ? `<button type="button" class="btn secondary" data-go="${backTo}">Back</button>` : "<span></span>"}${nextLabel ? `<button type="button" class="btn big" data-next="1"${nextEnabled === false ? " disabled" : ""}>${nextLabel}</button>` : ""}</div>`;
+  const tiles = (key, opts, cls) => `<div class="tiles${cls ? " " + cls : ""}" data-key="${key}">${opts.map(([v, l, s]) => `<button type="button" data-val="${v}" aria-pressed="${String(J[key]) === String(v)}">${esc(l)}${s ? `<small>${esc(s)}</small>` : ""}</button>`).join("")}</div>`;
+
+  const VIEWS_J = {};
+  VIEWS_J[1] = () => `${head("First, are you safe right now?")}
+    <div class="safe">
+      <button type="button" data-safe="yes"><b>Yes, I am safe</b><span class="muted">Continue to compare my options</span></button>
+      <button type="button" class="danger" data-safe="no"><b>No, I need help now</b><span class="muted">Show me who to call</span></button>
+    </div>
+    ${J.safe === "no" ? `<div class="crisis-panel" role="alert"><h2>Get help now</h2>
+      <div class="line"><span>Emergency</span><b>000</b></div>
+      <div class="line"><span>NSW Mental Health Line, 24 hours</span><b>1800 011 511</b></div>
+      <div class="line"><span>Lifeline, 24 hours</span><b>13 11 14</b></div>
+      <div class="line"><span>Suicide Call Back Service, 24 hours</span><b>1300 659 467</b></div>
+      <p>You can also go to your nearest hospital emergency department.</p>
+      <div><button type="button" class="btn secondary" data-safe="yes">I am safe now. Continue.</button></div></div>` : ""}`;
+  VIEWS_J[2] = () => `${head("About you", "This helps us show options that suit you. You can skip any question.")}
+    <div class="q"><span class="ql">How old are you?</span>${tiles("age", [["12to15", "12 to 15"], ["16to17", "16 or 17"], ["18to25", "18 to 25"], ["26plus", "26 or older"]])}</div>
+    <div class="q"><label class="ql" for="j-area">Where do you live?</label><select id="j-area">${AREAS.map(([v, l]) => `<option value="${v}"${J.area === v ? " selected" : ""}>${l}</option>`).join("")}</select></div>
+    <div class="q"><span class="ql">Are you a University of Newcastle student?</span>${tiles("student", [["yes", "Yes"], ["no", "No"]], "two")}</div>
+    <div class="q"><span class="ql">Is cost a big problem for you?</span>${tiles("hardship", [["yes", "Yes", "For example, I have a Health Care Card"], ["no", "No"]], "two")}</div>
+    ${nav(1, "Next: your goal")}`;
+  VIEWS_J[3] = () => `${head("When would you like to start?", "Think about exams, work, a move or anything else coming up.")}
+    <div class="q"><span class="ql">I would like my first session within</span>${tiles("goal", [[2, "2 weeks"], [4, "4 weeks"], [6, "6 weeks"], [8, "8 weeks"], [12, "12 weeks"], [99, "No set time"]])}</div>
+    <div class="q"><span class="ql">Do you have a GP mental health plan? <button type="button" class="helpbtn" data-help="plan">What is this?</button></span>${tiles("gpplan", [["yes", "Yes"], ["no", "No"], ["unsure", "Not sure"]])}
+      ${J.gpplan && J.gpplan !== "yes" ? `<p class="small">That is fine. We will add about 1 week to options that need a GP plan, so you have time to see your GP.</p>` : ""}</div>
+    ${nav(2, "Next: see your options")}`;
+
+  function buildOptions() {
+    const key = [J.age, J.student, J.hardship, J.gpplan].join("|");
+    if (J.options.length && J.optKey === key) return;
+    const shift = J.gpplan && J.gpplan !== "yes" ? 1 : 0;
+    J.options = OPTION_TEMPLATES.filter(t => !t.when || t.when(J)).map(t => {
+      const o = Object.assign({}, t); delete o.when;
+      if (o.needsPlan && shift) { if (o.kind === "confirmed") o.week += shift; else { o.from += shift; o.to += shift; } o.gpShift = true; }
+      return o;
+    });
+    J.optKey = key; J.chosen = null; saveJ();
+  }
+  let editing = null;
+  function optEditor(o, i) {
+    const st = (k, label, val) => `<div class="stepper" role="group" aria-label="${label}"><button type="button" data-step="${k}:${i}" data-d="-1" aria-label="Less">&minus;</button><output>${val}</output><button type="button" data-step="${k}:${i}" data-d="1" aria-label="More">+</button></div>`;
+    return `<div class="edit-box">
+      <div class="edit-row"><span>Wait</span><div class="seg" role="group" aria-label="Kind of wait"><button type="button" data-set="kind:${i}" data-v="range" aria-pressed="${o.kind === "range"}">A range</button><button type="button" data-set="kind:${i}" data-v="confirmed" aria-pressed="${o.kind === "confirmed"}">A set date</button></div></div>
+      ${o.kind === "confirmed" ? `<div class="edit-row"><span>Week</span>${st("week", "Week", o.week)}</div>` : `<div class="edit-row"><span>From week</span>${st("from", "From week", o.from)}<span style="min-width:0">to week</span>${st("to", "To week", o.to)}</div>`}
+      <div class="edit-row"><span>You pay</span>${st("cost", "Cost per session", "$" + o.cost)}<span class="small muted" style="min-width:0">per session, after Medicare</span></div>
+      <div class="edit-row"><span>How</span><div class="seg" role="group" aria-label="How"><button type="button" data-set="mode:${i}" data-v="inperson" aria-pressed="${o.mode !== "video"}">Face to face</button><button type="button" data-set="mode:${i}" data-v="video" aria-pressed="${o.mode === "video"}">Video</button></div></div>
+      <div class="btnrow"><button type="button" class="btn small" data-done="${i}">Done</button><button type="button" class="btn tertiary small" data-remove="${i}">Remove this option</button></div>
+    </div>`;
+  }
+  VIEWS_J[4] = () => {
+    buildOptions();
+    const goal = Number(J.goal);
+    return `${head("Your options", "These are typical options in the Hunter for someone like you. If a service has offered you a time, press Change and enter it.")}
+    <div class="alert info"><span class="ic">i</span><div><p><b>Waiting times here are simulated.</b> In a full version, local services would update them through the For services page. <button type="button" class="helpbtn" data-help="range">Why ranges?</button></p></div></div>
+    ${J.options.map((o, i) => `<article class="opt-card" aria-labelledby="o-${i}">
+      <div class="opt-top"><h3 id="o-${i}">${esc(o.name)}</h3><span class="small muted">${esc(o.note || "Your offer")}</span></div>
+      <div class="opt-facts"><span>Wait: <b>${whenText(o)}</b>${o.gpShift ? " (includes 1 week to see your GP)" : ""}</span><span>You pay: <b>${costText(o)}</b> a session</span><span>How: <b>${modeText(o)}</b></span></div>
+      ${weekStrip(o, goal, true)}
+      ${editing === i ? optEditor(o, i) : `<div class="btnrow"><button type="button" class="btn secondary small" data-edit="${i}">Change</button></div>`}
+    </article>`).join("")}
+    <div class="btnrow">${J.options.length < 6 ? `<button type="button" class="btn secondary" id="add-offer">+ Add an offer I got</button>` : ""}<button type="button" class="btn tertiary small" id="reset-offers">Reset to typical options</button></div>
+    ${nav(3, "Next: 6 quick choices", J.options.length > 0)}`;
+  };
+  VIEWS_J[5] = () => {
+    const q = Math.min(J.q, TASKS.length - 1), [a, b] = TASKS[q], picked = J.answers[q];
+    const card = (o, idx) => `<button type="button" class="pick" data-pick="${idx}" aria-pressed="${picked === idx}">
+      <span class="lab">APPOINTMENT ${idx === 0 ? "A" : "B"}</span>
+      <dl><dt>When</dt><dd>${whenText(o)}</dd><dt>You pay</dt><dd>${costText(o)} a session</dd><dt>How</dt><dd>${modeText(o)}</dd></dl>
+      ${weekStrip(o, 99, true)}
+      <span class="go">${picked === idx ? "Chosen" : "Choose " + (idx === 0 ? "A" : "B")}</span></button>`;
+    return `${head("Which would you choose?", "There are no right answers. Pick the one you would take if these were your only two choices.")}
+      <div class="game-head"><span class="stepcount">Choice ${q + 1} of ${TASKS.length}</span><span class="pips" aria-hidden="true">${TASKS.map((_, i) => `<i class="${i < q ? "done" : i === q ? "now" : ""}"></i>`).join("")}</span></div>
+      <div class="pair step-anim">${card(a, 0)}${card(b, 1)}</div>
+      <p class="feedback" id="feedback" aria-live="polite"></p>
+      <div class="btnrow spread"><button type="button" class="btn secondary" id="q-back">Back</button><button type="button" class="btn tertiary" id="q-skip">I cannot choose, skip this one</button></div>`;
+  };
+
+  function personal() {
+    const ans = J.answers.map((p, i) => (p === 0 || p === 1) ? { a: E.attrs(TASKS[i][0]), b: E.attrs(TASKS[i][1]), pick: p } : null).filter(Boolean);
+    const b = E.posterior(PRIOR_DRAWS, ans).mean, v = E.values(b);
+    const pct = { certainty: E.percentile(POP_DRAWS, "certainty", v.certainty), weeksFor50: E.percentile(POP_DRAWS, "weeksFor50", v.weeksFor50), faceToFace: E.percentile(POP_DRAWS, "faceToFace", v.faceToFace) };
+    return { b, v, pct, n: ans.length };
+  }
+  function compareWord(p, more, less) {
+    if (p >= 0.6) return `<b>${more}</b> than ${Math.round(p * 100)} in 100 people in the study.`;
+    if (p <= 0.4) return `<b>${less}</b> than ${Math.round((1 - p) * 100)} in 100 people in the study.`;
+    return "<b>About the same</b> as most people in the study.";
+  }
+  function meter(label, shown, value, p, studyVal, max, lowLab, highLab, sentence, more, less) {
+    const pos = Math.max(1, Math.min(99, 100 * value / max)), avg = Math.max(0, Math.min(100, 100 * studyVal / max));
+    return `<div class="meter"><div class="row"><span><b>${label}</b></span><span class="val num">${shown}</span></div>
+      <div class="bar" aria-hidden="true"><span class="avg" style="left:${avg}%"></span><span class="mark" style="left:${pos}%"></span></div>
+      <div class="ends"><span>${lowLab}</span><span>Blue: you. Grey: study average.</span><span>${highLab}</span></div>
+      <p class="small">${sentence} ${compareWord(p, more, less)}</p></div>`;
+  }
+  function reasonText(best, second, b) {
+    if (!second) return "It is your only option.";
+    const xa = E.attrs(best), xb = E.attrs(second);
+    const parts = [
+      [b.wait * (xa.mean - xb.mean), `you could be seen about ${E.fmt1(Math.abs(xb.mean - xa.mean))} weeks sooner`],
+      [b.spread * (xa.half - xb.half), xa.half === 0 ? "you get a set date" : "the date is more certain"],
+      [b.cost * (xa.cost - xb.cost), `it costs ${money(Math.abs(xb.cost - xa.cost))} less a session`],
+      [b.video * (xa.video - xb.video), xa.video ? "it is by video" : "it is face to face"]
+    ].filter(x => x[0] > 0.02).sort((p, q) => q[0] - p[0]);
+    if (!parts.length) return `It is a close call with ${esc(second.name)}.`;
+    let t = `Compared with ${esc(second.name)}, ${parts[0][1]}${parts[1] ? `, and ${parts[1][1]}` : ""}.`;
+    if (xa.cost > xb.cost) t += ` It costs ${money(xa.cost - xb.cost)} more a session, but your choices show that is worth it to you.`;
+    return t;
+  }
+  VIEWS_J[6] = () => {
+    const P = personal(), goal = Number(J.goal), g = goal >= 99 ? 12 : goal;
+    const sh = E.rank(P.b, J.options);
+    const order = J.options.map((_, i) => i).sort((a, b) => sh[b] - sh[a]);
+    if (J.chosen === null || !J.options[J.chosen]) { J.chosen = order[0]; saveJ(); }
+    const best = J.options[order[0]], second = J.options[order[1]];
+    const pBest = E.chanceBy(E.distribution(best), g), quiz = E.quizChoices(pBest), v = P.v;
+    const cert = Math.max(0, v.certainty), wk = Math.max(0, v.weeksFor50), f2f = v.faceToFace;
+    return `${head("Your results", `Based on your ${P.n} choices${goal < 99 ? ` and your goal of starting within ${goal} weeks` : ""}.`)}
+      <div class="top-match"><span class="small"><b>Your best match</b></span><span class="name">${esc(best.name)}</span>
+        <p>${reasonText(best, second, P.b)}</p>
+        <p><b>${Math.round(pBest * 10)} in 10</b> chance of being seen within ${g} weeks. You pay ${costText(best)} a session.</p>
+        <div><button type="button" class="helpbtn" data-help="howcalc">How we worked this out</button></div></div>
+      <section class="you" aria-labelledby="you-h"><h2 id="you-h">What matters to you</h2>
+        ${meter("Knowing the date", money(cert), cert, P.pct.certainty, STUDY.certainty, 160, "$0", "$160", `A set date, instead of a wait that could be 3 weeks earlier or later, is worth about <b>${money(cert)} a session</b> to you.`, "More", "Less")}
+        ${meter("Waiting to save money", wk.toFixed(1) + " weeks", wk, P.pct.weeksFor50, STUDY.weeksFor50, 10, "0 weeks", "10 weeks", `To save $50 a session, you would wait about <b>${wk.toFixed(1)} weeks</b> longer.`, "Longer", "Shorter")}
+        ${meter("Face to face", f2f >= 0 ? money(f2f) : "Prefers video", Math.max(0, f2f), P.pct.faceToFace, STUDY.faceToFace, 80, "$0", "$80", f2f >= 0 ? `Seeing someone face to face instead of by video is worth about <b>${money(f2f)} a session</b> to you.` : "You would rather have video sessions.", "More", "Less")}
+        <details class="why"><summary>Compare with the study average</summary><div class="compare">
+          <div class="r"><span></span><b>You</b><b>Study average (simulated)</b></div>
+          <div class="r"><span>Set date, per session</span><span class="num">${money(cert)}</span><span class="num">${money(STUDY.certainty)}</span></div>
+          <div class="r"><span>Weeks to save $50</span><span class="num">${wk.toFixed(1)}</span><span class="num">${STUDY.weeksFor50.toFixed(1)}</span></div>
+          <div class="r"><span>Face to face, per session</span><span class="num">${money(Math.max(0, f2f))}</span><span class="num">${money(STUDY.faceToFace)}</span></div></div></details>
+      </section>
+      <div class="btnrow"><span class="small muted">Show waiting times as</span><div class="seg" role="group" aria-label="Format"><button type="button" data-fmt="picture" aria-pressed="${J.format === "picture"}">Picture</button><button type="button" data-fmt="words" aria-pressed="${J.format === "words"}">Words</button></div><button type="button" class="helpbtn" data-help="picture">Why a picture?</button></div>
+      <h2>All your options, best match first</h2>
+      ${order.map((i, r) => { const o = J.options[i], k = Math.round(E.chanceBy(E.distribution(o), g) * 10);
+        return `<article class="res-card${r === 0 ? " first" : ""}${J.chosen === i ? " chosen" : ""}" aria-labelledby="r-${i}">
+          <div class="res-head"><h3 id="r-${i}">${esc(o.name)}</h3><span class="matchpct">${r === 0 ? "Best match, " : ""}${Math.round(sh[i] * 100)}% match</span></div>
+          <div class="chance"><span class="n num">${k} in 10</span><span>chance of being seen within ${g} weeks <button type="button" class="helpbtn" data-help="chance">What is this?</button></span><span class="dots" aria-hidden="true">${Array.from({ length: 10 }, (_, j) => `<i class="${j < k ? "on" : ""}"></i>`).join("")}</span></div>
+          ${J.format === "picture" ? weekStrip(o, g) + `<div class="legend"><span><i style="background:var(--ok)"></i>Seen in time</span><span><i style="background:var(--late)"></i>Later than your goal</span><span>Dashed line: your goal</span></div>` : `<p>${esc(inWords(o, g))}</p>`}
+          <div class="opt-facts"><span>You pay: <b>${costText(o)}</b> a session</span><span>6 sessions: <b>${money(o.cost * 6)}</b></span><span>How: <b>${modeText(o)}</b></span></div>
+          <div class="btnrow"><button type="button" class="btn small${J.chosen === i ? "" : " secondary"}" data-choose="${i}" aria-pressed="${J.chosen === i}">${J.chosen === i ? "This is my choice" : "Choose this one"}</button></div>
+        </article>`; }).join("")}
+      <section class="quiz" aria-labelledby="quiz-h"><h2 id="quiz-h">Quick check</h2>
+        <p>With <b>${esc(best.name)}</b>, out of 10 people, how many would be seen within ${g} weeks?</p>
+        <div class="tiles">${quiz.options.map(x => `<button type="button" data-quiz="${x}" class="${J.quiz === null ? "" : x === quiz.correct ? "right" : x === J.quiz ? "wrong" : ""}">${x} in 10</button>`).join("")}</div>
+        <p aria-live="polite">${J.quiz === null ? "" : J.quiz === quiz.correct ? "<b>Correct.</b> You read the waiting time well." : `<b>Not quite.</b> It is ${quiz.correct} in 10. Count the green weeks up to the dashed line, out of all the coloured weeks.`}</p>
+        <p class="small muted">Our study uses this question to test which way of showing waiting times is easiest to understand.</p></section>
+      ${nav(5, "Next: make my plan")}`;
+  };
+  function todayFor() {
+    const prof = { age: J.age, area: J.area, student: J.student, hardship: J.hardship, mode: "any" };
+    return TODAY.map(s => ({ s, m: E.matchService(s, prof) })).filter(x => x.m.ok).sort((a, b) => (a.s.areas ? 0 : 1) - (b.s.areas ? 0 : 1)).slice(0, 3).map(x => x.s);
+  }
+  function callTips(P) {
+    const tips = [];
+    if (P.v.certainty > STUDY.certainty) tips.push("Knowing the date matters to you. Ask: \"Can you give me a set date?\"");
+    if (P.v.weeksFor50 > STUDY.weeksFor50) tips.push("Cost matters to you. Ask: \"Do you bulk bill, or have a lower fee?\"");
+    tips.push("Ask: \"Can I go on your cancellation list?\"", "Ask: \"Do you offer video sessions? Are they sooner?\"");
+    return tips;
+  }
+  VIEWS_J[7] = () => {
+    const P = personal(), o = J.options[J.chosen] || J.options[0], today = todayFor();
+    const needGP = o.needsPlan && J.gpplan !== "yes";
+    const step = (n, t, body) => `<div class="plan-step"><span class="no">${n}</span><div class="stack" style="gap:8px"><h3>${t}</h3>${body}</div></div>`;
+    let n = 1;
+    return `${head("Your plan", `Your choice: ${esc(o.name)}.`)}
+      ${step(n++, "Today: start free support while you wait", `<p>You do not need a referral for these. Support that a person guides works best.</p><ul class="plain">${today.map(s => `<li><b>${esc(s.name)}</b>. ${esc(s.what)} <span class="small">${esc(s.how)}.</span></li>`).join("")}</ul>`)}
+      ${needGP ? step(n++, "This week: see your GP", `<p>Book a longer appointment. Ask for a <b>Mental Health Treatment Plan</b> and a referral. <button type="button" class="helpbtn" data-help="plan">What is this?</button></p>`) : ""}
+      ${step(n++, `Call ${esc(o.name)}`, `<p class="small muted">These questions are based on what matters to you.</p><ul class="checklist">${callTips(P).map((t, i) => `<li><label class="opt"><input type="checkbox" id="tip${i}"> ${esc(t)}</label></li>`).join("")}</ul>`)}
+      ${step(n++, "When you are on the list, track it", `<p>We will show how long you have waited, the chance of being seen soon, and what to do at each stage.</p><div><button type="button" class="btn" id="to-tracker">Add ${esc(o.name)} to my waiting lists</button></div>`)}
+      ${step(n++, "If things get worse", `<p>Do not wait. Call <b>000</b> in an emergency, the NSW Mental Health Line on <b>1800 011 511</b> (24 hours) or Lifeline on <b>13 11 14</b>.</p>`)}
+      <div class="btnrow" style="margin-top:6px"><button type="button" class="btn secondary" id="copy-plan">Copy my plan</button><button type="button" class="btn tertiary" data-go="6">Back to results</button><button type="button" class="btn tertiary" id="restart">Start again</button></div>
+      <pre class="sr" id="plan-text"></pre>`;
+  };
+  function planText() {
+    const o = J.options[J.chosen] || J.options[0], P = personal();
+    return [`My plan for seeing a psychologist`, ``, `My choice: ${o.name} (${whenText(o)}, ${costText(o)} a session, ${modeText(o)})`, ``,
+      `Start today:`, ...todayFor().map(s => `- ${s.name}: ${s.how}`), ``,
+      ...(o.needsPlan && J.gpplan !== "yes" ? [`This week: see my GP for a Mental Health Treatment Plan and referral.`, ``] : []),
+      `When I call:`, ...callTips(P).map(t => `- ${t}`), ``,
+      `What matters to me: a set date is worth about ${money(Math.max(0, P.v.certainty))} a session to me.`, ``,
+      `If things get worse: 000, NSW Mental Health Line 1800 011 511 (24 hours), Lifeline 13 11 14.`].join("\n");
+  }
+  function renderJourney(anim) { stepbar(); $("#journey").innerHTML = `<div class="step${anim ? " step-anim" : ""}">${VIEWS_J[J.step]()}</div>`; }
+  RENDER.start = () => renderJourney(true);
+
+  $("#journey").addEventListener("click", e => {
+    const t = e.target.closest("button"); if (!t || t.disabled) return;
+    if (t.dataset.go) return go(Number(t.dataset.go));
+    if (t.dataset.next) {
+      if (J.step === 4 && !J.options.length) return popup("Add an option", "<p>Add at least one option to compare.</p>");
+      if (J.step === 4) { J.q = 0; editing = null; }
+      const msg = { 2: "Saved. Now your goal.", 3: "Here are your options.", 4: "Now 6 quick choices.", 6: "Here is your plan." }[J.step];
+      go(J.step + 1); if (msg) toast(msg); return;
+    }
+    if (t.dataset.safe) { J.safe = t.dataset.safe; saveJ(); if (J.safe === "yes") { go(2); toast("Thank you. Let's start."); } else renderJourney(); return; }
+    const tileBox = t.closest("[data-key]");
+    if (tileBox && t.dataset.val !== undefined) { const k = tileBox.dataset.key; J[k] = k === "goal" ? Number(t.dataset.val) : t.dataset.val; saveJ(); renderJourney(); return; }
+    if (t.dataset.edit !== undefined) { editing = Number(t.dataset.edit); renderJourney(); return; }
+    if (t.dataset.done !== undefined) { editing = null; renderJourney(); toast("Option updated."); return; }
+    if (t.dataset.remove !== undefined) { const i = Number(t.dataset.remove), nm = J.options[i].name; J.options.splice(i, 1); editing = null; saveJ(); renderJourney(); toast(`Removed: ${nm}`); return; }
+    if (t.id === "add-offer") { J.options.push({ id: "own" + Date.now(), name: "My offer " + (J.options.length + 1), note: "Your offer", kind: "range", from: 3, to: 6, cost: 0, mode: "inperson" }); editing = J.options.length - 1; saveJ(); renderJourney(); return; }
+    if (t.id === "reset-offers") { J.options = []; J.optKey = ""; editing = null; buildOptions(); renderJourney(); toast("Options reset."); return; }
+    if (t.dataset.set) { const [k, i] = t.dataset.set.split(":"), o = J.options[Number(i)];
+      if (k === "kind" && t.dataset.v !== o.kind) { if (t.dataset.v === "confirmed") o.week = Math.round((o.from + o.to) / 2); else { o.from = Math.max(1, (o.week || 4) - 2); o.to = (o.week || 4) + 2; } }
+      o[k] = t.dataset.v; o.note = "Changed by you"; o.gpShift = false; saveJ(); renderJourney(); return; }
+    if (t.dataset.step) { const [k, i] = t.dataset.step.split(":"), o = J.options[Number(i)], d = Number(t.dataset.d);
+      if (k === "cost") o.cost = Math.max(0, Math.min(300, Number(o.cost) + 10 * d));
+      if (k === "week") o.week = Math.max(1, Math.min(30, o.week + d));
+      if (k === "from") { o.from = Math.max(0, Math.min(30, o.from + d)); if (o.from > o.to) o.to = o.from; }
+      if (k === "to") { o.to = Math.max(0, Math.min(30, o.to + d)); if (o.to < o.from) o.from = o.to; }
+      o.note = "Changed by you"; o.gpShift = false; saveJ(); renderJourney(); const again = document.querySelector(`[data-step="${t.dataset.step}"][data-d="${t.dataset.d}"]`); if (again) again.focus(); return; }
+    if (t.dataset.pick !== undefined) {
+      const idx = Number(t.dataset.pick); J.answers[J.q] = idx; saveJ();
+      $$(".pick").forEach(p => { p.setAttribute("aria-pressed", String(Number(p.dataset.pick) === idx)); p.disabled = true; });
+      $("#feedback").textContent = J.q < TASKS.length - 1 ? `You chose appointment ${idx === 0 ? "A" : "B"}. Next one...` : "Working out what matters to you...";
+      setTimeout(() => { if (J.q < TASKS.length - 1) { J.q++; saveJ(); renderJourney(); } else finishGame(); }, reduced ? 50 : 600);
+      return;
+    }
+    if (t.id === "q-skip") { J.answers[J.q] = null; if (J.q < TASKS.length - 1) { J.q++; saveJ(); renderJourney(); } else finishGame(); return; }
+    if (t.id === "q-back") { if (J.q > 0) { J.q--; saveJ(); renderJourney(); } else go(4); return; }
+    if (t.dataset.fmt) { J.format = t.dataset.fmt; saveJ(); renderJourney(); return; }
+    if (t.dataset.choose !== undefined) { J.chosen = Number(t.dataset.choose); saveJ(); renderJourney(); toast(`Your choice: ${J.options[J.chosen].name}`); return; }
+    if (t.dataset.quiz !== undefined) { J.quiz = Number(t.dataset.quiz); saveJ(); renderJourney(); const q = $("#quiz-h"); if (q) q.scrollIntoView({ block: "center" }); return; }
+    if (t.id === "to-tracker") { const o = J.options[J.chosen] || J.options[0]; addList(o); toast(`Added to My waiting lists: ${o.name}`); t.textContent = "Added. Open My waiting lists"; t.onclick = () => { location.hash = "#waiting"; }; return; }
+    if (t.id === "copy-plan") { const txt = planText(); $("#plan-text").textContent = txt; copyText(txt, $("#plan-text"), "Plan copied. Paste it into a note or message."); return; }
+    if (t.id === "restart") { popup("Start again?", "<p>This clears your answers and choices.</p>", [{ label: "Yes, start again", primary: true, onClick: () => { Object.assign(J, NEW_JOURNEY()); saveJ(); renderJourney(); toast("Starting again."); } }, { label: "Cancel" }]); return; }
+  });
+  $("#journey").addEventListener("change", e => { if (e.target.id === "j-area") { J.area = e.target.value; saveJ(); } });
+  function finishGame() { J.quiz = null; J.chosen = null; go(6); toast("Your results are ready."); }
+  function copyText(text, el, okMsg) {
+    const fallback = () => { if (el) { el.classList.remove("sr"); el.style.whiteSpace = "pre-wrap"; const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } toast("Text selected. Use copy on your keyboard."); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(okMsg), fallback); else fallback();
   }
 
-  /* ---------------- shared helpers ---------------- */
+  /* ============ Waiting lists ============ */
+  const isoToday = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  const addDays = (iso, n) => { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  const niceDate = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
+  function addList(o) {
+    const e = { id: Date.now().toString(36), name: o.name, joined: isoToday(), seen: false, kind: o.kind, from: o.from, to: o.to, week: o.week };
+    if (o.kind === "confirmed") e.date = addDays(isoToday(), o.week * 7);
+    S.lists.push(e); save("lists"); counts();
+  }
+  let lookDays = 0;
+  const TYPICAL = { from: 4, to: 17 };
+  function openAddForm(prefill) {
+    const f = $("#wl-form"); f.hidden = false;
+    f.innerHTML = `<h2>Add a waiting list</h2>
+      <div class="field"><label for="wl-name">Service or practitioner</label><input type="text" id="wl-name" value="${esc(prefill || "")}" placeholder="For example, Smith Street Psychology"></div>
+      <div class="field"><label for="wl-joined">When did you join the list?</label><input type="date" id="wl-joined" value="${isoToday()}" max="${isoToday()}"></div>
+      <fieldset><legend>What did they tell you about the wait?</legend><div class="opts" id="wl-kind"></div></fieldset>
+      <div id="wl-kind-detail"></div>
+      <div class="btnrow"><button type="button" class="btn" id="wl-save">Save</button><button type="button" class="btn tertiary" id="wl-cancel">Cancel</button></div>`;
+    let kind = "range";
+    const kindBox = $("#wl-kind");
+    kindBox.innerHTML = [["range", "A range of weeks, for example \"3 to 9 weeks\""], ["date", "A set date"], ["unknown", "They did not say"]].map(([v, l]) => `<label class="opt"><input type="radio" name="wlk" value="${v}"${v === kind ? " checked" : ""}> ${esc(l)}</label>`).join("");
+    kindBox.addEventListener("change", e => { kind = e.target.value; detail(); });
+    function detail() {
+      const d = $("#wl-kind-detail");
+      if (kind === "range") d.innerHTML = `<div class="btnrow"><div class="field"><label for="wl-from">From week</label><input type="number" id="wl-from" min="0" max="52" value="3"></div><div class="field"><label for="wl-to">To week</label><input type="number" id="wl-to" min="0" max="52" value="9"></div></div>`;
+      else if (kind === "date") d.innerHTML = `<div class="field"><label for="wl-date">Appointment date</label><input type="date" id="wl-date" value="${addDays(isoToday(), 28)}"></div>`;
+      else d.innerHTML = `<div class="alert info"><span class="ic">i</span><div><p>We will use a typical wait of ${TYPICAL.from} to ${TYPICAL.to} weeks. Most psychologists report waiting lists of 1 to 4 months (APS 2024). Call them and ask for a better estimate.</p></div></div>`;
+    }
+    detail();
+    $("#wl-cancel").addEventListener("click", () => { f.hidden = true; });
+    $("#wl-save").addEventListener("click", () => {
+      const name = $("#wl-name").value.trim(), joined = $("#wl-joined").value || isoToday();
+      if (!name) { popup("Add a name", "<p>Type the name of the service so you can tell your lists apart.</p>"); return; }
+      const entry = { id: Date.now().toString(36), name, joined, seen: false, kind: "range", from: TYPICAL.from, to: TYPICAL.to, assumed: kind === "unknown" };
+      if (kind === "range") { entry.from = Math.max(0, Number($("#wl-from").value) || 0); entry.to = Math.max(entry.from, Number($("#wl-to").value) || entry.from); }
+      if (kind === "date") { const dt = $("#wl-date").value; if (!dt) { popup("Add the date", "<p>Choose the appointment date.</p>"); return; } entry.kind = "confirmed"; entry.date = dt; entry.week = Math.ceil(E.elapsed(joined, dt).days / 7); }
+      S.lists.push(entry); save("lists"); counts(); f.hidden = true; renderWaiting(); toast(`Added: ${name}`);
+    });
+    $("#wl-name").focus();
+  }
+  $("#wl-add-btn").addEventListener("click", () => openAddForm(""));
+  $("#wl-example").addEventListener("click", () => {
+    const t = isoToday();
+    S.lists.push({ id: "ex1" + Date.now().toString(36), name: "Example: private psychologist", joined: addDays(t, -38), kind: "range", from: 3, to: 9, seen: false });
+    S.lists.push({ id: "ex2" + Date.now().toString(36), name: "Example: free PHN psychology", joined: addDays(t, -10), kind: "range", from: 6, to: 14, seen: false });
+    save("lists"); counts(); renderWaiting(); toast("Two examples added. Remove them when you are done.");
+  });
+  $("#look").addEventListener("input", e => { lookDays = Number(e.target.value); renderWaiting(); });
+  const ADVICE = {
+    early: ["Ask to go on their cancellation list.", "Ask if they offer video sessions, which can be sooner.", "Start free support now, such as Medicare Mental Health Check In or MindSpot."],
+    middle: ["Call to check you are still on the list and your details are right.", "Keep using free support while you wait."],
+    window: ["You are now in the weeks they said you would be seen.", "Keep your phone on and check messages.", "If your plans change, tell them so they can offer the spot to someone else."],
+    overdue: ["You have waited longer than they said. Call them and ask for an update.", "Ask your GP about other options, or call 1800 595 212.", "Use the free services that can start today."]
+  };
+  const STAGE_LABEL = { early: "Just started", middle: "Waiting", window: "Could be any day now", overdue: "Longer than they said" };
+  function renderWaiting() {
+    const today = addDays(isoToday(), lookDays);
+    $("#look-out").textContent = lookDays === 0 ? "Showing today" : `Showing ${niceDate(today)} (${Math.round(lookDays / 7 * 10) / 10} weeks from now)`;
+    $("#lookahead").hidden = S.lists.filter(l => !l.seen).length === 0;
+    if (!S.lists.length) { $("#wl-list").innerHTML = `<div class="callout"><h3>No waiting lists yet</h3><p>Press "Add a waiting list" when a service puts you on their list, or finish <a href="#start">Compare my options</a> and add your choice from your plan. Press "Show an example" to see how it works.</p></div>`; return; }
+    $("#wl-list").innerHTML = S.lists.map(l => {
+      if (l.seen) return `<article class="wl"><div class="wl-head"><h3>${esc(l.name)}</h3><span class="status seen">Seen</span></div><p class="muted">You marked this as seen.</p><div class="btnrow"><button type="button" class="btn tertiary small" data-wl-remove="${l.id}">Remove</button></div></article>`;
+      const st = E.waitStage(l, today), span = Math.max(st.latest + 2, st.weeks + 2, 8);
+      const pct = x => (100 * Math.min(x, span) / span).toFixed(1);
+      const next = st.next2, k = next === null ? null : Math.round(next * 10);
+      const past = l.kind === "confirmed" && new Date(l.date + "T00:00:00") < new Date(today + "T00:00:00");
+      const when = l.kind === "confirmed" ? `Your appointment is on <b>${niceDate(l.date)}</b>.` : `${l.assumed ? `We used a typical wait of <b>${l.from} to ${l.to} weeks</b>, because the service did not say` : `They said <b>${l.from} to ${l.to} weeks</b>`}. That is between ${niceDate(addDays(l.joined, l.from * 7))} and ${niceDate(addDays(l.joined, l.to * 7))}.`;
+      let big;
+      if (l.kind === "confirmed") { const left = E.elapsed(today, l.date).days; big = past ? `<div class="wl-big"><span class="n">Date passed</span><span>Did you go? Mark it as seen, or call them.</span></div>` : `<div class="wl-big"><span class="n num">${left} day${left === 1 ? "" : "s"}</span><span>until your appointment</span></div>`; }
+      else if (k === null) big = `<div class="wl-big"><span class="n">Overdue</span><span>You have waited longer than the latest week they gave you.</span></div>`;
+      else big = `<div class="wl-big"><span class="n num">${k} in 10</span><span>chance you will be seen in the next 2 weeks</span><span class="dots" aria-hidden="true">${Array.from({ length: 10 }, (_, j) => `<i class="${j < k ? "on" : ""}"></i>`).join("")}</span></div>${st.weeks + 2 < st.earliest ? `<p class="small">That is expected. The earliest is week ${st.earliest}, from ${niceDate(addDays(l.joined, st.earliest * 7))}.</p>` : ""}`;
+      const stage = l.kind === "confirmed" ? (past ? "overdue" : "window") : st.stage;
+      const label = l.kind === "confirmed" ? (past ? "Date passed" : "Date booked") : STAGE_LABEL[stage];
+      const adv = l.kind === "confirmed" ? ["Put the date in your calendar and set a reminder.", "Ask to be called if an earlier time comes up.", "If you cannot go, tell them early so someone else can have the time."] : ADVICE[stage];
+      return `<article class="wl" aria-labelledby="wl-${l.id}">
+        <div class="wl-head"><h3 id="wl-${l.id}">${esc(l.name)}</h3><span class="status ${stage}">${label}</span></div>
+        <p>You joined on ${niceDate(l.joined)}. You have waited <b>${st.weeks} week${st.weeks === 1 ? "" : "s"} and ${st.days % 7} day${st.days % 7 === 1 ? "" : "s"}</b>. ${when}</p>
+        ${big}
+        <div class="timeline" aria-hidden="true"><span class="base"></span>
+          ${l.kind === "confirmed" ? "" : `<span class="window" style="left:${pct(st.earliest)}%;width:${(pct(st.latest + 1) - pct(st.earliest)).toFixed(1)}%"></span>`}
+          <span class="done" style="width:${pct(st.days / 7)}%"></span>
+          <span class="today" style="left:${pct(st.days / 7)}%"><span>${lookDays ? "Then" : "Today"}</span></span>
+          ${l.kind === "confirmed" ? `<span class="today" style="left:${pct(l.week)}%;background:var(--ok)"><span style="color:var(--ok)">Appointment</span></span>` : ""}
+        </div>
+        <div class="tl-labels"><span>Joined</span>${l.kind === "confirmed" ? "" : `<span>Green: weeks ${st.earliest} to ${st.latest}</span>`}<span>Week ${span}</span></div>
+        <div class="stack" style="gap:6px"><h4>What to do now</h4><ul class="plain">${adv.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div>
+        <div class="btnrow"><button type="button" class="btn small secondary" data-wl-date="${l.id}">I have a date now</button><button type="button" class="btn small secondary" data-wl-seen="${l.id}">I have been seen</button><button type="button" class="btn tertiary small" data-wl-remove="${l.id}">Remove</button></div>
+      </article>`;
+    }).join("");
+  }
+  RENDER.waiting = renderWaiting;
+  $("#wl-list").addEventListener("click", e => {
+    const t = e.target.closest("button"); if (!t) return;
+    const find = id => S.lists.find(l => l.id === id);
+    if (t.dataset.wlRemove) { const l = find(t.dataset.wlRemove); popup("Remove this waiting list?", `<p>Remove <b>${esc(l.name)}</b>?</p>`, [{ label: "Yes, remove", primary: true, onClick: () => { S.lists = S.lists.filter(x => x.id !== l.id); save("lists"); counts(); renderWaiting(); toast("Removed."); } }, { label: "Cancel" }]); }
+    if (t.dataset.wlSeen) { find(t.dataset.wlSeen).seen = true; save("lists"); counts(); renderWaiting(); toast("Marked as seen. We hope it goes well."); }
+    if (t.dataset.wlDate) { const l = find(t.dataset.wlDate);
+      popup("Add your appointment date", `<div class="field"><label for="m-date">Appointment date</label><input type="date" id="m-date" value="${addDays(isoToday(), 7)}"></div>`, [{ label: "Save date", primary: true, onClick: vals => { const dt = vals["m-date"]; if (dt) { l.kind = "confirmed"; l.date = dt; l.week = Math.ceil(E.elapsed(l.joined, dt).days / 7); l.assumed = false; save("lists"); renderWaiting(); toast("Date saved."); } } }, { label: "Cancel" }]); }
+  });
+
+  /* ============ Cost calculator ============ */
   function radios(container, name, options, value, onChange) {
     container.innerHTML = options.map(([v, l]) => `<label class="opt"><input type="radio" name="${name}" value="${esc(v)}"${String(value) === String(v) ? " checked" : ""}> ${esc(l)}</label>`).join("");
     container.addEventListener("change", e => { if (e.target.name === name) onChange(e.target.value); });
   }
-  function svcCost(s) {
-    if (s.costText) return s.costText;
-    if (s.cost === "free") return "No cost";
-    if (s.cost === "medicare") {
-      const c = E.costPlan({ fee: S.cost.fee, type: S.cost.type, bulkBilled: S.cost.bulk, sessions: 1, usedThisYear: 0 });
-      return S.cost.bulk ? "No cost if they bulk bill" : `About ${money(c.medicareGap)} a session if the fee is ${money(S.cost.fee)} (Medicare pays ${money(c.rebate, true)})`;
-    }
-    return "Ask the service";
-  }
-  const isoToday = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
-  const addDays = (iso, n) => { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
-  const niceDate = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
-
-  /* ---------------- home ---------------- */
-  $("#home-facts").innerHTML = `
-    <div><span class="n">1 in 4</span><span>people who needed a psychologist delayed or did not go because of cost</span></div>
-    <div><span class="n">31%</span><span>of psychologists could not take new clients</span></div>
-    <div><span class="n">2 to 4 months</span><span>is the most common waiting-list length psychologists report</span></div>
-    <div><span class="n">39%</span><span>of people aged 16 to 24 had a mental health condition in the past year</span></div>`;
-
-  /* ---------------- find support ---------------- */
-  const Q = {
-    age: [["u12", "Under 12"], ["12to15", "12 to 15"], ["16to17", "16 or 17"], ["18to25", "18 to 25"], ["26plus", "26 or older"]],
-    student: [["yes", "Yes"], ["no", "No"]],
-    hardship: [["yes", "Yes"], ["no", "No"]],
-    mode: [["any", "Any way"], ["inperson", "Face to face"], ["phone", "Phone or video"], ["online", "Online, at my own pace"]],
-    gpplan: [["yes", "Yes"], ["no", "No"], ["unsure", "Not sure"]]
-  };
-  Object.keys(Q).forEach(k => {
-    const c = document.querySelector(`[data-q="${k}"]`);
-    radios(c, "q-" + k, Q[k], S.profile[k], v => { S.profile[k] = v; save("profile"); renderFind(); });
-  });
-  $("#f-area").innerHTML = AREAS.map(([v, l]) => `<option value="${v}"${S.profile.area === v ? " selected" : ""}>${l}</option>`).join("");
-  $("#f-area").addEventListener("change", e => { S.profile.area = e.target.value; save("profile"); renderFind(); });
-  radios($("#sort-opts"), "sort", [["fit", "Best fit for me"], ["soon", "Soonest start"], ["cost", "Lowest cost"]], S.sort, v => { S.sort = v; save("sort"); renderFind(); });
-  $("#reset-filters").addEventListener("click", () => {
-    S.profile = Object.assign({}, DEFAULT_PROFILE); save("profile");
-    $$("#filters input[type=radio]").forEach(i => { i.checked = i.name === "q-mode" && i.value === "any"; });
-    $("#f-area").value = ""; renderFind(); toast("Answers cleared.");
-  });
-
-  function svcCard(s, m) {
-    const inPlan = S.plan.includes(s.id);
-    const group = s.group === "today" ? "g-today" : s.group === "referral" ? "g-referral" : "";
-    const ref = s.referral === "gp" ? (S.profile.gpplan === "yes" ? "Uses your GP referral" : "Needs a GP referral") : "No referral needed";
-    return `<article class="svc ${group}" aria-labelledby="t-${s.id}">
-      <div class="svc-head"><div><h3 id="t-${s.id}">${esc(s.name)}</h3><span class="by">${esc(s.by)}</span></div></div>
-      <p>${esc(s.what)}</p>
-      <dl class="kv">
-        <div><dt>Cost</dt><dd>${esc(svcCost(s))}</dd></div>
-        <div><dt>How soon</dt><dd>${esc(s.when)}</dd></div>
-        <div><dt>How to start</dt><dd>${esc(s.how)}</dd></div>
-        <div><dt>Referral</dt><dd>${ref}</dd></div>
-      </dl>
-      ${m.why.length ? `<div class="fits" aria-label="Why it may suit you">${m.why.slice(0, 5).map(w => `<span class="chip">${esc(w)}</span>`).join("")}</div>` : ""}
-      <div class="btnrow">
-        <button type="button" class="btn small${inPlan ? "" : " secondary"}" data-plan="${s.id}" aria-pressed="${inPlan}">${inPlan ? "Added to my plan" : "Add to my plan"}</button>
-        ${s.group !== "today" ? `<button type="button" class="btn tertiary small" data-onlist="${s.id}">I am on their waiting list</button>` : ""}
-        ${s.cost === "medicare" ? `<a class="btn tertiary small" href="#costs">Work out my cost</a>` : ""}
-      </div>
-      <p class="src">Source: <a href="${s.src.url}" target="_blank" rel="noopener">${esc(s.src.label)}</a>. Checked ${CHECKED}.</p>
-    </article>`;
-  }
-  function renderFind() {
-    const prof = S.profile;
-    const scored = SERVICES.map(s => ({ s, m: E.matchService(s, prof), k: E.rankScore(s, prof, S.sort) }));
-    const fit = scored.filter(x => x.m.ok).sort((a, b) => a.k - b.k);
-    const notFit = scored.filter(x => !x.m.ok);
-    const today = fit.filter(x => x.s.group === "today"), book = fit.filter(x => x.s.group === "book"), refl = fit.filter(x => x.s.group === "referral");
-    const freeToday = today.filter(x => x.s.cost === "free").length;
-    $("#find-summary").textContent = `${fit.length} options for you. ${freeToday} are free and you can start today.`;
-    const groupHTML = (title, items, note) => items.length ? `<section class="stack"><div class="group-h"><h2>${title}</h2><span class="count">${items.length}</span></div>${note ? `<p class="muted">${note}</p>` : ""}${items.map(x => svcCard(x.s, x.m)).join("")}</section>` : "";
-    let html = "";
-    if (prof.age === "u12") html += `<div class="alert info"><span class="ic">i</span><div><b>For children under 12</b><p>Talk to your GP or call the Medicare Mental Health phone service on 1800 595 212. Kids Helpline (1800 55 1800) is free for children and young people aged 5 to 25.</p></div></div>`;
-    html += groupHTML("You can start today", today, "Free or low cost. No referral or waiting list.");
-    html += groupHTML("Book a time, no referral needed", book, "Contact them directly. Ask how long the wait is.");
-    html += groupHTML("Needs a GP referral", refl, prof.gpplan === "yes" ? "You have a GP plan, so you can contact these now." : "See your GP first. Ask for a Mental Health Treatment Plan and a referral. While you wait, use the free options above.");
-    if (notFit.length) html += `<details class="notfit"><summary>${notFit.length} services may not suit you</summary><ul>${notFit.map(x => `<li><b>${esc(x.s.name)}</b>: ${esc(x.m.not.join(". "))}.</li>`).join("")}</ul></details>`;
-    $("#find-results").innerHTML = html;
-  }
-  RENDER.find = renderFind;
-  $("#find-results").addEventListener("click", e => {
-    const p = e.target.closest("[data-plan]");
-    if (p) {
-      const id = p.dataset.plan, i = S.plan.indexOf(id), s = SERVICES.find(x => x.id === id);
-      if (i >= 0) { S.plan.splice(i, 1); toast(`Removed from your plan: ${s.name}`); } else { S.plan.push(id); toast(`Added to your plan: ${s.name}`); }
-      save("plan"); counts(); renderFind(); const again = document.querySelector(`[data-plan="${id}"]`); if (again) again.focus();
-      return;
-    }
-    const w = e.target.closest("[data-onlist]");
-    if (w) { const s = SERVICES.find(x => x.id === w.dataset.onlist); location.hash = "#waiting"; setTimeout(() => openAddForm(s.name), 0); }
-  });
-
-  /* ---------------- plan ---------------- */
-  function planText() {
-    const chosen = SERVICES.filter(s => S.plan.includes(s.id));
-    const lines = ["My mental health support plan", ""];
-    const t = chosen.filter(s => s.group === "today"), b = chosen.filter(s => s.group !== "today");
-    if (t.length) { lines.push("Start now:"); t.forEach(s => lines.push(`- ${s.name}: ${s.how}`)); lines.push(""); }
-    if (b.length) { lines.push("Book and wait:"); b.forEach(s => lines.push(`- ${s.name}: ${s.how}`)); lines.push(""); }
-    lines.push("Questions to ask when I call:", ...QUESTIONS.map(q => "- " + q), "");
-    lines.push("If things get worse: call 000 in an emergency, NSW Mental Health Line 1800 011 511 (24/7) or Lifeline 13 11 14.");
-    return lines.join("\n");
-  }
-  const QUESTIONS = ["How long is the wait for a first appointment?", "Is that a set date, or could it change?", "Can I go on a cancellation list?", "Do you bulk bill? If not, what is the fee and the gap after Medicare?", "Do you offer phone or video sessions?", "What can I do while I wait?"];
-  function renderPlan() {
-    const chosen = SERVICES.filter(s => S.plan.includes(s.id));
-    if (!chosen.length) {
-      $("#plan-body").innerHTML = `<div class="alert info"><span class="ic">i</span><div><b>Your plan is empty</b><p>Go to Find support and press "Add to my plan" on the options you like.</p><div><a class="btn" href="#find">Find support</a></div></div></div>`;
-      return;
-    }
-    const t = chosen.filter(s => s.group === "today"), b = chosen.filter(s => s.group !== "today");
-    const needsGP = b.some(s => s.referral === "gp") && S.profile.gpplan !== "yes";
-    const step = (n, title, body) => `<div class="plan-step"><span class="no">${n}</span><div class="stack" style="gap:6px"><h3>${title}</h3>${body}</div></div>`;
-    let n = 1, html = "";
-    if (t.length) html += step(n++, "Start now", `<p>You do not need to wait for these.</p><ul>${t.map(s => `<li><b>${esc(s.name)}</b>. ${esc(s.how)}.</li>`).join("")}</ul>`);
-    if (needsGP) html += step(n++, "See your GP", `<p>Book a longer appointment and ask for a Mental Health Treatment Plan and a referral. <button type="button" class="helpbtn" data-help="plan">What is this?</button></p>`);
-    if (b.length) html += step(n++, "Book and ask about the wait", `<ul>${b.map(s => `<li><b>${esc(s.name)}</b>. ${esc(s.how)}.</li>`).join("")}</ul><p class="small">When you are put on a waiting list, add it to <a href="#waiting">My waiting lists</a>.</p>`);
-    html += step(n++, "Questions to ask when you call", `<ul class="checklist">${QUESTIONS.map((q, i) => `<li><label class="opt"><input type="checkbox" id="q${i}"> ${esc(q)}</label></li>`).join("")}</ul>`);
-    html += step(n++, "If things get worse", `<p>Do not wait. Call <b>000</b> in an emergency, the NSW Mental Health Line on <b>1800 011 511</b> (24 hours) or Lifeline on <b>13 11 14</b>.</p>`);
-    html += `<div class="btnrow" style="margin-top:8px"><button type="button" class="btn" id="copy-plan">Copy my plan</button><a class="btn secondary" href="#find">Change my options</a><button type="button" class="btn tertiary" id="clear-plan">Clear my plan</button></div><pre class="sr" id="plan-text"></pre>`;
-    $("#plan-body").innerHTML = html;
-    $("#plan-text").textContent = planText();
-    $("#copy-plan").addEventListener("click", () => copyText(planText(), $("#plan-text"), "Plan copied. Paste it into a note, email or message."));
-    $("#clear-plan").addEventListener("click", () => popup("Clear your plan?", "<p>This removes all options from your plan.</p>", [{ label: "Yes, clear it", primary: true, onClick: () => { S.plan = []; save("plan"); counts(); renderPlan(); toast("Plan cleared."); } }, { label: "Cancel" }]));
-  }
-  RENDER.plan = renderPlan;
-  function copyText(text, el, okMsg) {
-    const fallback = () => { if (el) { el.classList.remove("sr"); const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } toast("Text selected. Use copy on your keyboard."); };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(okMsg), fallback); else fallback();
-  }
-
-  /* ---------------- costs ---------------- */
   radios(document.querySelector('[data-c="type"]'), "c-type", [["psychologist", "Psychologist"], ["clinical", "Clinical psychologist"], ["socialworker", "Mental health social worker or occupational therapist"]], S.cost.type, v => { S.cost.type = v; renderCosts(); });
   radios(document.querySelector('[data-c="hasPlan"]'), "c-plan", [["yes", "Yes"], ["no", "No"]], S.cost.hasPlan, v => { S.cost.hasPlan = v; renderCosts(); });
   radios(document.querySelector('[data-c="extrasOn"]'), "c-ex", [["yes", "Yes"], ["no", "No"]], S.cost.extrasOn, v => { S.cost.extrasOn = v; renderCosts(); });
-  $("#c-fee").value = S.cost.fee; $("#c-fee-range").value = S.cost.fee; $("#c-bulk").checked = S.cost.bulk;
-  $("#c-exper").value = S.cost.exPer; $("#c-exlimit").value = S.cost.exLimit;
+  $("#c-fee").value = S.cost.fee; $("#c-fee-range").value = S.cost.fee; $("#c-bulk").checked = S.cost.bulk; $("#c-exper").value = S.cost.exPer; $("#c-exlimit").value = S.cost.exLimit;
   $("#c-fee").addEventListener("input", e => { S.cost.fee = Math.max(0, Number(e.target.value) || 0); $("#c-fee-range").value = S.cost.fee; renderCosts(); });
   $("#c-fee-range").addEventListener("input", e => { S.cost.fee = Number(e.target.value); $("#c-fee").value = S.cost.fee; renderCosts(); });
   $("#c-bulk").addEventListener("change", e => { S.cost.bulk = e.target.checked; renderCosts(); });
   $("#c-exper").addEventListener("input", e => { S.cost.exPer = Number(e.target.value) || 0; renderCosts(); });
   $("#c-exlimit").addEventListener("input", e => { S.cost.exLimit = Number(e.target.value) || 0; renderCosts(); });
-  $("#cost-form").addEventListener("click", e => {
-    const b = e.target.closest("[data-cs]"); if (!b) return;
-    const k = b.dataset.cs, d = Number(b.dataset.d);
-    if (k === "sessions") S.cost.sessions = Math.max(1, Math.min(30, S.cost.sessions + d));
-    if (k === "used") S.cost.used = Math.max(0, Math.min(10, S.cost.used + d));
-    renderCosts();
-  });
+  $("#cost-form").addEventListener("click", e => { const b = e.target.closest("[data-cs]"); if (!b) return; const d = Number(b.dataset.d);
+    if (b.dataset.cs === "sessions") S.cost.sessions = Math.max(1, Math.min(30, S.cost.sessions + d)); else S.cost.used = Math.max(0, Math.min(10, S.cost.used + d)); renderCosts(); });
   function renderCosts() {
     const c = S.cost; save("cost");
-    $("#c-sessions").textContent = c.sessions; $("#c-used").textContent = c.used;
-    $("#extras-box").hidden = c.extrasOn !== "yes";
+    $("#c-sessions").textContent = c.sessions; $("#c-used").textContent = c.used; $("#extras-box").hidden = c.extrasOn !== "yes";
     const r = E.costPlan({ fee: c.fee, type: c.type, bulkBilled: c.bulk, sessions: c.sessions, usedThisYear: c.used, hasPlan: c.hasPlan === "yes", extras: { on: c.extrasOn === "yes", perSession: c.exPer, annualLimit: c.exLimit } });
     const rows = [];
     if (r.medicareSessions) rows.push([`${r.medicareSessions} with Medicare`, c.bulk ? "Bulk billed: $0 each" : `${money(r.medicareGap, true)} each`, r.medicareSessions * r.medicareGap]);
@@ -1109,132 +1431,17 @@ const Engine = (() => {
     let warn = "";
     if (c.hasPlan !== "yes") warn = `<div class="alert warn"><span class="ic">!</span><div><b>No GP plan, no Medicare rebate</b><p>Ask your GP for a Mental Health Treatment Plan and referral. It could save you ${money(c.sessions * Math.min(c.fee, E.REBATE[c.type]))}.</p></div></div>`;
     else if (c.used + c.sessions > 10) warn = `<div class="alert info"><span class="ic">i</span><div><b>Medicare covers 10 sessions a year</b><p>${c.used + c.sessions - 10} of your sessions are past the limit.${c.extrasOn === "yes" ? " Your health fund can help with those." : ""} The count starts again on 1 January.</p></div></div>`;
-    $("#cost-answer").innerHTML = `
-      <span class="small muted">You will pay about</span>
-      <span class="big num">${money(r.total)}</span>
+    $("#cost-answer").innerHTML = `<span class="small muted">You will pay about</span><span class="big num">${money(r.total)}</span>
       <span>for ${c.sessions} session${c.sessions > 1 ? "s" : ""}${r.saved > 0 ? `. You save ${money(r.saved)}.` : "."}</span>
       ${c.hasPlan === "yes" ? `<p class="small">Medicare pays <b>${money(r.rebate, true)}</b> for each session of 50 minutes or more.${c.bulk ? " Because they bulk bill, you pay nothing." : ` You pay the rest: <b>${money(r.medicareGap, true)}</b>.`}</p>` : ""}
       ${warn}
       ${rows.length ? `<div class="tablewrap"><table><thead><tr><th>Sessions</th><th>You pay</th><th class="r">Total</th></tr></thead><tbody>${rows.map(x => `<tr><td>${x[0]}</td><td>${x[1]}</td><td class="r">${money(x[2])}</td></tr>`).join("")}</tbody></table></div>` : ""}
-      <div class="bars" aria-label="Compare totals">${options.map(([l, v], i) => `<div class="bar${i === options.length - 1 ? " best" : ""}"><span>${l}</span><span class="track"><span class="fill" style="display:block;width:${(100 * v / maxV).toFixed(1)}%"></span></span><span class="num"><b>${money(v)}</b></span></div>`).join("")}</div>
-      <p class="small muted">Your health fund cannot top up a Medicare session. <button type="button" class="helpbtn" data-help="extras">Why?</button> Medicare benefits from 1 July 2026. If you spend a lot on out-of-hospital care, the Extended Medicare Safety Net may cover more.</p>
-      <div class="btnrow"><a class="btn secondary small" href="#find">Find bulk-billed or free options</a></div>`;
+      <div class="bars">${options.map(([l, v], i) => `<div class="hbar${i === options.length - 1 ? " best" : ""}"><span>${l}</span><span class="track"><span class="fill" style="width:${(100 * v / maxV).toFixed(1)}%"></span></span><span class="num"><b>${money(v)}</b></span></div>`).join("")}</div>
+      <p class="small muted">Your health fund cannot top up a Medicare session. <button type="button" class="helpbtn" data-help="extras">Why?</button> Medicare benefits from 1 July 2026.</p>`;
   }
   RENDER.costs = renderCosts;
 
-  /* ---------------- waiting lists ---------------- */
-  let lookDays = 0;
-  const TYPICAL = { from: 4, to: 17 }; // APS member poll 2024: most waitlists 1 to 4 months
-  function openAddForm(prefill) {
-    const f = $("#wl-form");
-    f.hidden = false;
-    f.innerHTML = `
-      <h2>Add a waiting list</h2>
-      <div class="field"><label for="wl-name">Service or practitioner</label><input type="text" id="wl-name" list="wl-names" value="${esc(prefill || "")}" placeholder="For example, Smith Street Psychology"><datalist id="wl-names">${SERVICES.filter(s => s.group !== "today").map(s => `<option value="${esc(s.name)}">`).join("")}</datalist></div>
-      <div class="field"><label for="wl-joined">When did you join the list?</label><input type="date" id="wl-joined" value="${isoToday()}" max="${isoToday()}"></div>
-      <fieldset><legend>What did they tell you about the wait?</legend><div class="opts" id="wl-kind"></div></fieldset>
-      <div id="wl-kind-detail"></div>
-      <div class="btnrow"><button type="button" class="btn" id="wl-save">Save</button><button type="button" class="btn tertiary" id="wl-cancel">Cancel</button></div>`;
-    let kind = "range";
-    radios($("#wl-kind"), "wl-kind-r", [["range", "A range of weeks, for example \"3 to 9 weeks\""], ["date", "A set date"], ["unknown", "They did not say"]], kind, v => { kind = v; detail(); });
-    function detail() {
-      const d = $("#wl-kind-detail");
-      if (kind === "range") d.innerHTML = `<div class="btnrow"><div class="field"><label for="wl-from">From week</label><input type="number" id="wl-from" min="0" max="52" value="3"></div><div class="field"><label for="wl-to">To week</label><input type="number" id="wl-to" min="0" max="52" value="9"></div></div>`;
-      else if (kind === "date") d.innerHTML = `<div class="field"><label for="wl-date">Appointment date</label><input type="date" id="wl-date" value="${addDays(isoToday(), 28)}"></div>`;
-      else d.innerHTML = `<div class="alert info"><span class="ic">i</span><div><p>We will use a typical wait of ${TYPICAL.from} to ${TYPICAL.to} weeks. Most psychologists report waiting lists of 1 to 4 months (APS 2024). Call them and ask for a better estimate.</p></div></div>`;
-    }
-    detail();
-    $("#wl-cancel").addEventListener("click", () => { f.hidden = true; });
-    $("#wl-save").addEventListener("click", () => {
-      const name = $("#wl-name").value.trim();
-      const joined = $("#wl-joined").value || isoToday();
-      if (!name) { popup("Add a name", "<p>Type the name of the service or practitioner so you can tell your lists apart.</p>"); return; }
-      const entry = { id: Date.now().toString(36), name, joined, seen: false, kind: "range", from: TYPICAL.from, to: TYPICAL.to, assumed: kind === "unknown" };
-      if (kind === "range") { entry.from = Math.max(0, Number($("#wl-from").value) || 0); entry.to = Math.max(entry.from, Number($("#wl-to").value) || entry.from); }
-      if (kind === "date") {
-        const dt = $("#wl-date").value; if (!dt) { popup("Add the date", "<p>Choose the appointment date.</p>"); return; }
-        entry.kind = "confirmed"; entry.date = dt; entry.week = Math.ceil(E.elapsed(joined, dt).days / 7);
-      }
-      S.lists.push(entry); save("lists"); counts(); f.hidden = true; renderWaiting(); toast(`Added: ${name}`);
-    });
-    $("#wl-name").focus();
-  }
-  $("#wl-add-btn").addEventListener("click", () => openAddForm(""));
-  $("#wl-example").addEventListener("click", () => {
-    const t = isoToday();
-    S.lists.push({ id: "ex1" + Date.now().toString(36), name: "Example: private psychologist", joined: addDays(t, -38), kind: "range", from: 3, to: 9, seen: false, example: true });
-    S.lists.push({ id: "ex2" + Date.now().toString(36), name: "Example: free PHN psychology", joined: addDays(t, -10), kind: "range", from: 6, to: 14, seen: false, example: true });
-    save("lists"); counts(); renderWaiting(); toast("Two example waiting lists added. Remove them when you are done.");
-  });
-  $("#look").addEventListener("input", e => { lookDays = Number(e.target.value); renderWaiting(); });
-  const ADVICE = {
-    early: ["Ask to go on their cancellation list.", "Ask if they offer phone or video sessions, which can be sooner.", "Start a free option now, such as Medicare Mental Health Check In or MindSpot."],
-    middle: ["Call to check you are still on the list and your details are right.", "Keep using free support while you wait."],
-    window: ["You are now in the weeks they said you would be seen.", "Keep your phone on and check messages.", "If your plans change, tell them so they can offer your spot to someone else."],
-    overdue: ["You have waited longer than they said. Call them and ask for an update.", "Ask your GP about other options, or call 1800 595 212.", "Consider the free services that can start today."]
-  };
-  const STAGE_LABEL = { early: "Just started", middle: "Waiting", window: "Could be any day now", overdue: "Longer than they said", seen: "Seen" };
-  function renderWaiting() {
-    const today = addDays(isoToday(), lookDays);
-    $("#look-out").textContent = lookDays === 0 ? "Showing today" : `Showing ${niceDate(today)} (${Math.round(lookDays / 7 * 10) / 10} weeks from now)`;
-    $("#lookahead").hidden = S.lists.filter(l => !l.seen).length === 0;
-    if (!S.lists.length) {
-      $("#wl-list").innerHTML = `<div class="callout"><h3>No waiting lists yet</h3><p>Press "Add a waiting list" when a service puts you on their list. Or press "Show an example" to see how it works.</p></div>`;
-      return;
-    }
-    $("#wl-list").innerHTML = S.lists.map(l => {
-      if (l.seen) return `<article class="wl"><div class="wl-head"><h3>${esc(l.name)}</h3><span class="status seen">Seen</span></div><p class="muted">You marked this as seen.</p><div class="btnrow"><button type="button" class="btn tertiary small" data-wl-remove="${l.id}">Remove</button></div></article>`;
-      const st = E.waitStage(l, today);
-      const p = E.distribution(l);
-      const span = Math.max(st.latest + 2, st.weeks + 2, 8);
-      const pct = x => (100 * Math.min(x, span) / span).toFixed(1);
-      const next = st.next2;
-      const k = next === null ? null : Math.round(next * 10);
-      const when = l.kind === "confirmed" ? `Your appointment is on <b>${niceDate(l.date)}</b>.` : `${l.assumed ? `We used a typical wait of <b>${l.from} to ${l.to} weeks</b>, because the service did not say` : `They said <b>${l.from} to ${l.to} weeks</b>`}. That is between ${niceDate(addDays(l.joined, l.from * 7))} and ${niceDate(addDays(l.joined, l.to * 7))}.`;
-      let big;
-      if (l.kind === "confirmed") {
-        const left = E.elapsed(today, l.date).days;
-        const past = new Date(l.date + "T00:00:00") < new Date(today + "T00:00:00");
-        big = past ? `<div class="wl-big"><span class="n">Date passed</span><span>Did you go? Mark it as seen, or call them.</span></div>` : `<div class="wl-big"><span class="n num">${left} day${left === 1 ? "" : "s"}</span><span>until your appointment</span></div>`;
-      } else if (k === null) {
-        big = `<div class="wl-big"><span class="n">Overdue</span><span>You have waited longer than the latest week they gave you.</span></div>`;
-      } else {
-        big = `<div class="wl-big"><span class="n num">${k} in 10</span><span>chance you will be seen in the next 2 weeks <button type="button" class="helpbtn" data-help="chance">What is this?</button></span><span class="dots" aria-hidden="true">${Array.from({ length: 10 }, (_, j) => `<i class="${j < k ? "on" : ""}"></i>`).join("")}</span></div>${st.weeks + 2 < st.earliest ? `<p class="small">That is expected. They said the earliest is week ${st.earliest}, from ${niceDate(addDays(l.joined, st.earliest * 7))}.</p>` : ""}`;
-      }
-      const stage = l.kind === "confirmed" ? (new Date(l.date + "T00:00:00") < new Date(today + "T00:00:00") ? "overdue" : "window") : st.stage;
-      const adv = l.kind === "confirmed" ? ["Put the date in your calendar and set a reminder.", "Ask to be called if an earlier time comes up.", "If you cannot go, tell them early so someone else can have the time."] : ADVICE[stage];
-      return `<article class="wl" aria-labelledby="wl-${l.id}">
-        <div class="wl-head"><h3 id="wl-${l.id}">${esc(l.name)}</h3><span class="status ${stage}">${l.kind === "confirmed" ? (stage === "overdue" ? "Date passed" : "Date booked") : STAGE_LABEL[stage]}</span></div>
-        <p>You joined on ${niceDate(l.joined)}. You have waited <b>${st.weeks} week${st.weeks === 1 ? "" : "s"} and ${st.days % 7} day${st.days % 7 === 1 ? "" : "s"}</b>. ${when}</p>
-        ${big}
-        <div class="timeline" aria-hidden="true"><span class="base"></span>
-          ${l.kind === "confirmed" ? "" : `<span class="window" style="left:${pct(st.earliest)}%;width:${(pct(st.latest + 1) - pct(st.earliest)).toFixed(1)}%"></span>`}
-          <span class="done" style="width:${pct(st.days / 7)}%"></span>
-          <span class="today" style="left:${pct(st.days / 7)}%"><span>${lookDays ? "Then" : "Today"}</span></span>
-          ${l.kind === "confirmed" ? `<span class="today" style="left:${pct(l.week)}%;background:var(--ok)"><span style="color:var(--ok)">Appointment</span></span>` : ""}
-        </div>
-        <div class="tl-labels"><span>Joined</span>${l.kind === "confirmed" ? "" : `<span>Green: weeks ${st.earliest} to ${st.latest}</span>`}<span>Week ${span}</span></div>
-        <div class="stack" style="gap:6px"><h4>What to do now</h4><ul style="margin:0;padding-left:1.2em;display:grid;gap:4px">${adv.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div>
-        <div class="btnrow"><button type="button" class="btn small secondary" data-wl-date="${l.id}">I have a date now</button><button type="button" class="btn small secondary" data-wl-seen="${l.id}">I have been seen</button><button type="button" class="btn tertiary small" data-wl-remove="${l.id}">Remove</button></div>
-      </article>`;
-    }).join("");
-  }
-  RENDER.waiting = renderWaiting;
-  $("#wl-list").addEventListener("click", e => {
-    const t = e.target.closest("button"); if (!t) return;
-    const find = id => S.lists.find(l => l.id === id);
-    if (t.dataset.wlRemove) { const l = find(t.dataset.wlRemove); popup("Remove this waiting list?", `<p>Remove <b>${esc(l.name)}</b>?</p>`, [{ label: "Yes, remove", primary: true, onClick: () => { S.lists = S.lists.filter(x => x.id !== l.id); save("lists"); counts(); renderWaiting(); toast("Removed."); } }, { label: "Cancel" }]); }
-    if (t.dataset.wlSeen) { const l = find(t.dataset.wlSeen); l.seen = true; save("lists"); counts(); renderWaiting(); toast("Marked as seen. We hope it goes well."); }
-    if (t.dataset.wlDate) {
-      const l = find(t.dataset.wlDate);
-      popup("Add your appointment date", `<div class="field"><label for="m-date">Appointment date</label><input type="date" id="m-date" value="${addDays(isoToday(), 7)}"></div>`, [{ label: "Save date", primary: true, onClick: vals => {
-        const dt = vals["m-date"] || "";
-        if (dt) { l.kind = "confirmed"; l.date = dt; l.week = Math.ceil(E.elapsed(l.joined, dt).days / 7); l.assumed = false; save("lists"); renderWaiting(); toast("Date saved."); }
-      } }, { label: "Cancel" }]);
-    }
-  });
-
-  /* ---------------- for services ---------------- */
+  /* ============ For services ============ */
   const S_EXAMPLE = "12, 15, 18, 20, 21, 21, 23, 25, 26, 27, 28, 28, 30, 31, 33, 34, 35, 35, 36, 38, 40, 41, 42, 44, 45, 47, 49, 50, 52, 55, 56, 60, 63, 66, 70, 74, 80, 88, 95, 110";
   radios(document.querySelector('[data-s="unit"]'), "s-unit", [["days", "Days"], ["weeks", "Weeks"]], S.unit, v => { S.unit = v; save("unit"); renderServices(); });
   $("#s-data").value = store.get("sdata", S_EXAMPLE);
@@ -1243,79 +1450,50 @@ const Engine = (() => {
   $("#s-example").addEventListener("click", () => { $("#s-data").value = S_EXAMPLE; S.unit = "days"; $$('input[name="s-unit"]').forEach(i => { i.checked = i.value === "days"; }); store.set("sdata", S_EXAMPLE); renderServices(); toast("Example numbers loaded."); });
   $("#s-clear").addEventListener("click", () => { $("#s-data").value = ""; store.set("sdata", ""); renderServices(); $("#s-data").focus(); });
   function renderServices() {
-    const raw = E.parseNumbers($("#s-data").value);
-    const waits = raw.map(x => S.unit === "days" ? x / 7 : x);
+    const waits = E.parseNumbers($("#s-data").value).map(x => S.unit === "days" ? x / 7 : x);
     if (waits.length < 5) { $("#s-out").innerHTML = `<div class="alert info"><span class="ic">i</span><div><b>Enter at least 5 waiting times</b><p>You have entered ${waits.length}. Or press "Use example numbers".</p></div></div>`; return; }
     const st = E.clinicStatements(waits, $("#s-name").value);
-    const free = SERVICES.filter(s => s.group === "today" && !s.areas && !s.ages);
-    const letter = `Thank you for contacting ${($("#s-name").value || "our service").trim()}. You are now on our waiting list.\n\nHow long you may wait: half of our new clients are seen within ${st.q50} weeks, and 9 in 10 within ${st.q90} weeks. We will contact you with a date.\n\nWhile you wait, you can use these free services:\n${free.map(s => `- ${s.name}: ${s.how}`).join("\n")}\n\nIf you need help sooner, call the Medicare Mental Health phone service on 1800 595 212. In an emergency call 000, or the NSW Mental Health Line on 1800 011 511 (24 hours).`;
-    const maxW = Math.ceil(Math.max(...waits));
-    const counts_ = new Array(maxW + 1).fill(0); waits.forEach(x => counts_[Math.min(maxW, Math.ceil(x))]++);
-    const W = 560, H = 180, L = 30, B = 34, T = 12, Rr = 10, bw = (W - L - Rr) / (maxW + 1), ymax = Math.max(...counts_);
-    const y = v => T + (H - T - B) * (1 - v / ymax);
+    const free = TODAY.filter(s => !s.areas && !s.ages);
+    const nm = ($("#s-name").value || "our service").trim();
+    const lo = Math.max(1, Math.floor(E.quantile(waits, 0.1)));
+    const letter = `Thank you for contacting ${nm}. You are now on our waiting list.\n\nHow long you may wait: half of our new clients are seen within ${st.q50} weeks, and 9 in 10 within ${st.q90} weeks. We will contact you with a date.\n\nWhile you wait, you can use these free services:\n${free.map(s => `- ${s.name}: ${s.how}`).join("\n")}\n\nIf you need help sooner, call the Medicare Mental Health phone service on 1800 595 212. In an emergency call 000, or the NSW Mental Health Line on 1800 011 511 (24 hours).`;
+    const maxW = Math.ceil(Math.max(...waits)), cnt = new Array(maxW + 1).fill(0); waits.forEach(x => cnt[Math.min(maxW, Math.ceil(x))]++);
+    const W = 560, H = 180, L = 30, B = 34, T = 12, Rr = 10, bw = (W - L - Rr) / (maxW + 1), ymax = Math.max(...cnt), y = v => T + (H - T - B) * (1 - v / ymax);
     let g = "";
-    counts_.forEach((c, w) => { if (c) g += `<rect x="${(L + w * bw + 1).toFixed(1)}" y="${y(c).toFixed(1)}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${(H - B - y(c)).toFixed(1)}" fill="${w <= st.q50 ? "var(--ok)" : w <= st.q90 ? "var(--brand-alt)" : "var(--field)"}"></rect>`; });
-    for (let w = 0; w <= maxW; w += maxW > 20 ? 4 : 2) g += `<text x="${(L + (w + 0.5) * bw).toFixed(1)}" y="${H - 16}" font-size="11" text-anchor="middle" fill="var(--muted)">${w}</text>`;
-    g += `<text x="${W - Rr}" y="${H - 2}" font-size="11" text-anchor="end" fill="var(--muted)">weeks to first appointment</text><text x="${L - 6}" y="${y(ymax) + 4}" font-size="11" text-anchor="end" fill="var(--muted)">${ymax}</text><text x="${L - 6}" y="${H - B}" font-size="11" text-anchor="end" fill="var(--muted)">0</text><line x1="${L}" x2="${W - Rr}" y1="${H - B}" y2="${H - B}" stroke="var(--rule)"></line>`;
+    cnt.forEach((c, w) => { if (c) g += `<rect x="${(L + w * bw + 1).toFixed(1)}" y="${y(c).toFixed(1)}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${(H - B - y(c)).toFixed(1)}" fill="${w <= st.q50 ? "var(--ok)" : w <= st.q90 ? "var(--brand-alt)" : "var(--field)"}"></rect>`; });
+    for (let w = 0; w <= maxW; w += maxW > 20 ? 4 : 2) g += `<text x="${(L + (w + 0.5) * bw).toFixed(1)}" y="${H - 16}" font-size="12" text-anchor="middle" fill="var(--muted)">${w}</text>`;
+    g += `<text x="${W - Rr}" y="${H - 2}" font-size="12" text-anchor="end" fill="var(--muted)">weeks to first appointment</text><text x="${L - 6}" y="${y(ymax) + 4}" font-size="12" text-anchor="end" fill="var(--muted)">${ymax}</text><text x="${L - 6}" y="${H - B}" font-size="12" text-anchor="end" fill="var(--muted)">0</text><line x1="${L}" x2="${W - Rr}" y1="${H - B}" y2="${H - B}" stroke="var(--rule)"></line>`;
     $("#s-out").innerHTML = `
       <div class="out-box"><h3>For your website</h3><p class="text" id="o-web">${esc(st.web)}</p><div><button type="button" class="btn small" data-copy="o-web">Copy</button></div></div>
-      <div class="out-box"><h3>For an SMS</h3><p class="text" id="o-sms">${esc(st.sms)}</p><span class="chars">${st.sms.length} characters${st.sms.length > 160 ? " (more than 1 SMS)" : " (fits in 1 SMS)"}</span><div><button type="button" class="btn small" data-copy="o-sms">Copy</button></div></div>
+      <div class="out-box"><h3>For an SMS</h3><p class="text" id="o-sms">${esc(st.sms)}</p><span class="small muted">${st.sms.length} characters (fits in 1 SMS)</span><div><button type="button" class="btn small" data-copy="o-sms">Copy</button></div></div>
       <div class="out-box"><h3>For a letter or email</h3><p class="text" id="o-letter" style="white-space:pre-line">${esc(letter)}</p><div><button type="button" class="btn small" data-copy="o-letter">Copy</button></div></div>
       <figure class="out-box chart" style="margin:0"><h3>Your waiting times</h3><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Number of clients by weeks waited">${g}</svg>
-        <figcaption class="small muted">Based on ${st.n} clients. Green: seen within ${st.q50} weeks (half). Blue: within ${st.q90} weeks (9 in 10). Grey: waited longer.</figcaption></figure>`;
+        <figcaption class="small muted">Based on ${st.n} clients. Green: seen within ${st.q50} weeks (half). Blue: within ${st.q90} weeks (9 in 10). Grey: waited longer. People using Know Your Wait would see your wait as week ${lo} to week ${st.q90}.</figcaption></figure>`;
   }
   RENDER.services = renderServices;
   $("#s-out").addEventListener("click", e => { const b = e.target.closest("[data-copy]"); if (!b) return; const el = document.getElementById(b.dataset.copy); copyText(el.textContent, el, "Copied."); });
 
-  /* ---------------- evidence ---------------- */
-  function hbars(rows, unit, max) {
-    return `<div class="bars">${rows.map(([l, v]) => `<div class="bar"><span>${l}</span><span class="track"><span class="fill" style="display:block;width:${(100 * v / max).toFixed(1)}%"></span></span><span class="num"><b>${v}${unit}</b></span></div>`).join("")}</div>`;
-  }
-  $("#evi-charts").innerHTML = `
-    <figure><h3>Cost stops people getting mental health care</h3>
-      <p class="small">People who needed care for their own mental health and delayed or did not go because of cost, by type of professional, 2024-25.</p>
-      ${hbars([["Psychologist", 25.3], ["Psychiatrist", 25.4], ["Other mental health professional", 17.0], ["GP", 9.6]], "%", 30)}
-      <figcaption>Source: ABS, Patient Experiences 2024-25.</figcaption></figure>
-    <figure><h3>How long psychologists' waiting lists are</h3>
-      <p class="small">What psychologists reported in July 2024. Also, 31% could not take any new clients.</p>
-      ${hbars([["About 1 month", 34], ["2 to 4 months", 49], ["5 months or more", 18]], "%", 55)}
-      <figcaption>Source: Australian Psychological Society member poll, July 2024.</figcaption></figure>
-    <figure><h3>People on lower incomes wait longer</h3>
-      <p class="small">Median days from GP plan to first Better Access session, 2021.</p>
-      ${hbars([["Lowest income fifth", 22], ["Highest income fifth", 17]], " days", 25)}
-      <figcaption>Source: Pirkis et al. 2022, Evaluation of Better Access.</figcaption></figure>`;
-  $("#refs").innerHTML = REFS.map(([t, u]) => `<li>${esc(t)} <a href="${u}" target="_blank" rel="noopener">Link</a></li>`).join("");
-  (function sim() {
-    const v = R.values, c = R.comprehension, et = R.eye_tracking;
-    $("#sim-kpis").innerHTML = `
-      <div><span class="n">${money(v.dollars_per_session_confirmed_vs_pm3.est)}</span><span>extra per session people would pay for a set date (simulated)</span></div>
-      <div><span class="n">${v.weeks_confirmed_vs_pm3.est.toFixed(1)} weeks</span><span>longer people would wait for a set date (simulated)</span></div>
-      <div><span class="n">${Math.round(c.proportion_correct.text * 100)}% vs ${Math.round(c.proportion_correct.graphic * 100)}%</span><span>understood the wait: words vs picture (simulated)</span></div>`;
-    const ci = (a, d) => `${a[0].toFixed(d)} to ${a[1].toFixed(d)}`;
-    const lab = { wait: "Expected wait (per week)", spread: "Uncertainty of wait (per week)", cost: "Cost (per $1)", video: "Video instead of face to face" };
+  /* ============ How it works ============ */
+  (function how() {
+    const v = R.values, c = R.comprehension, et = R.eye_tracking, a = et.attention_choice_model.coefs.slice(-1)[0];
+    $("#how-dce").textContent = `Simulated result: people would pay about ${money(v.dollars_per_session_confirmed_vs_pm3.est)} more a session for a set date.`;
+    $("#how-et").textContent = `Simulated result: ${Math.round(c.proportion_correct.graphic * 100)}% understood the picture and ${Math.round(c.proportion_correct.text * 100)}% the words. People who looked longer at the waiting range gave it more weight.`;
+    $("#sim-kpis").innerHTML = `<div><span class="n">${money(v.dollars_per_session_confirmed_vs_pm3.est)}</span><span>extra a session people would pay for a set date</span></div>
+      <div><span class="n">${v.weeks_confirmed_vs_pm3.est.toFixed(1)} weeks</span><span>longer people would wait for a set date</span></div>
+      <div><span class="n">${Math.round(c.proportion_correct.text * 100)}% vs ${Math.round(c.proportion_correct.graphic * 100)}%</span><span>understood the wait: words vs picture</span></div>`;
+    const ci = (x, d) => `${x[0].toFixed(d)} to ${x[1].toFixed(d)}`;
+    const lab = { wait: "Expected wait (per week)", spread: "Weeks earlier or later (per week)", cost: "Cost (per $1 a session)", video: "Video instead of face to face" };
     $("#tbl-main").innerHTML = `<table><thead><tr><th>Attribute</th><th class="r">Estimate</th><th class="r">95% CI</th><th class="r">Value used to simulate</th></tr></thead><tbody>${R.main_model.coefs.map(k => `<tr><td>${lab[k.name]}</td><td class="r">${k.est.toFixed(4)}</td><td class="r">${ci(k.ci, 4)}</td><td class="r">${R.true_parameters[k.name]}</td></tr>`).join("")}</tbody></table>`;
     const rows = [["Time on waiting information (log seconds)", "log_dwell_wait_seconds", 2], ["Time per % of screen (seconds)", "dwell_wait_per_pct_area", 3], ["Looks back at waiting information", "revisits_wait", 2], ["Comparisons between options", "transitions_between_options_wait", 2]];
     $("#tbl-eye").innerHTML = `<table><thead><tr><th>Per task</th><th class="r">Words</th><th class="r">Picture</th><th class="r">Difference (95% CI)</th></tr></thead><tbody>${rows.map(([l, k, d]) => `<tr><td>${l}</td><td class="r">${et[k].mean.text.toFixed(d)}</td><td class="r">${et[k].mean.graphic.toFixed(d)}</td><td class="r">${et[k].graphic_minus_text.est.toFixed(d)} (${ci(et[k].graphic_minus_text.ci, d)})</td></tr>`).join("")}</tbody></table>`;
-    const a = et.attention_choice_model.coefs.slice(-1)[0];
-    $("#tech-note").textContent = `Conditional logit with standard errors clustered by person (${R.main_model.respondents} people, ${R.main_model.choices} choices). Relative scale of the picture group ${R.format.relative_scale_graphic.est.toFixed(2)}. Attention to waiting information and the weight on certainty: ${a.est.toFixed(3)} per SD (95% CI ${ci(a.ci, 3)}). All values simulated.`;
+    $("#tech-note").textContent = `Conditional logit, ${R.main_model.respondents} people, ${R.main_model.choices} choices, standard errors clustered by person. Attention to waiting information and the weight on uncertainty: ${a.est.toFixed(3)} per SD (95% CI ${ci(a.ci, 3)}). All values simulated.`;
+    $("#refs").innerHTML = REFS.map(([t, u]) => `<li>${esc(t)} <a href="${u}" target="_blank" rel="noopener">Link</a></li>`).join("");
   })();
-
-  /* ---------------- urgent ---------------- */
   $("#crisis-table tbody").innerHTML = CRISIS.map(r => `<tr><td><b>${esc(r[0])}</b></td><td class="num"><b>${esc(r[1])}</b></td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join("");
-
-  /* ---------------- about ---------------- */
   $("#wipe").addEventListener("click", () => popup("Delete everything?", "<p>This deletes your answers, plan, costs and waiting lists from this device.</p>", [{ label: "Yes, delete", primary: true, onClick: () => { store.wipe(); location.hash = "#home"; location.reload(); } }, { label: "Cancel" }]));
 
-  /* ---------------- start ---------------- */
   counts();
   route();
-  if (!S.welcomed && (!location.hash || location.hash === "#home")) {
-    S.welcomed = true; save("welcomed");
-    popup("Welcome to Know Your Wait", `<p>This tool helps you get mental health support in the Hunter. What would you like to do?</p>
-      <ul><li><b>Find support</b>: see free options you can start today.</li><li><b>Work out costs</b>: what you will pay after Medicare.</li><li><b>Track a waiting list</b>: how long you have waited and what to do next.</li></ul>
-      <p class="small muted">If you are in danger, call 000 now.</p>`,
-      [{ label: "Find support", primary: true, onClick: () => { location.hash = "#find"; } }, { label: "Track a waiting list", onClick: () => { location.hash = "#waiting"; } }, { label: "Look around first" }]);
-  }
 })();
 </script>
 </body>

@@ -123,6 +123,50 @@ t("natural frequency phrases", () => {
 });
 t("parse numbers ignores junk", () => { assert.deepEqual(Engine.parseNumbers("12, 15;x\n-3 20"), [12, 15, 20]); });
 
+
+/* personal trade-offs (choice game) */
+const PRI = { wait: { mu: -0.2, sd: 0.1 }, spread: { mu: -0.26, sd: 0.13 }, cost: { mu: -0.0138, sd: 0.0069 }, video: { mu: -0.35, sd: 0.17 } };
+const TASKS = [
+  [{ kind: "confirmed", week: 6, cost: 0 }, { kind: "range", from: 2, to: 10, cost: 0 }],
+  [{ kind: "confirmed", week: 8, cost: 0 }, { kind: "range", from: 3, to: 7, cost: 0 }],
+  [{ kind: "confirmed", week: 4, cost: 120 }, { kind: "range", from: 2, to: 8, cost: 40 }]
+];
+t("attributes match the study coding", () => {
+  assert.deepEqual(Engine.attrs({ kind: "range", from: 3, to: 9, cost: 40, mode: "video" }), { mean: 6, half: 3, cost: 40, video: 1 });
+  assert.deepEqual(Engine.attrs({ kind: "confirmed", week: 4, cost: 0 }), { mean: 4, half: 0, cost: 0, video: 0 });
+});
+t("draws are repeatable and keep cost negative", () => {
+  const a = Engine.draws(PRI, 500, 1), b = Engine.draws(PRI, 500, 1);
+  assert.deepEqual(a[10], b[10]); assert.ok(a.every(d => d.cost < 0 && d.wait < 0));
+});
+t("no answers gives back the starting point", () => {
+  const ds = Engine.draws(PRI, 4000, 3), m = Engine.posterior(ds, []).mean;
+  close(m.spread, -0.26, 0.01); close(m.cost, -0.0138, 0.0005);
+});
+t("always choosing the set date raises the value of certainty", () => {
+  const ds = Engine.draws(PRI, 4000, 5);
+  const base = Engine.values(Engine.posterior(ds, []).mean).certainty;
+  const sure = Engine.values(Engine.posterior(ds, TASKS.map(([a, b]) => ({ a: Engine.attrs(a), b: Engine.attrs(b), pick: 0 }))).mean).certainty;
+  const flex = Engine.values(Engine.posterior(ds, TASKS.map(([a, b]) => ({ a: Engine.attrs(a), b: Engine.attrs(b), pick: 1 }))).mean).certainty;
+  assert.ok(sure > base && base > flex, `${sure} ${base} ${flex}`);
+});
+t("values are the study's trade-offs", () => {
+  const v = Engine.values({ wait: -0.2, spread: -0.25, cost: -0.0125, video: -0.3 });
+  close(v.certainty, 60); close(v.weeksFor50, 3.125); close(v.faceToFace, 24);
+});
+t("percentile is between 0 and 1 and ordered", () => {
+  const ds = Engine.draws(PRI, 2000, 9);
+  const lo = Engine.percentile(ds, "certainty", 10), hi = Engine.percentile(ds, "certainty", 150);
+  assert.ok(lo >= 0 && hi <= 1 && lo < hi);
+});
+t("rank prefers the cheaper option when all else is equal", () => {
+  const sh = Engine.rank({ wait: -0.2, spread: -0.25, cost: -0.0125, video: -0.3 }, [{ kind: "range", from: 3, to: 6, cost: 0 }, { kind: "range", from: 3, to: 6, cost: 100 }]);
+  close(sh[0] + sh[1], 1); assert.ok(sh[0] > sh[1]);
+});
+t("quick check always includes the right answer", () => {
+  for (const p of [0, 0.1, 0.43, 0.5, 0.86, 1]) { const q = Engine.quizChoices(p); assert.ok(q.options.includes(q.correct)); assert.ok(q.options.length >= 2); }
+});
+
 /* page */
 t("embedded pilot results are flagged as simulated", () => {
   assert.equal(json.meta.simulated, true);

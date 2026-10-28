@@ -225,12 +225,95 @@ const Engine = (() => {
     return e.map(x => x / s);
   }
 
+  /* ---------- Personal trade-offs (choice game) ----------
+   * Attributes follow the study's choice tasks:
+   *   mean  = expected wait in weeks
+   *   half  = how many weeks earlier or later it could be (0 for a set date)
+   *   cost  = out-of-pocket cost per session in dollars
+   *   video = 1 for a video session, 0 for face to face
+   */
+  function attrs(o) {
+    const cost = Math.max(0, Number(o.cost) || 0), video = o.mode === "video" ? 1 : 0;
+    if (o.kind === "confirmed") return { mean: Number(o.week), half: 0, cost, video };
+    const a = Math.min(Number(o.from), Number(o.to)), b = Math.max(Number(o.from), Number(o.to));
+    return { mean: (a + b) / 2, half: (b - a) / 2, cost, video };
+  }
+  const KEYS = ["wait", "spread", "cost", "video"];
+  function util(b, x) { return b.wait * x.mean + b.spread * x.half + b.cost * x.cost + b.video * x.video; }
+
+  /** Small seeded random number generator (mulberry32), so results are repeatable. */
+  function rng(seed) {
+    let a = seed >>> 0;
+    return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  function normals(r) {
+    const u = Math.max(r(), 1e-12), v = r();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  /** Draws from independent normal distributions; wait and cost are kept negative. */
+  function draws(prior, n, seed) {
+    const r = rng(seed || 2027), out = [];
+    for (let i = 0; i < n; i++) {
+      const d = {};
+      KEYS.forEach(k => { d[k] = prior[k].mu + prior[k].sd * normals(r); });
+      d.cost = Math.min(d.cost, -0.002);
+      d.wait = Math.min(d.wait, -0.005);
+      out.push(d);
+    }
+    return out;
+  }
+  /**
+   * Update the starting point with a person's answers.
+   * answers: [{ a: attrs, b: attrs, pick: 0 | 1 }] (pick 0 = option A).
+   * Importance weights = probability of the answers under each draw (logit).
+   */
+  function posterior(ds, answers) {
+    const logw = ds.map(d => answers.reduce((s, q) => {
+      const ua = util(d, q.a), ub = util(d, q.b), m = Math.max(ua, ub);
+      const lse = m + Math.log(Math.exp(ua - m) + Math.exp(ub - m));
+      return s + (q.pick === 0 ? ua : ub) - lse;
+    }, 0));
+    const mx = Math.max(...logw);
+    const w = logw.map(l => Math.exp(l - mx));
+    const sw = w.reduce((a, b) => a + b, 0);
+    const mean = {};
+    KEYS.forEach(k => { mean[k] = ds.reduce((s, d, i) => s + w[i] * d[k], 0) / sw; });
+    const ess = sw * sw / w.reduce((a, b) => a + b * b, 0);
+    return { mean, ess };
+  }
+  /** Plain-language values from a set of weights. */
+  function values(b) {
+    return {
+      certainty: 3 * b.spread / b.cost,   // dollars per session for a set date instead of "3 weeks either way"
+      weeksFor50: 50 * b.cost / b.wait,   // extra weeks you would wait to save $50 a session
+      faceToFace: b.video / b.cost        // dollars per session to see someone face to face instead of by video
+    };
+  }
+  /** Share of people (draws) whose value is below x. */
+  function percentile(ds, key, x) {
+    const v = ds.map(d => values(d)[key]).filter(Number.isFinite);
+    return v.filter(y => y < x).length / v.length;
+  }
+  /** Match shares for a list of options under weights b. */
+  function rank(b, opts) {
+    const u = opts.map(o => util(b, attrs(o)));
+    return shares(u);
+  }
+  /** Three answer choices for the quick check, one correct, as whole "in 10" values. */
+  function quizChoices(correctProb) {
+    const c = Math.round(correctProb * 10);
+    const pool = [c, c >= 5 ? c - 3 : c + 3, c >= 8 ? c - 6 : c + 5, 10 - c, 0, 10].map(x => Math.max(0, Math.min(10, x)));
+    const uniq = [...new Set(pool)].slice(0, 3);
+    return { correct: c, options: uniq.sort((a, b) => a - b) };
+  }
+
   return {
     MAX_WEEK, REBATE, MEDICARE_SESSIONS_PER_YEAR, AGE_BANDS,
     distribution, stats, chanceBy, chanceNext, remaining, elapsed, waitStage,
     costPlan, matchService, rankScore,
     parseNumbers, quantile, shareWithin, inTen, clinicStatements, fmt1,
-    utility, shares
+    utility, shares,
+    attrs, util, rng, draws, posterior, values, percentile, rank, quizChoices
   };
 })();
 /* ===== ENGINE END ===== */

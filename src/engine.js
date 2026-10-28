@@ -5,7 +5,9 @@ const Engine = (() => {
   /* ---------- Medicare rules (Better Access), checked 28 October 2026 ---------- */
   // Medicare benefit for a session of 50 minutes or more, from 1 July 2026.
   // Psychologist: MBS item 80110, schedule fee $119.45, benefit $101.55 (MBS Online).
-  // Clinical psychologist (item 80010) and mental health social worker or OT: published 2026-27 benefits.
+  // Clinical psychologist (item 80010) $149.05 and mental health social worker $89.50: published 2026-27 benefits.
+  // Better Access: up to 10 individual sessions a calendar year; first referral up to 6, then a GP review.
+  // Video and phone sessions are covered with the same limits. Health fund extras cannot top up a Medicare session.
   const REBATE = { psychologist: 101.55, clinical: 149.05, socialworker: 89.50 };
   const MEDICARE_SESSIONS_PER_YEAR = 10;
 
@@ -77,6 +79,14 @@ const Engine = (() => {
   /** Stage of a waiting-list entry and the advice that goes with it. */
   function waitStage(entry, today) {
     const { days, weeks } = elapsed(entry.joined, today);
+    if (entry.curve && entry.curve.length > 1 && entry.kind !== "confirmed") {
+      const S = entry.curve.map(x => x / 100), last = entry.lastWeek ?? S.length - 1;
+      const q = p => { for (let w = 0; w < S.length; w++) if (S[w] <= 1 - p + 1e-9) return w; return null; };
+      const earliest = Math.max(0, q(0.1) ?? 1), latest = q(0.9) ?? last;
+      const c = chanceNextS(S, weeks, 2, last);
+      let stage = weeks > latest ? "overdue" : weeks >= earliest ? "window" : weeks >= Math.max(1, Math.floor(earliest / 2)) ? "middle" : "early";
+      return { days, weeks, stage, next2: c.p, beyond: c.beyond, earliest, latest, method: "records", remainingHalf: medianRemaining(S, weeks), pctThrough: latest > 0 ? Math.min(1, days / (7 * latest)) : 1 };
+    }
     const p = distribution(entry);
     const st = stats(p);
     const next2 = chanceNext(p, weeks, 2);
@@ -86,7 +96,7 @@ const Engine = (() => {
     else if (weeks >= Math.max(1, Math.floor(st.earliest / 2))) stage = "middle";
     else stage = "early";
     const pctThrough = st.latest > 0 ? Math.min(1, days / (7 * st.latest)) : 1;
-    return { days, weeks, stage, next2, earliest: st.earliest, latest: st.latest, pctThrough };
+    return { days, weeks, stage, next2, beyond: false, earliest: st.earliest, latest: st.latest, pctThrough, method: entry.assumed ? "typical" : "range" };
   }
 
   /* ---------- Costs ---------- */
@@ -101,36 +111,48 @@ const Engine = (() => {
     const fee = Math.max(0, Number(a.fee) || 0);
     const sessions = clampInt(a.sessions, 0, 52);
     const used = clampInt(a.usedThisYear, 0, MEDICARE_SESSIONS_PER_YEAR);
-    const rebate = a.hasPlan === false ? 0 : (REBATE[a.type] || REBATE.psychologist);
+    const fundOnly = a.pathway === "fund";
+    const medicareOn = a.hasPlan !== false && !fundOnly;
+    const rebate = medicareOn ? (REBATE[a.type] || REBATE.psychologist) : 0;
+    // A Medicare benefit is never more than the fee charged.
+    const benefit = a.bulkBilled ? fee : Math.min(fee, rebate);
     const medicareGap = a.bulkBilled ? 0 : Math.max(0, fee - rebate);
-    const medicareLeft = a.hasPlan === false ? 0 : MEDICARE_SESSIONS_PER_YEAR - used;
+    const medicareLeft = medicareOn ? MEDICARE_SESSIONS_PER_YEAR - used : 0;
     const ex = a.extras || {};
     const exOn = !!ex.on;
     const exPer = exOn ? Math.max(0, Number(ex.perSession) || 0) : 0;
     const exLimit = exOn ? Math.max(0, Number(ex.annualLimit) || 0) : 0;
 
-    // Medicare first, then extras, then pay in full.
-    let mSessions = Math.min(sessions, medicareLeft);
-    let rest = sessions - mSessions;
-    let limitLeft = exLimit, exSessions = 0, exPaid = 0, fullSessions = 0, restCost = 0;
-    for (let i = 0; i < rest; i++) {
+    // Each session is paid ONE way: Medicare, or the health fund, or in full. Never both.
+    const schedule = [];
+    let limitLeft = exLimit, mSessions = 0, exSessions = 0, exPaid = 0, fullSessions = 0, total = 0;
+    for (let i = 0; i < sessions; i++) {
+      if (mSessions < medicareLeft) {
+        const yearNo = used + mSessions + 1;
+        mSessions++; total += medicareGap;
+        schedule.push({ n: i + 1, payer: a.bulkBilled ? "bulk" : "medicare", paid: round2(benefit), you: round2(medicareGap), review: yearNo === 7 });
+        continue;
+      }
       const pay = Math.min(exPer, fee, limitLeft);
-      if (pay > 0) { exSessions++; exPaid += pay; limitLeft -= pay; restCost += fee - pay; }
-      else { fullSessions++; restCost += fee; }
+      if (pay > 0) { exSessions++; exPaid += pay; limitLeft -= pay; total += fee - pay; schedule.push({ n: i + 1, payer: "fund", paid: round2(pay), you: round2(fee - pay) }); }
+      else { fullSessions++; total += fee; schedule.push({ n: i + 1, payer: "self", paid: 0, you: round2(fee) }); }
     }
-    const medicareFirst = round2(mSessions * medicareGap + restCost);
-
-    // Extras only (no Medicare), for comparison.
+    // Health fund only (no Medicare), for comparison.
     limitLeft = exLimit; let exOnly = 0;
     for (let i = 0; i < sessions; i++) { const pay = Math.min(exPer, fee, limitLeft); limitLeft -= pay; exOnly += fee - pay; }
+    // Medicare only, then pay in full.
+    const mOnlyN = Math.min(sessions, a.hasPlan === false ? 0 : MEDICARE_SESSIONS_PER_YEAR - used);
+    const mOnly = mOnlyN * (a.bulkBilled ? 0 : Math.max(0, fee - (REBATE[a.type] || REBATE.psychologist))) + (sessions - mOnlyN) * fee;
 
     return {
-      fee, rebate, medicareGap: round2(medicareGap), medicareLeft,
+      fee, rebate, benefit: round2(benefit), medicareGap: round2(medicareGap), medicareLeft,
       medicareSessions: mSessions, extrasSessions: exSessions, extrasPaid: round2(exPaid), fullSessions,
-      total: medicareFirst,
+      schedule, reviewAt: (schedule.find(x => x.review) || {}).n || null,
+      total: round2(total),
       totalNoHelp: round2(sessions * fee),
       totalExtrasOnly: round2(exOnly),
-      saved: round2(sessions * fee - medicareFirst)
+      totalMedicareOnly: round2(mOnly),
+      saved: round2(sessions * fee - total)
     };
   }
 
@@ -360,17 +382,118 @@ const Engine = (() => {
     return ((c.when || 0) + (c.weeks || 0)) / tot < 0.12;
   }
   /**
-   * The eye-tracking study links attention to the waiting time with the weight on certainty:
-   * spread weight = base + coef * z, where z is attention share in standard deviations.
+   * Summary of where a person looked across the choice tasks. Descriptive only:
+   * it never changes their results or ranking.
+   * tasks: [{ dw: {A:{when,weeks,pay,how}, B:{...}}, sw: side switches, t: seconds, pick: 0|1 }]
    */
-  function attentionAdjust(b, waitShare, mean, sd, coef) {
-    if (!(sd > 0) || !Number.isFinite(waitShare)) return Object.assign({}, b);
-    const z = Math.max(-2, Math.min(2, (waitShare - mean) / sd));
-    return Object.assign({}, b, { spread: Math.min(-0.01, b.spread + coef * z) });
+  function eyeSummary(tasks) {
+    const list = (tasks || []).filter(x => x && x.dw && (x.pick === 0 || x.pick === 1));
+    const tot = attentionTotals(list.map(x => x.dw));
+    const sideSum = d => AOIS.reduce((s, a) => s + ((d || {})[a] || 0), 0);
+    let moreChosen = 0, judged = 0, latest = 0, switches = 0, time = 0;
+    const chosen = { when: 0, weeks: 0, pay: 0, how: 0 }, other = { when: 0, weeks: 0, pay: 0, how: 0 };
+    list.forEach(x => {
+      const c = x.dw[x.pick === 0 ? "A" : "B"] || {}, o = x.dw[x.pick === 0 ? "B" : "A"] || {};
+      const sc = sideSum(c), so = sideSum(o);
+      if (sc + so >= 0.5) { judged++; if (sc > so) moreChosen++; }
+      if ((c.weeks || 0) + (o.weeks || 0) >= 0.4) latest++;
+      AOIS.forEach(a => { chosen[a] += c[a] || 0; other[a] += o[a] || 0; });
+      switches += x.sw || 0; time += x.t || 0;
+    });
+    const n = list.length;
+    const avgSwitch = n ? switches / n : 0, avgTime = n ? time / n : 0;
+    const top = AOIS.slice().sort((p, q) => tot.seconds[q] - tot.seconds[p])[0];
+    let style = "balanced";
+    if (n && avgTime < 5) style = "quick";
+    else if (avgSwitch >= 4) style = "comparer";
+    else if (tot.share.pay >= 0.4) style = "cost";
+    else if (tot.waitShare >= 0.6) style = "date";
+    return { n, total: tot.total, seconds: tot.seconds, share: tot.share, waitShare: tot.waitShare,
+      moreChosen, judged, latest, avgSwitch, avgTime, chosen, other, top, style };
+  }
+  /** Mean distance between predicted and true points (both 0..1 of screen), in screen fractions. */
+  function calibError(pred, truth) {
+    if (!pred.length) return NaN;
+    return pred.reduce((s, p, i) => s + Math.hypot(p[0] - truth[i][0], p[1] - truth[i][1]), 0) / pred.length;
+  }
+
+  /* ---------- Waiting times from clinic records ----------
+   * Completed waits (people already seen) are events. People still waiting are
+   * right-censored at the time they have waited so far. Kaplan-Meier gives the
+   * chance of still waiting after t weeks without dropping the longest waits.
+   */
+  function kmFit(completed, ongoing) {
+    const ev = (completed || []).filter(x => x >= 0).map(t => [t, 1]);
+    const ce = (ongoing || []).filter(x => x >= 0).map(t => [t, 0]);
+    const all = ev.concat(ce).sort((a, b) => a[0] - b[0] || b[1] - a[1]);
+    let atRisk = all.length, S = 1, gw = 0;
+    const t = [0], surv = [1], se = [0];
+    for (let i = 0; i < all.length;) {
+      const time = all[i][0]; let d = 0, c = 0;
+      while (i < all.length && all[i][0] === time) { if (all[i][1]) d++; else c++; i++; }
+      if (d > 0) {
+        S *= 1 - d / atRisk;
+        if (atRisk > d) gw += d / (atRisk * (atRisk - d));
+        t.push(time); surv.push(S); se.push(S * Math.sqrt(gw));
+      }
+      atRisk -= d + c;
+    }
+    const maxObs = all.length ? all[all.length - 1][0] : 0;
+    const maxEvent = ev.length ? Math.max(...ev.map(x => x[0])) : 0;
+    return { t, S: surv, se, nCompleted: ev.length, nOngoing: ce.length, maxObs, maxEvent };
+  }
+  function kmAt(km, time) { let s = 1; for (let i = 0; i < km.t.length; i++) { if (km.t[i] <= time + 1e-9) s = km.S[i]; else break; } return s; }
+  /** Smallest time by which a share p has been seen, or null if the records do not reach it. */
+  function kmQuantile(km, p) { for (let i = 0; i < km.t.length; i++) if (km.S[i] <= 1 - p + 1e-9) return km.t[i]; return null; }
+  /** Chance of still waiting at the end of each whole week, 0..maxW. */
+  function kmWeekly(km, maxW) { const out = []; for (let w = 0; w <= maxW; w++) out.push(kmAt(km, w)); return out; }
+  /**
+   * From a weekly "still waiting" curve S: chance of being seen in the next h weeks
+   * for someone who has already waited w weeks. beyond = true when this goes past the records.
+   */
+  function chanceNextS(S, w, h, lastWeek) {
+    const sw = S[Math.min(w, S.length - 1)];
+    if (!(sw > 1e-9)) return { p: null, beyond: false };
+    const end = Math.min(w + h, S.length - 1);
+    const p = (sw - S[end]) / sw;
+    return { p: Math.max(0, Math.min(1, p)), beyond: w + h > (lastWeek ?? S.length - 1) };
+  }
+  /** Weeks more until half of the people who have waited w weeks are seen, or null. */
+  function medianRemaining(S, w) {
+    const sw = S[Math.min(w, S.length - 1)]; if (!(sw > 1e-9)) return null;
+    for (let k = 1; w + k < S.length; k++) if (S[w + k] / sw <= 0.5 + 1e-9) return k;
+    return null;
+  }
+  /** Statements for clinics using completed and ongoing waits (weeks). */
+  function clinicSurvival(completed, ongoing, serviceName) {
+    const km = kmFit(completed, ongoing), up = x => x === null ? null : Math.max(1, Math.ceil(x - 1e-9));
+    const q10 = up(kmQuantile(km, 0.1)), q50 = up(kmQuantile(km, 0.5)), q90 = up(kmQuantile(km, 0.9));
+    const naive = completed.length ? { q50: Math.max(1, Math.ceil(quantile(completed, 0.5))), q90: Math.max(1, Math.ceil(quantile(completed, 0.9))) } : null;
+    const lastWeek = Math.ceil(km.maxObs);
+    const name = (serviceName || "").trim() || "our service";
+    const p90 = q90 === null ? `more than ${Math.max(1, Math.floor(km.maxEvent))} weeks` : `${q90} weeks`;
+    const p50 = q50 === null ? `more than ${Math.max(1, Math.floor(km.maxEvent))} weeks` : `${q50} weeks`;
+    const web = `Waiting times at ${name}: half of new clients have their first appointment within ${p50}, and 9 in 10 within ${p90}. This includes ${km.nCompleted} people we have seen and ${km.nOngoing} people still waiting.`;
+    let sms = `${name}: half of new clients are seen within ${p50}, 9 in 10 within ${p90}. Help sooner: 1800 595 212. Emergency: 000`;
+    if (sms.length > 160) sms = `Half of new clients are seen within ${p50}, 9 in 10 within ${p90}. Help sooner: 1800 595 212. Emergency: 000`;
+    const enough = km.nCompleted >= 30 && km.nOngoing >= 1;
+    return { km, q10, q50, q90, naive, lastWeek, web, sms, enough, p50, p90 };
+  }
+  /** Validation of a guide against what actually happened. cases: [{ p, seen }]. */
+  function validateGuide(cases, bins) {
+    const ok = (cases || []).filter(c => Number.isFinite(c.p) && (c.seen === 0 || c.seen === 1));
+    const k = bins || 5, out = [];
+    for (let i = 0; i < k; i++) {
+      const lo = i / k, hi = (i + 1) / k, g = ok.filter(c => c.p >= lo && (c.p < hi || (i === k - 1 && c.p <= 1)));
+      out.push({ lo, hi, n: g.length, meanP: g.length ? g.reduce((s, c) => s + c.p, 0) / g.length : NaN, observed: g.length ? g.reduce((s, c) => s + c.seen, 0) / g.length : NaN });
+    }
+    const brier = ok.length ? ok.reduce((s, c) => s + (c.p - c.seen) ** 2, 0) / ok.length : NaN;
+    return { n: ok.length, brier, bins: out };
   }
 
   return {
-    b64urlEncode, b64urlDecode, ridgeFit, dot, AOIS, attentionTotals, missedWait, attentionAdjust,
+    b64urlEncode, b64urlDecode, ridgeFit, dot, AOIS, attentionTotals, missedWait, eyeSummary, calibError,
+    kmFit, kmAt, kmQuantile, kmWeekly, chanceNextS, medianRemaining, clinicSurvival, validateGuide,
     MAX_WEEK, REBATE, MEDICARE_SESSIONS_PER_YEAR, AGE_BANDS,
     distribution, stats, chanceBy, chanceNext, remaining, elapsed, waitStage,
     costPlan, matchService, rankScore,

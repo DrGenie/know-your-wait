@@ -11,6 +11,9 @@ for k in ("/*RESULTS_JSON*/", "/*ENGINE*/", "/*QRLIB*/"):
     assert k in html, k
 qr = read("src", "vendor", "qrcode.min.js").replace("</", "<\\/")
 html = html.replace("/*QRLIB*/", qr).replace("/*ENGINE*/", read("src", "engine.js"))
+att = res["eye_tracking"]["attention_choice_model"]["coefs"][-1]
+html = html.replace("{{ATTN_EFFECT}}", f"{att['est']:.3f} (95% CI {att['ci'][0]:.3f} to {att['ci'][1]:.3f})")
+assert "{{" not in html.split("<script")[0], "unfilled placeholder"
 html = html.replace("/*RESULTS_JSON*/", payload)
 with open(os.path.join(ROOT, "index.html"), "w", encoding="utf-8") as f:
     f.write(html)

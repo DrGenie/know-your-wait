@@ -192,11 +192,70 @@ t("missed wait only fires with enough looking and little time on the wait", () =
   assert.equal(Engine.missedWait({ A: { pay: 0.5 }, B: {} }, 0, 1.5), false);
   assert.equal(Engine.missedWait(undefined, 0, 1.5), false);
 });
-t("more attention to waiting makes uncertainty weigh more", () => {
-  const b = { wait: -0.2, spread: -0.25, cost: -0.0125, video: -0.3 };
-  const hi = Engine.attentionAdjust(b, 0.7, 0.54, 0.086, -0.12), lo = Engine.attentionAdjust(b, 0.4, 0.54, 0.086, -0.12);
-  assert.ok(hi.spread < b.spread && lo.spread > b.spread && lo.spread < 0);
-  close(hi.cost, b.cost);
+t("eye summary is descriptive: shares, chosen-vs-other and style", () => {
+  const tasks = [
+    { dw: { A: { when: 2, weeks: 1, pay: 0.5 }, B: { pay: 0.5 } }, sw: 4, t: 8, pick: 0 },
+    { dw: { A: { pay: 0.2 }, B: { when: 1, pay: 2, how: 0.3 } }, sw: 5, t: 9, pick: 1 },
+    null
+  ];
+  const s = Engine.eyeSummary(tasks);
+  assert.equal(s.n, 2); assert.equal(s.moreChosen, 2); assert.equal(s.latest, 1);
+  close(s.total, 7.5); close(s.avgSwitch, 4.5); assert.equal(s.style, "comparer");
+  close(s.chosen.when, 3); close(s.other.pay, 0.7);
+  assert.equal(Engine.attentionAdjust, undefined, "attention must not adjust preferences");
+});
+t("Kaplan-Meier keeps people still waiting", () => {
+  const km = Engine.kmFit([1, 2, 3, 4], [2.5, 10]);
+  close(Engine.kmAt(km, 0.5), 1); close(Engine.kmAt(km, 1), 5 / 6); close(Engine.kmAt(km, 2), 4 / 6);
+  close(Engine.kmAt(km, 3), (4 / 6) * (2 / 3)); close(Engine.kmAt(km, 4), (4 / 6) * (2 / 3) * (1 / 2));
+  assert.equal(Engine.kmQuantile(km, 0.9), null);            // records never reach 9 in 10
+  assert.equal(Engine.kmQuantile(km, 0.5), 3);
+  const plain = Engine.kmFit([1, 2, 3, 4], []);
+  close(Engine.kmAt(plain, 2), 0.5);
+});
+t("including ongoing waits lengthens the quoted wait", () => {
+  const done = [2, 3, 3, 4, 4, 5, 5, 6, 6, 7], now = [8, 9, 10, 11, 12, 13];
+  const st = Engine.clinicSurvival(done, now, "Clinic");
+  assert.ok(st.naive.q50 <= 5); assert.ok(st.q50 === null || st.q50 > st.naive.q50);
+  assert.ok(st.sms.length <= 160, st.sms.length); assert.ok(st.web.includes("still waiting"));
+  assert.equal(st.enough, false);
+});
+t("chance in next 2 weeks from a survival curve is conditional on time waited", () => {
+  const S = [1, 1, 0.8, 0.6, 0.4, 0.2, 0];
+  close(Engine.chanceNextS(S, 0, 2).p, 0.2); close(Engine.chanceNextS(S, 3, 2).p, (0.6 - 0.2) / 0.6);
+  assert.equal(Engine.chanceNextS(S, 6, 2).p, null);
+  assert.equal(Engine.chanceNextS(S, 4, 2, 5).beyond, true);
+  assert.equal(Engine.medianRemaining(S, 2), 2);
+  const st = Engine.waitStage({ kind: "range", curve: S.map(x => x * 100), lastWeek: 6, joined: "2026-10-01" }, "2026-10-22");
+  assert.equal(st.method, "records"); assert.equal(st.weeks, 3); close(st.next2, (0.6 - 0.2) / 0.6);
+});
+t("Medicare and health fund are never combined on one session", () => {
+  const r = Engine.costPlan({ fee: 200, type: "psychologist", sessions: 12, usedThisYear: 0, extras: { on: true, perSession: 80, annualLimit: 1000 } });
+  assert.equal(r.schedule.length, 12);
+  r.schedule.forEach(s => assert.ok(["medicare", "fund", "self", "bulk"].includes(s.payer)));
+  assert.equal(r.schedule.filter(s => s.payer === "medicare").length, 10);
+  assert.equal(r.schedule.filter(s => s.payer === "fund").length, 2);
+  r.schedule.filter(s => s.payer === "medicare").forEach(s => { close(s.paid, 101.55); close(s.you, 98.45); });
+  assert.equal(r.reviewAt, 7);
+  close(r.total, 10 * 98.45 + 2 * 120, 1e-6);
+});
+t("health fund only pathway uses no Medicare", () => {
+  const r = Engine.costPlan({ fee: 200, type: "psychologist", sessions: 4, pathway: "fund", extras: { on: true, perSession: 70, annualLimit: 150 } });
+  assert.equal(r.medicareSessions, 0); close(r.total, 130 + 120 + 200 + 200);
+  close(r.totalMedicareOnly, 4 * 98.45, 1e-6);
+});
+t("Medicare benefit never exceeds the fee", () => {
+  const r = Engine.costPlan({ fee: 80, type: "clinical", sessions: 2 });
+  close(r.schedule[0].paid, 80); close(r.total, 0);
+});
+t("validation reports Brier score and calibration bands", () => {
+  const v = Engine.validateGuide([{ p: 0.1, seen: 0 }, { p: 0.9, seen: 1 }, { p: 0.5, seen: 1 }, { p: 0.5, seen: 0 }], 2);
+  assert.equal(v.n, 4); close(v.brier, (0.01 + 0.01 + 0.25 + 0.25) / 4);
+  assert.equal(v.bins[0].n, 1); assert.equal(v.bins[1].n, 3);
+});
+t("the attention estimate is shown with its value", () => {
+  assert.ok(/uncertainty by <b>-0\.\d{3} \(95% CI/.test(html));
+  assert.ok(!html.includes("{{ATTN_EFFECT}}"));
 });
 
 /* page */

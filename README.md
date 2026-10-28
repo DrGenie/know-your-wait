@@ -1,17 +1,19 @@
 # Know Your Wait
 
-**Research prototype, version 0.5.0.** A free web tool for people in the Hunter region of NSW who are waiting to see a psychologist. In about 3 minutes it helps them:
+**Research prototype, version 0.6.0.** A free web tool for people in the Hunter region of NSW who are waiting to see a psychologist. It works on phones, tablets and computers, and helps people:
 
-- compare their options and find out what matters most to them;
+- compare their options and find out what matters most to them (6 quick choices);
+- see where their eyes went while choosing, using the phone or laptop camera (optional, video never leaves the device);
 - get a plan, with free support they can start today;
-- share the plan by QR code, WhatsApp or text;
-- track their waiting list, with the chance of being seen updated as time passes.
+- know what to ask when they call a clinic, and turn the answers into a waiting list and a cost;
+- work out what they will pay, with Medicare and health fund rules built in;
+- track their waiting list, with a rough guide to the chance of being seen soon.
 
-It also gives clinics a clear way to describe their waiting times, and a QR code that adds their waiting list to a person's tracker.
+It also gives clinics a way to describe their waiting times from their own records, including people still waiting, and a QR code that adds their waiting list to a person's tracker.
 
 The tool comes from the University of Newcastle pilot study *Waiting, cost and certainty: preferences for access to psychological care* (CHSF Pilot Research Scheme 2027 application).
 
-> Service details were checked on 28 October 2026. **The research results in Technical details are simulated** until the study is complete.
+> Medicare and service details were checked on 28 October 2026. **The research results in Technical details are simulated** until the study is complete.
 
 ## Why
 
@@ -21,76 +23,84 @@ The tool comes from the University of Newcastle pilot study *Waiting, cost and c
 - Longer waits are linked to missed first appointments (Loumidis and Shropshire 1997).
 - Digital support used while waiting is seen as useful, but engagement is low unless a person guides it (Huang et al. 2024).
 
-People often do not know about free services that need no referral, do not know what Medicare will pay, and get no clear information while they wait. This tool addresses those three gaps.
+## One connected journey
 
-## What the tool does
+A bar under the menu shows 7 stages on every page: **Compare, Plan, Share, Call, Cost, Wait, Seen**. Its "Next" link is worked out from everything saved, for example "Call Smith Psychology: you have waited longer than they said", "Your appointment is in 5 days. Work out the cost" or "Week 6 with Smith Psychology: check in". Every tool page ends with a "Your next step" card, so no page is a dead end.
 
-Version 0.5.0 tells one connected story across every page: **Compare, Plan, Share, Wait, Seen**. A journey bar under the menu shows where the person is up to and the next thing to do, on every page.
-
-The guided journey, **Compare my options**, takes about 3 minutes. Each step appears when the person presses Next.
-
-1. **Safety check.** If the person is not safe, crisis numbers are shown at once.
-2. **About you.** Age, area, UON student, whether cost is a problem. Every question can be skipped.
-3. **Your goal.** When they want to start, and whether they have a GP mental health plan. Options that need a plan get 1 extra week.
-4. **Your options.** Typical Hunter options for someone like them (estimated waits; Medicare gap from the real $101.55 rebate). Each can be changed to match a real offer, removed, or added.
-5. **6 quick choices.** Paired appointments in the same format as the study's choice tasks. Optionally, the camera shows what the person looks at (see below). If they choose an uncertain option after barely looking at its waiting weeks, the tool asks them to check the latest week first.
-6. **Results.** Best match with a plain reason; what a set date, waiting and face to face are worth to them compared with other people; **What caught your eye**; options ranked with the chance of being seen by the goal week; a one-question comprehension check.
-7. **Your plan.** Free support to start today, the GP step if needed, questions to ask when calling (based on what matters to them), and what to do if things get worse.
-8. **Save and share.** A QR code, WhatsApp, text message, email or the phone's own share menu. The message can be written for the person or for someone who supports them. The plan travels inside the link (`#plan-...`), so nothing is stored online. One button then starts tracking the chosen option.
-
-### How the pages connect
-
-| Page | What it does | Connection |
+| Page | What it does | Feeds into |
 |---|---|---|
-| Home | First visit: start. Return visit: **Welcome back** with their choice, plan and waiting lists | Reads the journey state |
-| My waiting lists | Each visit recalculates how long they have waited, the chance of being seen in the next 2 weeks and advice for each stage. Look-ahead slider. WhatsApp update for each list | Filled from the plan, a shared plan, or a clinic QR code |
-| Costs | Better Access costs with Medicare benefits from 1 July 2026, the 10-session limit and the private health extras rule | **Use my choice** fills in the fee from the chosen option |
-| For clinics | Website statement, 1-SMS message, letter and a **QR code** from a clinic's recent waits | Scanning the QR (`#add-...`) adds that clinic's waiting list, with its real waits, to the person's tracker |
-| Shared plan | Read-only view of a plan someone sent | **Track this waiting list** and **Make my own plan** |
-| How it works | How the research feeds the tool, privacy, technical details, sources | |
-| Urgent help | 000, NSW Mental Health Line, Lifeline, Suicide Call Back Service, 13YARN, Kids Helpline, Beyond Blue | Crisis strip on every page |
+| Compare my options | 8 steps: safety, about you, goal, options (with taking new clients, video or phone, referral, fee, where the wait came from, date checked), 6 choices, results, plan, share | Plan, call questions, costs, tracker |
+| Call a clinic | 6 questions (new clients, first-appointment wait, cancellation list, video or phone, fee and bulk billing, what to bring) plus questions tailored to the person's choices. A summary to print or share, with private wording (no health words) | Creates or updates the waiting list; sets the cost as "fee from the practice" |
+| Costs | 6 step-by-step questions with a live answer: provider type, face to face, video or phone, Medicare or health fund only or neither, fee (from the practice or a guess), sessions and Medicare sessions used, extras cover. Session-by-session strip showing who pays each session and where the GP review falls. Comparison table and a "what you need" checklist | Home dashboard, ribbon |
+| My waiting lists | Time waited, stage, rough-guide chance of being seen in the next 2 weeks, how sure it is, service details, what to do now, look-ahead slider, WhatsApp update, links to call questions and costs. Free support while you wait, including Medicare Mental Health Centres | Ribbon |
+| For clinics | Completed waits and people still waiting, Kaplan-Meier curve, website text, SMS, letter, QR code, record sheet | Person's tracker (QR) |
+| Shared plan | Read-only plan from a link or QR code | Tracker |
 
-The word "simulated" and other technical terms appear only in **Technical details** on the How it works page.
+The word "simulated" and other technical terms appear only in Technical details on the How it works page.
 
-### How the study feeds the tool
+## How the research feeds the tool
 
-| Study component | What it changes in the tool |
-|---|---|
-| Online choice experiment (200 adults) | Its estimates are the starting point for each person's trade-offs. The person's 6 choices update them (importance weighting over 4,000 draws); the population spread gives the "compared with other people" figures. |
-| Eye-tracking and comprehension (40 adults) | Decides the display (picture of weeks first, latest week in orange and in words). The quick check reuses the study's comprehension question. The attention x uncertainty estimate (-0.120 per SD) adjusts a person's weight on uncertainty when their camera is on. |
-| Clinics | Turn recent waits into ranges and a QR code. In this prototype the Hunter waits are simulated. |
+| Source | Used for | Not used for |
+|---|---|---|
+| Choice experiment (200 adults) | Starting point for each person's trade-offs; their 6 choices update it. Best match, "what matters to you", tailored questions | Waiting-time probabilities |
+| Eye-tracking study (40 adults) | Picture format, latest week in orange and in words, the comprehension check. Live attention shows people where they looked and what to double-check | Changing anyone's weights, best match or ranking |
+| Clinic records | Waiting-time statements and the tracker's chances | What people prefer |
 
-### Camera eye tracking (optional)
+The simulated attention x uncertainty estimate (-0.120 per SD, 95% CI -0.195 to -0.045) is shown in Technical details as a hypothesis to test. **The tool does not use it to change recommendations.**
 
-Feasibility: webcam eye tracking in the browser can reach about 1.4 degrees of accuracy (Kaduk et al. 2023, *Behavior Research Methods*); simpler set-ups are around 170 px (Papoutsaki et al. 2016). That is good enough for large areas (When, You pay, How, the week picture), which is all the tool uses.
+## Camera eye tracking
 
-- Off by default. A consent popup explains: the video never leaves the device, is never recorded, saved or sent, and nobody sees it. Only seconds per screen area are counted.
-- Uses Google MediaPipe Face Landmarker (Apache 2.0), downloaded from jsDelivr and Google the first time the camera is turned on (about 4 MB). GPU, then CPU fallback.
-- Features: each iris position within its eye, plus nose position. A 9-dot calibration fits a ridge regression to screen position; smoothed gaze points are matched to the `data-aoi` area under them about 30 times a second.
-- Small mirrored preview with **Turn off**; optional "Show my gaze" dot. Turns off by itself when the person leaves the 6 choices.
-- If the camera or program is not available, the person is told plainly and carries on. On a desktop without the camera, pointer position is used instead (mouse-tracking style) and disclosed in the results.
-- WebGazer was not used because it is GPL licensed.
+Works in Chrome, Safari, Edge and Firefox on phones, tablets and computers, on a secure (https) address. Off by default.
 
-Everything else runs in the browser with no external requests. Answers, plans and waiting lists are saved on the device only (local storage) and can be deleted from How it works.
+- **Consent first.** The popup says the video never leaves the device, is never recorded, saved or sent, nobody sees it, and what is looked at does not change results.
+- **Phones.** The face reader runs on the CPU on phones and tablets (more reliable than GPU there) and GPU then CPU on computers, with a switch to CPU if GPU fails during use. The front camera is requested with `facingMode: "user"`; the video element is muted, inline and always rendered, so iOS Safari delivers frames. Frames are processed with `requestVideoFrameCallback` where available. Load times out after 45 seconds with a plain message. In-app browsers that block the camera (Facebook, Instagram, TikTok and others) are detected and the person is told to open the page in Chrome or Safari.
+- **Calibration.** 9 dots to tap (each collects up to 10 frames over 1.8 seconds, dropping blinks), then 4 dots that move by themselves to measure accuracy. Result: good, okay or rough, with the average error in pixels. "Redo dots" is always available.
+- **Features and model.** MediaPipe Face Landmarker: iris position within each eye (across and up-down), nose position, head turn from the face transformation matrix. Standardised, ridge regression to screen position, smoothed.
+- **Focus mode.** While the camera is on, the comparison fills the screen as an A/B table (When, Weeks, You pay, How), so each area is large on a phone.
+- **Results.** Share of time on each area; looking style; how often the person chose the option they looked at longer; looks back and forth per choice; how often they checked the week picture; time to choose; a heat table (chosen versus other); a replay of the gaze path for each choice; and "what this changes", which only adds reminders (latest week shown first, a cost step, a video question).
+- **Without the camera.** On computers, pointer position is used in the same way and labelled. On phones without the camera, the results offer to redo the 6 choices with the camera.
+
+By default the MediaPipe program comes from jsDelivr and the model from Google. To serve everything from your own site, run `scripts/get_mediapipe.sh`, which puts the files in `vendor/mediapipe/`; the tool uses them automatically when they are there.
+
+## Waiting times: method and validation
+
+- A range a person enters is treated as an equal chance in each week of the range. A typical 4 to 17 weeks is used when the service gave nothing, and labelled as very rough.
+- Clinic records use a **Kaplan-Meier** estimate. Waits of people seen are events; people still waiting are censored at the time they have waited so far, so the longest waits are not dropped. The example shows the difference: completed waits alone say half within 6 weeks and 9 in 10 within 11; including the 15 people still waiting gives 7 and 16.
+- The chance of a first appointment in the next 2 weeks after waiting w weeks is (S(w) - S(w + 2)) / S(w). The tracker also shows the weeks until half of people who have waited as long are seen.
+- These are labelled **rough guide** everywhere, with "How sure is this?" explaining the source. They are not yet validated. Validation needs weekly snapshots of each waiting list, first-appointment dates, people leaving the list, cancellations and clinician hours. At each snapshot, predict each person's 2-week chance and compare with what happened, using calibration bands and the Brier score (`Engine.validateGuide`). The For clinics page lists these records and offers a CSV record sheet.
+- The choice study cannot produce these probabilities, because choices between hypothetical appointments say nothing about a clinic's capacity.
+
+## Costs: rules used
+
+- Medicare benefits from 1 July 2026, sessions of 50 minutes or more: psychologist $101.55 (item 80110), clinical psychologist $149.05, mental health social worker or occupational therapist $89.50. A benefit is never more than the fee.
+- Up to 10 individual sessions a calendar year with a Mental Health Treatment Plan and a referral from the person's MyMedicare practice or usual GP. The first referral covers up to 6; then a GP review (marked on the session strip).
+- Video and phone sessions are covered with the same limits. The same benefit is assumed and the person is told to check the item with the practice.
+- **Each session is paid one way:** Medicare, or the health fund, or in full. Extras never top up a Medicare session. Pathways: Medicare first then health fund once Medicare sessions run out; health fund only; neither.
+- The result is labelled "Estimate" or "Based on the practice's fee".
 
 ## Run it
 
-- **Locally:** open `index.html` in a browser. (The camera needs `https` or `localhost`.)
+The tool is a single static file. No build step is needed to use it.
+
+- **Locally:** open `index.html` in a browser. The camera needs `https` or `localhost`.
 - **GitHub Pages:** Settings > Pages > Deploy from branch > `main` / root. The `.nojekyll` file is included. Share links and QR codes point to the address the page is served from.
+
+Everything runs in the browser. Answers, plans, calls, costs and waiting lists are saved on the device only (local storage) and can be deleted from How it works.
 
 ## Repository structure
 
 ```
 index.html                      the tool (generated; do not edit by hand)
 src/index.template.html         page layout, styles and interface code
-src/engine.js                   calculation engine (costs, matching, waiting-list chances, clinic statements,
-                                personal trade-offs, share links, gaze calibration, attention)
+src/engine.js                   calculation engine: costs, matching, waiting-list chances, Kaplan-Meier,
+                                clinic statements, validation, personal trade-offs, share links,
+                                gaze calibration, attention summary
 src/vendor/qrcode.min.js        QR code generator (qrcode-generator 1.4.4, MIT, Kazuhiko Arase)
-simulation/simulate_and_estimate.py   simulates the pilot data and runs the planned analyses
-simulation/results/estimates.json     model results used by the tool
-simulation/results/*_simulated.csv    simulated choice, participant and gaze data
 scripts/embed_results.py        builds index.html from the template, engine, QR library and estimates.json
-tests/engine.test.mjs           40 tests of the engine and page content (Node 18+)
+scripts/get_mediapipe.sh        optional: self-host the MediaPipe program and model
+simulation/simulate_and_estimate.py   simulates the pilot data and runs the planned analyses
+simulation/results/             model results and simulated data
+tests/engine.test.mjs           48 tests of the engine and page content (Node 18+)
 tests/test_results.py           checks that the analysis recovers the assumed parameters
 ```
 
@@ -147,19 +157,20 @@ The simulation uses a fixed seed (2027), so results are reproducible. It takes u
 
 ## How the tool calculates
 
-- **Waiting lists.** A range such as "3 to 9 weeks" is treated as an equal chance of being seen in each of those weeks. After `w` whole weeks without being seen, the chance of being seen in the next 2 weeks is P(w < T <= w + 2) / P(T > w). Stages: early, waiting, in the window, longer than they said.
-- **Costs.** Medicare sessions are used first, up to 10 a calendar year less those already used. The gap per session is the fee minus the Medicare benefit, or $0 if bulk billed. Remaining sessions use private health extras up to the per-session benefit and yearly limit. Any sessions left after that are paid in full.
+- **Waiting lists and costs.** See the two sections above.
 - **Personal trade-offs.** Prior for each weight: study estimate, SD 50% of its size (independent normals, wait and cost kept negative), 4,000 seeded draws. Each draw is weighted by the logit probability of the person's answers; the weighted mean gives their weights. Values: set date = 3 x spread / cost; weeks to save $50 = 50 x cost / wait; face to face = video / cost. "Compared with others" uses draws with SD 30%, the simulated spread between people.
 - **Service matching.** A service is shown unless an answer rules it out (age band, area, student-only, hardship-only, mode). Skipped questions never hide a service.
-- **Attention.** Seconds on each area are summed across the 6 choices. Waiting share = (When + week picture) / total. With the camera on, spread weight += -0.120 x z, where z is the person's waiting share standardised by the laboratory mean and SD (clipped to plus or minus 2). The check before choosing fires when the chosen uncertain option's waiting areas got under 12% of at least 1.5 seconds of looking (at most twice).
+- **Attention.** Seconds on each area (When, Weeks, You pay, How, for A and B) are summed per choice, with side switches, time to choose and a gaze path sampled 10 times a second. Attention never changes weights or ranking. The check before choosing fires when the chosen uncertain option's waiting areas got under 12% of at least 1.5 seconds of looking (at most twice). Reminders: latest week shown first if the week picture was checked in fewer than half the choices; a highlighted cost step if cost got under 15% of attention; a video question if How got under 8%.
 - **Share links.** The plan is compact JSON encoded as URL-safe base64 after `#plan-`; clinic QR codes use `#add-`. Fragments are never sent to a server.
-- **Clinic statements.** Empirical percentiles (type 7), rounded up to whole weeks, so a statement never promises a shorter wait than clients had.
+- **Clinic statements.** Kaplan-Meier quantiles rounded up to whole weeks; when the records never reach a share, the statement says "more than X weeks". A guide is flagged as too thin below 30 completed waits or with no ongoing waits.
 
 ## Limits
 
 - The research results are simulated. Service details, phone numbers, hours and Medicare amounts change; they were checked on 28 October 2026 and should be reviewed every 3 months.
 - The tool is a research prototype. It was developed with reference to the International Patient Decision Aid Standards, but it has not been evaluated against them.
 - It is not a medical device and does not give clinical advice.
+- Waiting-time chances are a rough guide until validated against real appointment and waiting-list records.
+- Webcam eye tracking is less accurate than laboratory eye tracking, especially on phones and in poor light.
 - Public release would require user testing and ethics review.
 
 ## Developer
